@@ -5,7 +5,7 @@ module "station" {
   role_definition_name_on_workload_rg = "Owner"
   station_resource_group_name         = "rg-terraform-remote-state"
   federated_identity_credential_config = {
-    create = false
+    create    = true
     audiences = ["api://AzureADTokenExchange"]
     issuer    = "https://token.actions.githubusercontent.com"
     subject   = "repo:kimfy/station:environment:dev"
