@@ -10,4 +10,9 @@ module "station" {
     issuer    = "https://token.actions.githubusercontent.com"
     subject   = "repo:kimfy/station:environment:dev"
   }
+
+  tags = {
+    "repoUrl" = "https://github.com/kimfy/station.git"
+    "owner"   = "platform-engineer"
+  }
 }
