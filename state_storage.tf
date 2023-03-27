@@ -4,6 +4,7 @@ resource "azurerm_storage_account" "state" {
   location                 = "norwayeast"
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  tags                     = local.tags
 }
 
 resource "azurerm_storage_container" "state" {

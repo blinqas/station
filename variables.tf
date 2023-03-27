@@ -21,13 +21,20 @@ variable "federated_identity_credential_config" {
     audiences = list(string)
     issuer    = string
     subject   = string
-    create = bool
+    create    = bool
   })
   description = "The Application Federated Identity Credential configuration. Configure this for secret-less automation by setting create to `true` and filling in the object values."
   default = {
-    "create" = false
+    "create"    = false
     "audiences" = null,
     "issuer"    = "https://token.actions.githubusercontent.com",
     "subject"   = null,
   }
 }
+
+variable "tags" {
+  type        = map(string)
+  description = "Additional tags to append to the default tags."
+  default     = {}
+}
+

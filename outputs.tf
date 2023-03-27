@@ -11,7 +11,7 @@ output "subscription_id" {
 }
 
 output "state_storage_account_name" {
-  value = azurerm_storage_account.state.name 
+  value = azurerm_storage_account.state.name
 }
 
 output "state_storage_container_name" {
