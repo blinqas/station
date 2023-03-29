@@ -42,3 +42,9 @@ variable "applications" {
   description = "Applications to create. See https://registry.terraform.io/modules/aztfmod/caf/azurerm/5.7.0-preview0/submodules/applications?tab=inputs for documentation."
   default     = {}
 }
+
+variable "groups" {
+  description = "List of Azure AD groups to create"
+  default = {}
+}
+

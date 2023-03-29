@@ -30,6 +30,23 @@ module "station" {
     "owner"   = "platform-engineer"
   }
 
+  groups = {
+    "admins" = {
+       settings = {
+        display_name = "admins"
+        owners = [data.azurerm_client_config.current.object_id]
+        security_enabled = true
+        types = ["DynamicMembership"]
+        dynamic_membership = {
+          "JuniorDevOpsNoAccess" = {
+            enabled = true
+            rule = "user.department -eq \"Sales\""
+          }
+        }
+       }
+      }
+  }
+
   applications = {
     "backstage-azure-integration" = {
       // Caller is added as owner on the application.
