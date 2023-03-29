@@ -32,28 +32,32 @@ module "station" {
 
   applications = {
     "backstage-azure-integration" = {
+      // Caller is added as owner on the application.
       client_config = data.azurerm_client_config.current
+      // Unsure what this is used for.
       user_type = "null"
 
+      // See aztfmod's docs (see variables.tf file for link)
       settings = {
         application_name = "backstage-azure-integration"
       }
 
-      #azuread_api_permissions = [
-      #  {
-      #    resource_app_id = "00000003-0000-0000-c000-000000000000"
-      #    resource_access = [
-      #      {
-      #        id   = "98830695-27a2-44f7-8c18-0c3ebc9698f6" # GroupMember.Read.All
-      #        type = "Role"
-      #      },
-      #      {
-      #        id   = "df021288-bdef-4463-88db-98f22de89214" # User.Read.All
-      #        type = "Role"
-      #      }
-      #    ]
-      #  }
-      #]
+      // required_resource_access: see https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application
+      azuread_api_permissions = [
+        {
+          resource_app_id = "00000003-0000-0000-c000-000000000000"
+          resource_access = [
+            {
+              id   = "98830695-27a2-44f7-8c18-0c3ebc9698f6" # GroupMember.Read.All
+              type = "Role"
+            },
+            {
+              id   = "df021288-bdef-4463-88db-98f22de89214" # User.Read.All
+              type = "Role"
+            }
+          ]
+        }
+      ]
     }
   }
 }
