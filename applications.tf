@@ -11,7 +11,9 @@ module "caf_applications" {
     passthrough = false
   }
 
-  settings = each.value.settings
+  settings = merge(each.value.settings, {
+    owners = [azuread_service_principal.workload.object_id]
+  })
 
   azuread_api_permissions = can(each.value.azuread_api_permissions) ? each.value.azuread_api_permissions : []
 }
