@@ -45,6 +45,6 @@ variable "applications" {
 
 variable "groups" {
   description = "List of Azure AD groups to create"
-  default = {}
+  default     = {}
 }
 

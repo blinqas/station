@@ -8,7 +8,7 @@ terraform {
 
 provider "azurerm" {
   features {
-    
+
   }
 }
 
@@ -32,19 +32,19 @@ module "station" {
 
   groups = {
     "admins" = {
-       settings = {
-        display_name = "admins"
-        owners = [data.azurerm_client_config.current.object_id]
+      settings = {
+        display_name     = "admins"
+        owners           = [data.azurerm_client_config.current.object_id]
         security_enabled = true
-        types = ["DynamicMembership"]
+        types            = ["DynamicMembership"]
         dynamic_membership = {
           "JuniorDevOpsNoAccess" = {
             enabled = true
-            rule = "user.department -eq \"Sales\""
+            rule    = "user.department -eq \"Sales\""
           }
         }
-       }
       }
+    }
   }
 
   applications = {
