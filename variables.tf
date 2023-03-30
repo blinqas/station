@@ -17,19 +17,8 @@ variable "station_resource_group_name" {
 }
 
 variable "federated_identity_credential_config" {
-  type = object({
-    audiences = list(string)
-    issuer    = string
-    subject   = string
-    create    = bool
-  })
   description = "The Application Federated Identity Credential configuration. Configure this for secret-less automation by setting create to `true` and filling in the object values."
-  default = {
-    "create"    = false
-    "audiences" = null,
-    "issuer"    = "https://token.actions.githubusercontent.com",
-    "subject"   = null,
-  }
+  default = []
 }
 
 variable "tags" {
