@@ -21,3 +21,7 @@ output "state_storage_container_name" {
 output "workload_resource_group_name" {
   value = azurerm_resource_group.workload.name
 }
+
+output "groups" {
+  value = module.ad_groups
+}

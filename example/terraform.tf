@@ -8,7 +8,7 @@ terraform {
 
 provider "azurerm" {
   features {
-    
+
   }
 }
 
@@ -28,6 +28,31 @@ module "station" {
   tags = {
     "repoUrl" = "https://github.com/kimfy/station.git"
     "owner"   = "platform-engineer"
+  }
+
+  groups = {
+    "dynamic" = {
+      settings = {
+        display_name     = "admins"
+        owners           = [data.azurerm_client_config.current.object_id]
+        security_enabled = true
+        types            = ["DynamicMembership"]
+        dynamic_membership = {
+          "JuniorDevOpsNoAccess" = {
+            enabled = true
+            rule    = "user.department -eq \"Sales\""
+          }
+        }
+      }
+    },
+    "static" = {
+      settings = {
+        display_name     = "static"
+        owners           = [data.azurerm_client_config.current.object_id]
+        security_enabled = true
+        members          = [data.azurerm_client_config.current.object_id]
+      }
+    }
   }
 
   applications = {
