@@ -18,12 +18,13 @@ module "station" {
   environment_name                    = "dev"
   role_definition_name_on_workload_rg = "Owner"
   station_resource_group_name         = "rg-terraform-station"
-  #federated_identity_credential_config = {
-  #  create    = true
-  #  audiences = ["api://AzureADTokenExchange"]
-  #  issuer    = "https://token.actions.githubusercontent.com"
-  #  subject   = "repo:kimfy/station:environment:dev"
-  #}
+  federated_identity_credential_config = {
+  "plan" = {
+    create    = true
+    audiences = ["api://AzureADTokenExchange"]
+    issuer    = "https://token.actions.githubusercontent.com"
+    subject   = "repo:kimfy/station:environment:dev"
+  }}
 
   tags = {
     "repoUrl" = "https://github.com/kimfy/station.git"
