@@ -31,7 +31,7 @@ module "station" {
   }
 
   groups = {
-    "admins" = {
+    "dynamic" = {
       settings = {
         display_name     = "admins"
         owners           = [data.azurerm_client_config.current.object_id]
@@ -43,6 +43,14 @@ module "station" {
             rule    = "user.department -eq \"Sales\""
           }
         }
+      }
+    },
+    "static" = {
+      settings = {
+        display_name     = "static"
+        owners           = [data.azurerm_client_config.current.object_id]
+        security_enabled = true
+        members          = [data.azurerm_client_config.current.object_id]
       }
     }
   }
