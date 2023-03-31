@@ -18,7 +18,7 @@ variable "station_resource_group_name" {
 
 variable "federated_identity_credential_config" {
   description = "The Application Federated Identity Credential configuration. Configure this for secret-less automation by setting create to `true` and filling in the object values."
-  default = []
+  default     = []
 }
 
 variable "tags" {

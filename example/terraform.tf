@@ -19,12 +19,18 @@ module "station" {
   role_definition_name_on_workload_rg = "Owner"
   station_resource_group_name         = "rg-terraform-station"
   federated_identity_credential_config = {
-  "plan" = {
-    create    = true
-    audiences = ["api://AzureADTokenExchange"]
-    issuer    = "https://token.actions.githubusercontent.com"
-    subject   = "repo:kimfy/station:environment:dev"
-  }}
+    "plan" = {
+      display_name = "Backstage TFC plan"
+      audiences    = ["api://AzureADTokenExchange"]
+      issuer       = "https://example.com"
+      subject      = "repo:kimfy/station-deployments"
+    },
+    "apply" = {
+      display_name = "Backstage TFC apply"
+      audiences    = ["api://AzureADTokenExchange"]
+      issuer       = "https://example.com"
+      subject      = "repo:station-deployments"
+  } }
 
   tags = {
     "repoUrl" = "https://github.com/kimfy/station.git"
