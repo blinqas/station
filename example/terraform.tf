@@ -20,13 +20,13 @@ module "station" {
   station_resource_group_name         = "rg-terraform-station"
   federated_identity_credential_config = {
     "plan" = {
-      display_name = "Backstage TFC plan"
+      display_name = "station-example-tfc-plan"
       audiences    = ["api://AzureADTokenExchange"]
       issuer       = "https://example.com"
       subject      = "repo:kimfy/station-deployments"
     },
     "apply" = {
-      display_name = "Backstage TFC apply"
+      display_name = "station-example-tfc-apply"
       audiences    = ["api://AzureADTokenExchange"]
       issuer       = "https://example.com"
       subject      = "repo:station-deployments"
@@ -63,6 +63,24 @@ module "station" {
   }
 
   applications = {
+    "web" = {
+      client_config = data.azurerm_client_config.current
+      user_type     = "null"
+
+      settings = {
+        application_name = "station-example-web"
+
+        web = {
+          redirect_uris = ["http://localhost:7007/api/auth/microsoft/handler/frame"]
+
+          implicit_grant = {
+            access_token_issuance_enabled = true
+            id_token_issuance_enabled     = true
+          }
+        }
+      }
+
+    },
     "backstage-azure-integration" = {
       // Caller is added as owner on the application.
       client_config = data.azurerm_client_config.current
@@ -95,3 +113,11 @@ module "station" {
 }
 
 data "azurerm_client_config" "current" {}
+
+output "applications" {
+  value = module.station.applications
+}
+
+output "workload_service_principal_object_id" {
+  value = module.station.workload_service_principal_object_id
+}

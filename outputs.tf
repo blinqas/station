@@ -2,6 +2,10 @@ output "client_id" {
   value = azuread_service_principal.workload.application_id
 }
 
+output "workload_service_principal_object_id" {
+  value = azuread_service_principal.workload.object_id
+}
+
 output "tenant_id" {
   value = data.azuread_client_config.current.tenant_id
 }
