@@ -1,3 +1,3 @@
 output "group" {
-  value = azurerm_group.group
+  value = azuread_group.group
 }
