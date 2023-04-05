@@ -18,6 +18,17 @@ module "station" {
   environment_name                    = "dev"
   role_definition_name_on_workload_rg = "Owner"
   station_resource_group_name         = "rg-terraform-station"
+
+  user_assigned_identities = {
+    "container-app-x" = {
+      name = "id-ca-x"
+      role_assignments = [
+        "GroupMember.Read.All",
+        "User.Read.All"
+      ]
+    }
+  }
+
   federated_identity_credential_config = {
     "plan" = {
       display_name = "station-example-tfc-plan"
@@ -120,4 +131,8 @@ output "applications" {
 
 output "workload_service_principal_object_id" {
   value = module.station.workload_service_principal_object_id
+}
+
+output "user_assigned_identities" {
+  value = module.station.user_assigned_identities
 }

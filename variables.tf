@@ -37,3 +37,7 @@ variable "groups" {
   default     = {}
 }
 
+variable "user_assigned_identities" {
+  description = "User Assigned Identities to create."
+  default     = {}
+}
