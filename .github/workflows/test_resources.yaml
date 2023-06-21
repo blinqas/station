@@ -35,8 +35,17 @@ jobs:
       with:
         terraform_version: 1.5.0
 
-    - name: Initialize Terraform
+    - name: terraform init
       run: terraform init
+      working-directory: tests
+      env:
+        ARM_CLIENT_ID:       ${{ secrets.AZ_CLIENT_ID }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+        ARM_TENANT_ID:       ${{ secrets.AZ_TENANT_ID }}
+        ARM_USE_OIDC:        true
+
+    - name: terraform plan
+      run: terraform plan -out plan.tfplan
       working-directory: tests
       env:
         ARM_CLIENT_ID:       ${{ secrets.AZ_CLIENT_ID }}
