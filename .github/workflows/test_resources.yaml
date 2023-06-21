@@ -38,3 +38,9 @@ jobs:
     - name: Initialize Terraform
       run: terraform init
       working-directory: tests
+      env:
+        ARM_CLIENT_ID:       ${{ secrets.AZURE_CLIENT_ID }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        ARM_TENANT_ID:       ${{ secrets.AZURE_TENANT_ID }}
+        ARM_USE_OIDC:        true
+
