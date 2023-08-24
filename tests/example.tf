@@ -17,7 +17,6 @@ module "station" {
 
   environment_name                    = "dev"
   role_definition_name_on_workload_rg = "Owner"
-  station_resource_group_name         = "rg-terraform-station"
 
   user_assigned_identities = {
     "container-app-x" = {
@@ -75,9 +74,6 @@ module "station" {
 
   applications = {
     "web" = {
-      client_config = data.azurerm_client_config.current
-      user_type     = "null"
-
       settings = {
         application_name = "station-example-web"
 
@@ -93,11 +89,6 @@ module "station" {
 
     },
     "backstage-azure-integration" = {
-      // Caller is added as owner on the application.
-      client_config = data.azurerm_client_config.current
-      // Unsure what this is used for.
-      user_type = "null"
-
       // See aztfmod's docs (see variables.tf file for link)
       settings = {
         application_name = "backstage-azure-integration"

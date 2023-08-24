@@ -21,12 +21,6 @@ variable "resource_groups" {
   default     = {}
 }
 
-variable "station_resource_group_name" {
-  type        = string
-  description = "The Resource Group name where this module can create resources such as state Storage Accounts, Storage Containers, Key Vaults."
-  default     = "rg-terraform-station"
-}
-
 variable "federated_identity_credential_config" {
   description = "The Application Federated Identity Credential configuration. Configure this for secret-less automation by setting create to `true` and filling in the object values."
   default     = {}
