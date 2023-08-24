@@ -1,5 +1,3 @@
-data "azurerm_client_config" "current" {}
-
 module "station-basic" {
   source                              = "../"
   environment_name                    = "dev"
