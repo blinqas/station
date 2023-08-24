@@ -1,4 +1,4 @@
-name: 🥼 Test Station configuration
+name: 🥼 Validate and test apply Station
 
 on:
   workflow_dispatch:

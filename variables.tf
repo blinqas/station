@@ -1,3 +1,9 @@
+variable "default_location" {
+  type        = string
+  description = "The name of the default location to deploy workload resources to."
+  default     = "norwayeast"
+}
+
 variable "environment_name" {
   type        = string
   description = "The name of the current environment. Ex: dev/staging/production"
@@ -8,6 +14,11 @@ variable "role_definition_name_on_workload_rg" {
   type        = string
   description = "Which role to assign the workload Service Principal on the workload Resource Group"
   default     = "Owner"
+}
+
+variable "resource_groups" {
+  description = "Resource Groups to create."
+  default     = {}
 }
 
 variable "station_resource_group_name" {

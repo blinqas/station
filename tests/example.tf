@@ -29,12 +29,6 @@ module "station" {
     }
   }
 
-  resource_groups = {
-    "cad" = {
-      location = "westeurope"
-    }
-  }
-
   federated_identity_credential_config = {
     "plan" = {
       display_name = "station-example-tfc-plan"

@@ -19,7 +19,7 @@ output "workload_resource_group_name" {
 }
 
 output "applications" {
-  value = module.caf_applications
+  value = module.applications
 }
 
 output "groups" {
