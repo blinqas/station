@@ -49,7 +49,7 @@ variable "user_assigned_identities" {
 
 variable "tfe" {
   description = "Terraform Cloud configuration. See submodule ./hashicorp/tfe/variables.tf for settings"
-  default     = {}
+  default     = null
 }
 
 variable "tfe_projects" {
