@@ -16,8 +16,13 @@ variable "workspace_name" {
   type        = string
 }
 
+variable "workspace_description" {
+  description = "Description of the Terraform Cloud workspace"
+  type        = string
+}
+
 variable "env_vars" {
   description = "Map of environment variables to provision on the workspace in Terraform Cloud"
-  default = {}
+  default     = {}
 }
 

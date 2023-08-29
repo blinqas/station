@@ -8,8 +8,3 @@ terraform {
   }
 }
 
-provider "tfe" {
-  # Configuration options
-  # Authentication token sourced from TFE_TOKEN
-}
-
