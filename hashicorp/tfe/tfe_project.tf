@@ -1,5 +1,5 @@
 locals {
-  tfe_project = var.create_project ? tfe_project.workload : data.tfe_project.workload
+  tfe_project = var.create_project ? tfe_project.workload[0] : data.tfe_project.workload[0]
 }
 
 resource "tfe_project" "workload" {
