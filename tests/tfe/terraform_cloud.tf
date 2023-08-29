@@ -90,4 +90,7 @@ module "station-tfe" {
   tags = {
     "owner" = "Kim Iversen"
   }
+  depends_on = [
+    module.station-tfe-projects
+  ]
 }
