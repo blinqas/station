@@ -33,13 +33,13 @@ locals {
         create_project = true
       }
     },
-    prod = {
-      environment_name   = "prod"
+    #prod = {
+    #  environment_name   = "prod"
 
-      tfe = {
-        create_project = false
-      }
-    }
+    #  tfe = {
+    #    create_project = false
+    #  }
+    #}
   }
 }
 
