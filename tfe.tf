@@ -15,7 +15,7 @@ module "station-tfe" {
     },
     station_id = {
       value       = random_id.workload.hex
-      category    = "variable"
+      category    = "terraform"
       description = "Station ID"
     },
   })
