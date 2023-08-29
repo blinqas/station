@@ -1,3 +1,27 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "3.71.0"
+    }
+    azuread = {
+      source = "hashicorp/azuread"
+      version = "2.41.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  # Configuration options
+  features {
+    
+  }
+}
+
+provider "azuread" {
+  # Configuration options
+}
+
 data "azurerm_client_config" "current" {}
 
 module "station-tfe" {
