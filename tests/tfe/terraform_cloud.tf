@@ -13,9 +13,34 @@ provider "azurerm" {
 
 data "azurerm_client_config" "current" {}
 
+locals {
+  tfe_tests = {
+    test = {
+      environment_name   = "test"
+
+      tfe = {
+        create_project = true
+      }
+    },
+    prod = {
+      environment_name   = "prod"
+
+      tfe = {
+        create_project = false
+      }
+    }
+  }
+}
+
 module "station-tfe" {
+  for_each         = local.tfe_tests
   source           = "../../"
-  environment_name = "test"
+  environment_name = each.value.environment_name
+# Step 1: Create GitHub/BitBucket repositories
+
+# Step 2: Federated Identity Credential
+
+# Step 3: Terraform Cloud integration
 
   #  federated_identity_credential_config = {
   #    "plan" = {
@@ -36,6 +61,7 @@ module "station-tfe" {
     project_name          = "Station TFE Development"
     workspace_name        = "tfe"
     workspace_description = "This workspace is for testing Station's TFE integration"
+    create_project        = each.value.tfe.create_project
   }
 
   tags = {

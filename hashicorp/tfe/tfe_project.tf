@@ -6,6 +6,12 @@ resource "tfe_project" "workload" {
   # Create resource if create_project is true
   count = var.create_project ? 1 : 0
   name  = var.project_name
+  # prevent_destroy has been set to true because once created it must not be deleted in case we have multiple
+  # environments that depend on this project.
+  # This setting is unfortunate, but Terraform does not support creation of resource only if it does not exist.
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 data "tfe_project" "workload" {
