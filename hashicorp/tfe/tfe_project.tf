@@ -10,7 +10,7 @@ resource "tfe_project" "workload" {
   # environments that depend on this project.
   # This setting is unfortunate, but Terraform does not support creation of resource only if it does not exist.
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
