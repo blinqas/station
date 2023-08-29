@@ -72,7 +72,7 @@ module "station-tfe" {
     project_name          = "Station TFE Development"
     workspace_name        = "tfe-${each.value.environment_name}"
     workspace_description = "This workspace is for testing Station's TFE integration"
-    create_project        = each.value.tfe.create_projects
+    create_project        = each.value.tfe.create_project
   }
 
   tags = {
