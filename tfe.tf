@@ -2,7 +2,8 @@ module "station-tfe" {
   source = "./hashicorp/tfe/"
 
   # How to handle project creation vs existing project?
-  project_name = var.tfe.project_name
+  project_name   = var.tfe.project_name
+  create_project = var.tfe.create_project
   # How to handle dev/prod?
   workspace_name        = var.tfe.workspace_name
   workspace_description = var.tfe.workspace_description
@@ -19,5 +20,5 @@ module "station-tfe" {
       description = "Station ID"
     },
   })
-# TODO: vcs_repo configuration
+  # TODO: vcs_repo configuration
 }
