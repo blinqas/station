@@ -1,14 +1,17 @@
 module "station-tfe" {
   source = "./hashicorp/tfe/"
 
-  project_name          = "Station TFE Development"
-  workspace_name        = "tests-tfe"
-  workspace_description = "Default description"
-  env_vars = {
+  # How to handle project creation vs existing project?
+  project_name = var.tfe.project_name
+  # How to handle dev/prod?
+  workspace_name        = var.tfe.workspace_name
+  workspace_description = var.tfe.workspace_description
+  # Which default env vars?
+  env_vars = merge(try(var.tfe.env_vars, {}), {
     x = {
       value       = "x"
       category    = "env"
-      description = "Some description"
-    }
-  }
+      description = "My env var"
+    },
+  })
 }
