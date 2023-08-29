@@ -49,6 +49,17 @@ variable "user_assigned_identities" {
 
 variable "tfe" {
   description = "Terraform Cloud configuration. See submodule ./hashicorp/tfe/variables.tf for settings"
-  default     = {}
+  type = object({
+    project_name          = string
+    create_project        = optional(bool)
+    workspace_name        = string
+    workspace_description = string
+    env_vars = map(object({
+      value       = string
+      category    = string
+      description = string
+    }))
+  })
+  default = {}
 }
 
