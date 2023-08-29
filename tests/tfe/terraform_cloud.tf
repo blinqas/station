@@ -33,8 +33,8 @@ module "station-tfe" {
   #  }
 
   tfe = {
-    project_name          = "Station TFE Tests"
-    workspace_name        = "Test"
+    project_name          = "Station TFE Development"
+    workspace_name        = "tfe"
     workspace_description = "This workspace is for testing Station's TFE integration"
   }
 
