@@ -13,5 +13,10 @@ module "station-tfe" {
       category    = "env"
       description = "My env var"
     },
+    station_id = {
+      value       = random_id.workload.hex
+      category    = "variable"
+      description = "Station ID"
+    },
   })
 }
