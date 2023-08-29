@@ -49,7 +49,7 @@ variable "user_assigned_identities" {
 
 variable "tfe" {
   description = "Terraform Cloud configuration. See submodule ./hashicorp/tfe/variables.tf for settings"
-  type = object({
+  type = optional(object({
     project_name          = string
     create_project        = optional(bool)
     workspace_name        = string
@@ -59,7 +59,7 @@ variable "tfe" {
       category    = string
       description = string
     }))
-  })
-  default = {}
+  }))
+  default = null
 }
 
