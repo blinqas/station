@@ -19,4 +19,5 @@ module "station-tfe" {
       description = "Station ID"
     },
   })
+# TODO: vcs_repo configuration
 }
