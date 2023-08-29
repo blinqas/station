@@ -45,6 +45,16 @@ locals {
   }
 }
 
+module "station-tfe-projects" {
+  source = "../../"
+  environment_name = "prod"
+  tfe_projects = {
+    tfe_tests = {
+      project_name = "Station TFE Development"
+    }
+  }
+}
+
 module "station-tfe" {
   for_each         = local.tfe_tests
   source           = "../../"
@@ -71,7 +81,7 @@ module "station-tfe" {
   #  }
 
   tfe = {
-    project_name          = "Station TFE Development"
+    project_name          = module.station-tfe-projects.tfe_projects["tfe_tests"].name
     workspace_name        = "tfe-${each.value.environment_name}"
     workspace_description = "This workspace is for testing Station's TFE integration"
     create_project        = each.value.tfe.create_project

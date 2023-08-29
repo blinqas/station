@@ -29,3 +29,11 @@ output "groups" {
 output "user_assigned_identities" {
   value = module.user_assigned_identities
 }
+
+output "tfe" {
+  value = module.station-tfe
+}
+
+output "tfe_projects" {
+  value = module.tfe-projects
+}
