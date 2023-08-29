@@ -35,5 +35,5 @@ output "tfe" {
 }
 
 output "tfe_projects" {
-  value = module.tfe-projects
+  value = module.tfe-projects.tfe_projects
 }

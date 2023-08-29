@@ -1,4 +1,5 @@
 module "station-tfe" {
+  count  = var.tfe == null ? 0 : 1
   source = "./hashicorp/tfe/"
 
   # How to handle project creation vs existing project?
