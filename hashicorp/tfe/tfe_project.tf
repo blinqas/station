@@ -1,4 +1,4 @@
-local {
+locals {
   tfe_project = var.create_project ? tfe_project.workload : data.tfe_project.workload
 }
 
