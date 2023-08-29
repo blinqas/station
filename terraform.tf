@@ -9,12 +9,6 @@ terraform {
       source  = "hashicorp/azuread"
       version = "~> 2.41.0"
     }
-
-    tfe = {
-      # https://registry.terraform.io/providers/hashicorp/tfe/latest/docs
-      source  = "hashicorp/tfe"
-      version = "~> 0.48.0"
-    }
   }
 }
 

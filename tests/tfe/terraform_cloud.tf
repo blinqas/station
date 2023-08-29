@@ -4,6 +4,12 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.71.0"
     }
+
+    tfe = {
+      # https://registry.terraform.io/providers/hashicorp/tfe/latest/docs
+      source  = "hashicorp/tfe"
+      version = "~> 0.48.0"
+    }
   }
 }
 
