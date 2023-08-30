@@ -31,7 +31,3 @@ variable "env_vars" {
   default = {}
 }
 
-variable "create_project" {
-  description = "Determines if a Terraform Cloud Project is created. You may set this to false if it already exists. This variable exists since Terraform does not support checking if a resource already exists, and you may want to put your workspace in an existsing workspace."
-  type        = bool
-}
