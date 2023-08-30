@@ -43,4 +43,5 @@ variable "vcs_repo" {
       tags_regex                 = optional(string)
     })
   )
+  default = null
 }

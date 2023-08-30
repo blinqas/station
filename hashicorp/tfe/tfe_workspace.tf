@@ -2,6 +2,7 @@ resource "tfe_workspace" "workload" {
   name        = var.workspace_name
   description = var.workspace_description
   project_id  = data.tfe_project.workload.id
+
   dynamic "vcs_repo" {
     for_each = try(var.vcs_repo, null) != null ? [1] : [0]
 

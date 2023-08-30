@@ -1,5 +1,4 @@
 module "station-tfe" {
-  count  = var.tfe == null ? 0 : 1
   source = "./hashicorp/tfe/"
 
   project_name          = var.tfe.project_name
