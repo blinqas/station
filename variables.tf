@@ -52,7 +52,3 @@ variable "tfe" {
   default     = null
 }
 
-variable "tfe_projects" {
-  description = "Terraform Cloud Projects to create. See submodule ./hashicorp/tfe_project/variables.tf"
-  default     = {}
-}

@@ -28,31 +28,10 @@ locals {
   tfe_tests = {
     test = {
       environment_name   = "test"
-
-
-
-
       tfe = {
         create_project = true
       }
     },
-    #prod = {
-    #  environment_name   = "prod"
-
-    #  tfe = {
-    #    create_project = false
-    #  }
-    #}
-  }
-}
-
-module "station-tfe-projects" {
-  source = "../../"
-  environment_name = "prod"
-  tfe_projects = {
-    tfe_tests = {
-      project_name = "Station TFE Development"
-    }
   }
 }
 
@@ -82,7 +61,7 @@ module "station-tfe" {
   #  }
 
   tfe = {
-    project_name          = module.station-tfe-projects.tfe_projects["tfe_tests"].name
+    project_name          = local.tfe_projects.tfe_tests.project_name
     workspace_name        = "tfe-${each.value.environment_name}"
     workspace_description = "This workspace is for testing Station's TFE integration"
     create_project        = each.value.tfe.create_project
@@ -92,6 +71,6 @@ module "station-tfe" {
     "owner" = "Kim Iversen"
   }
   depends_on = [
-    module.station-tfe-projects
+    tfe_project.projects
   ]
 }
