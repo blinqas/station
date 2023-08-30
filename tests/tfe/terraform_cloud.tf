@@ -64,7 +64,7 @@ module "station-tfe" {
   }
 
   tags = {
-    "owner" = "Kim Iversen"
+    "owner" = "Kim"
   }
   depends_on = [
     tfe_project.projects
