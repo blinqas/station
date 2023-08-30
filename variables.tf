@@ -52,7 +52,3 @@ variable "tfe" {
   default     = {}
 }
 
-variable "github_app_installation_id" {
-  description = "The installation id of GitHub App used with the TFE module."
-  default = null
-}

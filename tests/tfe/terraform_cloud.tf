@@ -24,10 +24,15 @@ provider "azurerm" {
 
 data "azurerm_client_config" "current" {}
 
+variable "github_app_installation_id" {
+  description = "The installation id of GitHub App used with the TFE module."
+  default     = null
+}
+
 locals {
   tfe_tests = {
     test = {
-      environment_name   = "test"
+      environment_name = "test"
     },
   }
 }
@@ -36,11 +41,11 @@ module "station-tfe" {
   for_each         = local.tfe_tests
   source           = "../../"
   environment_name = each.value.environment_name
-# Step 1: Create GitHub/BitBucket repositories
+  # Step 1: Create GitHub/BitBucket repositories
 
-# Step 2: Federated Identity Credential
+  # Step 2: Federated Identity Credential
 
-# Step 3: Terraform Cloud integration
+  # Step 3: Terraform Cloud integration
 
   #  federated_identity_credential_config = {
   #    "plan" = {
@@ -62,8 +67,8 @@ module "station-tfe" {
     workspace_name        = "tfe-${each.value.environment_name}"
     workspace_description = "This workspace is for testing Station's TFE integration"
     vcs_repo = {
-      identifier = "kimfy/tfe-testing"
-      github_app_installation_id = var.GITHUB_APP_INSTALLATION_ID
+      identifier                 = "kimfy/tfe-testing"
+      github_app_installation_id = var.github_app_installation_id
     }
   }
 
