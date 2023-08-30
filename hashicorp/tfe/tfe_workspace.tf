@@ -7,12 +7,12 @@ resource "tfe_workspace" "workload" {
     for_each = var.vcs_repo == null ? [] : [var.vcs_repo]
 
     content {
-      identifier                 = vcs_repo.value["identifier"]
-      branch                     = try(vcs_repo.value["branch"], null)
-      ingress_submodules         = try(vcs_repo.value["ingress_submodules"], false)
-      oauth_token_id             = try(vcs_repo.value["oauth_token_id"], null)
-      github_app_installation_id = try(vcs_repo.value["github_app_installation_id"], null)
-      tags_regex                 = try(vcs_repo.value["tags_regex"], null)
+      identifier                 = var.vcs_repo.identifier
+      branch                     = try(var.vcs_repo.branch, null)
+      ingress_submodules         = try(var.vcs_repo.ingress_submodules, false)
+      oauth_token_id             = try(var.vcs_repo.oauth_token_id, null)
+      github_app_installation_id = try(var.vcs_repo.github_app_installation_id, null)
+      tags_regex                 = try(var.vcs_repo.tags_regex, null)
     }
   }
 }
