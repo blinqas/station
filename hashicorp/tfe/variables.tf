@@ -31,3 +31,16 @@ variable "env_vars" {
   default = {}
 }
 
+variable "vcs_repo" {
+  description = "Settings for the workspace's VCS repository, enabling the UI/VCS-driven run workflow."
+  type = map(
+    object({
+      identifier                 = string
+      branch                     = optional(string)
+      ingress_submodules         = optional(string)
+      oauth_token_id             = optional(string)
+      github_app_installation_id = optional(string)
+      tags_regex                 = optional(string)
+    })
+  )
+}
