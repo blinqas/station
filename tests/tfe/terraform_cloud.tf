@@ -61,6 +61,9 @@ module "station-tfe" {
     project_name          = local.tfe_projects.tfe_tests.project_name
     workspace_name        = "tfe-${each.value.environment_name}"
     workspace_description = "This workspace is for testing Station's TFE integration"
+    vcs_repo = {
+
+    }
   }
 
   tags = {

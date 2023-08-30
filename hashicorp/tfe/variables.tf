@@ -35,7 +35,7 @@ variable "vcs_repo" {
   description = "Settings for the workspace's VCS repository, enabling the UI/VCS-driven run workflow."
   type = map(
     object({
-      identifier                 = string
+      identifier                 = optional(string)
       branch                     = optional(string)
       ingress_submodules         = optional(string)
       oauth_token_id             = optional(string)
