@@ -4,7 +4,7 @@ resource "tfe_workspace" "workload" {
   project_id  = data.tfe_project.workload.id
 
   dynamic "vcs_repo" {
-    for_each = var.vcs_repo == null ? [] : var.vcs_repo
+    for_each = var.vcs_repo == null ? [] : [var.vcs_repo]
 
     content {
       identifier                 = vcs_repo.value["identifier"]
