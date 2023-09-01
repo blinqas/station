@@ -79,3 +79,21 @@ module "station-tfe" {
     tfe_project.projects
   ]
 }
+
+module "station-bitbucket" {
+  source           = "../../"
+  environment_name = "prod"
+
+  tfe = {
+    project_name          = local.tfe_projects.bitbucket.project_name
+    workspace_name        = "testing-bitbucket-integration"
+    workspace_description = "asd"
+    vcs_repo = {
+      identifier     = "blinq-kim/min-service"
+      oauth_token_id = var.VCS_OAUTH_TOKEN_ID
+    }
+  }
+
+  depends_on = [tfe_project.projects]
+}
+
