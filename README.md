@@ -29,6 +29,21 @@ Before using this module, ensure you have the following prerequisites:
 | TFE_ORGANIZATION | The default organization that resources should belong to. If provided, it's usually possible to omit resource-specific organization arguments. Ensure that the organization already exists prior to using this argument | N/A |
 | TFE_TOKEN | Token to use for authentication with the tfe provider | https://registry.terraform.io/providers/hashicorp/tfe/latest/docs#authentication
 
+### To run in Terraform Cloud you need the following enviornment variables
+
+| Name | Description | Comment |
+| ---- | ----------- | ------- |
+| ARM_SUBSCRIPTION_ID | The default organization that resources should belong to. If provided, it's usually possible to omit resource-specific organization arguments. Ensure that the organization already exists prior to using this argument | N/A |
+| ARM_TENANT_ID | Token to use for authentication with the tfe provider | https://registry.terraform.io/providers/hashicorp/tfe/latest/docs#authentication
+| TFC_AZURE_PROVIDER_AUTH | true/false if authenticating using OIDC | When bootstrapping with the provided bootstrap folder, set to true | 
+| TFC_AZURE_RUN_CLIENT_ID | Client ID of the identity to execute with |
+
+### Terraform variables
+
+| Name | Description | Comment |
+| ---- | ----------- | ------- |
+| VCS_OAUTH_TOKEN_ID | Token ID of VCS integration when linking Terraform Cloud to VCS provider |
+
 ## Usage
 
 
