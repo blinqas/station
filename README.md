@@ -7,6 +7,7 @@ The "Station" Terraform module is designed to simplify the setup of various reso
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
+- [Environment variables](#environment-variables)
 - [Usage](#usage)
   - [Module Configuration](#module-configuration)
   - [Output Values](#output-values)
@@ -21,7 +22,15 @@ Before using this module, ensure you have the following prerequisites:
 - [Terraform](https://www.terraform.io/) installed on your local machine.
 - An [Azure account](https://azure.com) and valid credentials for resource provisioning.
 
+### Environment Variables
+
+| Name | Description | Comment |
+| ---- | ----------- | ------- |
+| TFE_ORGANIZATION | The default organization that resources should belong to. If provided, it's usually possible to omit resource-specific organization arguments. Ensure that the organization already exists prior to using this argument | N/A |
+| TFE_TOKEN | Token to use for authentication with the tfe provider | https://registry.terraform.io/providers/hashicorp/tfe/latest/docs#authentication
+
 ## Usage
+
 
 ### Module Configuration
 
