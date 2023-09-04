@@ -45,7 +45,7 @@ module "station" {
 - `tags`: Tags to be applied to resources.
 - `groups`: Configure security groups and their settings.
 - `applications`: Configure applications, their settings, and permissions.
-- `data "azurerm_client_config" "current"`: Azure client configuration data.
+- `tfe`: Configure Terraform Cloud
 
 ### Output Values
 
@@ -57,10 +57,7 @@ module "station" {
 - `applications`: A map of configured applications, their settings, and permissions.
 - `groups`: A map of configured security groups and their settings.
 - `user_assigned_identities`: A map of configured user-assigned identities and their associated role assignments.
-
-These output values are useful for integrating your deployment process with other services, scripts, or configurations. You can use these values to ensure that resources are accessed and managed correctly.
-
-Remember that the actual values of these outputs will depend on your specific deployment and configuration choices. Always refer to the outputs of your actual Terraform deployment for accurate information.
+- `tfe`: Terraform Cloud configration. Create workspaces, link project and set up vcs connections.
 
 ## Contributing
 
