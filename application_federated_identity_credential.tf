@@ -22,7 +22,7 @@ locals {
 }
 
 resource "azuread_application_federated_identity_credential" "oidc-tfe" {
-  for_each              = var.tfe.create_federated_identity_credential ? [local.oidc_tfe] : [0]
+  for_each              = var.tfe.create_federated_identity_credential ? local.oidc_tfe : {}
   application_object_id = azuread_application.workload.object_id
   display_name          = each.value.display_name
   audiences             = ["api://AzureADTokenExchange"]
