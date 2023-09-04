@@ -12,11 +12,11 @@ locals {
   oidc_tfe = {
     plan = {
       display_name = "Terraform Cloud OIDC Station Project ${random_id.workload.hex} (plan phase)"
-      subject      = "organization:${var.TFE_ORGANIZATION}:project:${var.tfe.project_name}:workspace:${var.tfe.workspace_name}:run_phase:plan"
+      subject      = "organization:${var.tfe.organization_name}:project:${var.tfe.project_name}:workspace:${var.tfe.workspace_name}:run_phase:plan"
     },
     apply = {
       display_name = "Terraform Cloud OIDC Station Project ${random_id.workload.hex} (apply phase)"
-      subject      = "organization:${var.TFE_ORGANIZATION}:project:${var.tfe.project_name}:workspace:${var.tfe.workspace_name}:run_phase:apply"
+      subject      = "organization:${var.tfe.organization_name}:project:${var.tfe.project_name}:workspace:${var.tfe.workspace_name}:run_phase:apply"
     },
   }
 }

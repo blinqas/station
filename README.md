@@ -38,12 +38,6 @@ Before using this module, ensure you have the following prerequisites:
 | TFC_AZURE_PROVIDER_AUTH | true/false if authenticating using OIDC | When bootstrapping with the provided bootstrap folder, set to true | 
 | TFC_AZURE_RUN_CLIENT_ID | Client ID of the identity to execute with |
 
-### Variables
-
-| Name | Description | Comment |
-| ---- | ----------- | ------- |
-TFE_ORGANIZATION | The name of the Terraform Cloud organization | Used when automatically creating Federated Identity Credential Config for tfe. This must exist alongside env var TFE_ORGANIZATION
-
 
 ## Usage
 
