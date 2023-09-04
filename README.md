@@ -7,6 +7,7 @@ The "Station" Terraform module is designed to simplify the setup of various reso
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
+- [Environment variables](#environment-variables)
 - [Usage](#usage)
   - [Module Configuration](#module-configuration)
   - [Output Values](#output-values)
@@ -21,7 +22,25 @@ Before using this module, ensure you have the following prerequisites:
 - [Terraform](https://www.terraform.io/) installed on your local machine.
 - An [Azure account](https://azure.com) and valid credentials for resource provisioning.
 
+### Environment Variables
+
+| Name | Description | Comment |
+| ---- | ----------- | ------- |
+| TFE_ORGANIZATION | The default organization that resources should belong to. If provided, it's usually possible to omit resource-specific organization arguments. Ensure that the organization already exists prior to using this argument | N/A |
+| TFE_TOKEN | Token to use for authentication with the tfe provider | https://registry.terraform.io/providers/hashicorp/tfe/latest/docs#authentication
+
+### To run in Terraform Cloud you need the following enviornment variables
+
+| Name | Description | Comment |
+| ---- | ----------- | ------- |
+| ARM_SUBSCRIPTION_ID | The default organization that resources should belong to. If provided, it's usually possible to omit resource-specific organization arguments. Ensure that the organization already exists prior to using this argument | N/A |
+| ARM_TENANT_ID | Token to use for authentication with the tfe provider | https://registry.terraform.io/providers/hashicorp/tfe/latest/docs#authentication
+| TFC_AZURE_PROVIDER_AUTH | true/false if authenticating using OIDC | When bootstrapping with the provided bootstrap folder, set to true | 
+| TFC_AZURE_RUN_CLIENT_ID | Client ID of the identity to execute with |
+
+
 ## Usage
+
 
 ### Module Configuration
 
@@ -45,7 +64,7 @@ module "station" {
 - `tags`: Tags to be applied to resources.
 - `groups`: Configure security groups and their settings.
 - `applications`: Configure applications, their settings, and permissions.
-- `data "azurerm_client_config" "current"`: Azure client configuration data.
+- `tfe`: Configure Terraform Cloud
 
 ### Output Values
 
@@ -57,10 +76,7 @@ module "station" {
 - `applications`: A map of configured applications, their settings, and permissions.
 - `groups`: A map of configured security groups and their settings.
 - `user_assigned_identities`: A map of configured user-assigned identities and their associated role assignments.
-
-These output values are useful for integrating your deployment process with other services, scripts, or configurations. You can use these values to ensure that resources are accessed and managed correctly.
-
-Remember that the actual values of these outputs will depend on your specific deployment and configuration choices. Always refer to the outputs of your actual Terraform deployment for accurate information.
+- `tfe`: Terraform Cloud configration. Create workspaces, link project and set up vcs connections.
 
 ## Contributing
 

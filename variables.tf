@@ -46,3 +46,9 @@ variable "user_assigned_identities" {
   description = "User Assigned Identities to create."
   default     = {}
 }
+
+variable "tfe" {
+  description = "Terraform Cloud configuration. See submodule ./hashicorp/tfe/variables.tf for settings"
+  default     = {}
+}
+
