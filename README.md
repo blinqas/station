@@ -38,11 +38,6 @@ Before using this module, ensure you have the following prerequisites:
 | TFC_AZURE_PROVIDER_AUTH | true/false if authenticating using OIDC | When bootstrapping with the provided bootstrap folder, set to true | 
 | TFC_AZURE_RUN_CLIENT_ID | Client ID of the identity to execute with |
 
-### Terraform variables
-
-| Name | Description | Comment |
-| ---- | ----------- | ------- |
-| VCS_OAUTH_TOKEN_ID | Token ID of VCS integration when linking Terraform Cloud to VCS provider |
 
 ## Usage
 
