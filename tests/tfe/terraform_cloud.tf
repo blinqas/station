@@ -71,6 +71,7 @@ module "station-tfe" {
       identifier                 = "kimfy/tfe-testing"
       github_app_installation_id = var.github_app_installation_id
     }
+    create_federated_identity_credential = true
   }
 
   tags = {
