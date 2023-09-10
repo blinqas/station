@@ -52,7 +52,7 @@ module "station-tfe" {
         value = replace(jsonencode({ for k, v in module.ad_groups : k => {
           display_name = v.group.display_name
           object_id    = v.group.object_id
-        } }), "/(\".*?\"):/", "$1 = ")
+        } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "Groups provisioned by Station"
         hcl         = true
