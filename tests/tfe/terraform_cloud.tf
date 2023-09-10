@@ -71,10 +71,8 @@ module "station-tfe" {
       identifier                 = "kimfy/tfe-testing"
       github_app_installation_id = var.github_app_installation_id
     }
-    vars = {
-      groups = {
-        pass_to_workspace = true
-      }
+    module_outputs_to_workspace_var = {
+      groups = true
     }
     create_federated_identity_credential = true
   }

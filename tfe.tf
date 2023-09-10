@@ -5,7 +5,7 @@ module "station-tfe" {
   workspace_name        = var.tfe.workspace_name
   workspace_description = var.tfe.workspace_description
   vcs_repo              = try(var.tfe.vcs_repo, null)
-  env_vars = merge(try(var.tfe.env_vars, {}), {
+  workspace_env_vars = merge(try(var.tfe.env_vars, {}), {
     # Terraform variables are prefixed with TF_VAR_ to suppress TFC Runner warning of unused variables.
     TF_VAR_station_id = {
       value       = random_id.workload.hex
@@ -43,10 +43,11 @@ module "station-tfe" {
       category    = "env"
       description = "The Azure Tenant ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
     },
-    },
+  }, )
 
+  workspace_vars = merge(try(var.tfe.workspace_vars, {}),
     # Optionals
-    try(var.tfe.vars.groups.pass_to_workspace, false) ? {
+    try(var.tfe.module_outputs_to_workspace_var.groups, false) ? {
       groups = {
         value = { for k, v in module.ad_groups : k => {
           display_name = v.group.display_name
