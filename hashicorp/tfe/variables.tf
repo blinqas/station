@@ -38,6 +38,7 @@ variable "workspace_vars" {
     category    = string
     description = string
     hcl         = bool
+    sensitive   = bool
   }))
   default = {}
 }
