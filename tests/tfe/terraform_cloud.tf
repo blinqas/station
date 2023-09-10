@@ -70,10 +70,10 @@ module "station-tfe" {
     vcs_repo = {
       identifier                 = "kimfy/tfe-testing"
       github_app_installation_id = var.github_app_installation_id
-      env_vars = {
-        groups = {
-          pass_to_workspace = true
-        }
+    }
+    env_vars = {
+      groups = {
+        pass_to_workspace = true
       }
     }
     create_federated_identity_credential = true
