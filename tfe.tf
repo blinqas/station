@@ -9,17 +9,17 @@ module "station-tfe" {
     # Terraform variables are prefixed with TF_VAR_ to suppress TFC Runner warning of unused variables.
     TF_VAR_station_id = {
       value       = random_id.workload.hex
-      category    = "terraform"
+      category    = "env"
       description = "Station ID"
     },
     TF_VAR_workload_resource_group_name = {
       value       = azurerm_resource_group.workload.name
-      category    = "terraform"
+      category    = "env"
       description = "Name of the resource group created by Station"
     },
     TF_VAR_environment_name = {
       value       = var.environment_name
-      category    = "terraform"
+      category    = "env"
       description = "Name of the current deployment environment. Often dev/test/stage/prod."
     },
     # DOCS: https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud
