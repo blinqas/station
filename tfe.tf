@@ -48,10 +48,10 @@ module "station-tfe" {
     # Optionals
     try(var.tfe.env_vars.groups.pass_to_workspace, false) ? {
       TF_VAR_groups = {
-        value = { for k, v in module.ad_groups : k => {
+        value = jsonencode({ for k, v in module.ad_groups : k => {
           display_name = v.group.display_name
           object_id    = v.group.object_id
-        } }
+        } })
         category    = "env"
         description = "Groups provisioned by Station"
       }
