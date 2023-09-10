@@ -37,6 +37,7 @@ variable "workspace_vars" {
     value       = any
     category    = string
     description = string
+    hcl         = bool
   }))
   default = {}
 }

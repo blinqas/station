@@ -49,10 +49,10 @@ module "station-tfe" {
     # Optionals
     try(var.tfe.module_outputs_to_workspace_var.groups, false) ? {
       groups = {
-        value = { for k, v in module.ad_groups : k => {
+        value = replace(jsonencode({ for k, v in module.ad_groups : k => {
           display_name = v.group.display_name
           object_id    = v.group.object_id
-        } }
+        } }), "/(\".*?\"):/", "$1 = ")
         category    = "terraform"
         description = "Groups provisioned by Station"
         hcl         = true
