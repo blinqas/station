@@ -79,6 +79,15 @@ module "station-tfe" {
     create_federated_identity_credential = true
   }
 
+  groups = {
+    admins = {
+      settings = {
+        display_name = "tfe-testing Administrators"
+        security_enabled = true
+      }
+    }
+  }
+
   tags = {
     "owner" = "Kim"
   }
