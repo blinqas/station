@@ -43,5 +43,19 @@ module "station-tfe" {
       category    = "env"
       description = "The Azure Tenant ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
     },
-  })
+    },
+
+    # Optionals
+    try(var.tfe.env_vars.groups.pass_to_workspace, false) ? {
+      TF_VAR_groups = {
+        value = { for k, v in module.ad_groups.group : k => {
+          display_name = v.display_name
+          object_id    = v.object_id
+        } }
+        category    = "env"
+        description = "Groups provisioned by Station"
+      }
+    } : null
+  )
 }
+
