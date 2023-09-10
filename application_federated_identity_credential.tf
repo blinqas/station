@@ -22,7 +22,7 @@ locals {
 resource "azuread_application_federated_identity_credential" "oidc-tfe" {
   for_each              = try(var.tfe.create_federated_identity_credential, false) ? local.oidc_tfe : {}
   application_object_id = azuread_application.workload.object_id
-  ddisplay_name         = "ficc-station-proj-id-${random_id.workload.hex}-tfc-${each.value.phase}"
+  display_name          = "ficc-station-proj-id-${random_id.workload.hex}-tfc-${each.value.phase}"
   description           = "Terraform Cloud OIDC Station Project ${random_id.workload.hex} (${each.value.phase} phase)"
   audiences             = ["api://AzureADTokenExchange"]
   issuer                = "https://app.terraform.io"
