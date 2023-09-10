@@ -63,6 +63,7 @@ module "station-tfe" {
   #  }
 
   tfe = {
+    organization_name     = "managed-devops"
     project_name          = local.tfe_projects.tfe_tests.project_name
     workspace_name        = "tfe-${each.value.environment_name}"
     workspace_description = "This workspace is for testing Station's TFE integration"
@@ -70,6 +71,7 @@ module "station-tfe" {
       identifier                 = "kimfy/tfe-testing"
       github_app_installation_id = var.github_app_installation_id
     }
+    create_federated_identity_credential = true
   }
 
   tags = {
@@ -98,6 +100,6 @@ module "station-bitbucket" {
 }
 
 variable "VCS_OAUTH_TOKEN_ID" {
-  type = string
+  type      = string
   sensitive = true
 }
