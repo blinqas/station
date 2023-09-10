@@ -71,7 +71,7 @@ module "station-tfe" {
       identifier                 = "kimfy/tfe-testing"
       github_app_installation_id = var.github_app_installation_id
     }
-    env_vars = {
+    vars = {
       groups = {
         pass_to_workspace = true
       }
