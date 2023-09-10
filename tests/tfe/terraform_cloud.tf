@@ -84,6 +84,7 @@ module "station-tfe" {
       settings = {
         display_name = "tfe-testing Administrators"
         security_enabled = true
+        owners           = [data.azurerm_client_config.current.object_id]
       }
     }
   }
