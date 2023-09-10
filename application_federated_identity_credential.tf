@@ -11,12 +11,10 @@ resource "azuread_application_federated_identity_credential" "oidc" {
 locals {
   oidc_tfe = {
     plan = {
-      display_name = "Terraform Cloud OIDC Station Project ${random_id.workload.hex} (plan phase)"
-      subject      = "organization:${var.tfe.organization_name}:project:${var.tfe.project_name}:workspace:${var.tfe.workspace_name}:run_phase:plan"
+      phase = "plan"
     },
     apply = {
-      display_name = "Terraform Cloud OIDC Station Project ${random_id.workload.hex} (apply phase)"
-      subject      = "organization:${var.tfe.organization_name}:project:${var.tfe.project_name}:workspace:${var.tfe.workspace_name}:run_phase:apply"
+      phase = "apply"
     },
   }
 }
@@ -24,8 +22,8 @@ locals {
 resource "azuread_application_federated_identity_credential" "oidc-tfe" {
   for_each              = var.tfe.create_federated_identity_credential ? local.oidc_tfe : {}
   application_object_id = azuread_application.workload.object_id
-  display_name          = each.value.display_name
+  display_name          = "Terraform Cloud OIDC Station Project ${random_id.workload.hex} (${each.value.phase} phase)"
   audiences             = ["api://AzureADTokenExchange"]
   issuer                = "https://app.terraform.io"
-  subject               = each.value.subject
+  subject               = "organization:${var.tfe.organization_name}:project:${var.tfe.project_name}:workspace:${var.tfe.workspace_name}:run_phase:${each.value.phase}"
 }
