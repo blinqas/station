@@ -17,6 +17,11 @@ module "station-tfe" {
       category    = "terraform"
       description = "Name of the resource group created by Station"
     },
+    TF_VAR_environment_name = {
+      value       = var.environment_name
+      category    = "terraform"
+      description = "Name of the current deployment environment. Often dev/test/stage/prod."
+    },
     # DOCS: https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud
     TFC_AZURE_PROVIDER_AUTH = {
       value       = true
