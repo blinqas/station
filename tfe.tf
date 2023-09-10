@@ -56,6 +56,7 @@ module "station-tfe" {
         category    = "terraform"
         description = "Groups provisioned by Station"
         hcl         = true
+        sensitive   = false
       }
     } : null,
   )
