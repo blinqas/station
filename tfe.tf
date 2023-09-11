@@ -72,7 +72,7 @@ module "station-tfe" {
       }
     } : {},
     try(var.tfe.module_outputs_to_workspace_var.user_assigned_identities, false) ? {
-      applications = {
+      user_assigned_identities = {
         value = replace(jsonencode({ for k, v in module.user_assigned_identities : k => {
           id           = v.identities.id
           client_id    = v.identities.client_id
