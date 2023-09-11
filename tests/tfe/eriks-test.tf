@@ -5,7 +5,7 @@ module "eriks-station-test" {
   tfe = {
     organization_name     = "managed-devops"
     project_name          = local.tfe_projects.eriks_test.project_name
-    workspace_name        = "tfe-${each.value.environment_name}"
+    workspace_name        = "tfe-prod"
     workspace_description = "Erik test"
     vcs_repo = {
       identifier                 = "kimfy/tfe-testing"
