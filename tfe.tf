@@ -58,7 +58,15 @@ module "station-tfe" {
         hcl         = true
         sensitive   = false
       }
-    } : null,
+    } : {},
+    try(var.tfe.module_outputs_to_workspace_var.applications, false) ? {
+      applications = {
+        value = replace(jsonencode({ for k, v in module.applications : k => {
+          application_id = v.application.application_id
+          object_id      = v.application.object_id
+        } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
+      }
+    } : {}
   )
 }
 
