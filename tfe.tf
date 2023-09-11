@@ -6,22 +6,6 @@ module "station-tfe" {
   workspace_description = var.tfe.workspace_description
   vcs_repo              = try(var.tfe.vcs_repo, null)
   workspace_env_vars = merge(try(var.tfe.env_vars, {}), {
-    # Terraform variables are prefixed with TF_VAR_ to suppress TFC Runner warning of unused variables.
-    TF_VAR_station_id = {
-      value       = random_id.workload.hex
-      category    = "env"
-      description = "Station ID"
-    },
-    TF_VAR_workload_resource_group_name = {
-      value       = azurerm_resource_group.workload.name
-      category    = "env"
-      description = "Name of the resource group created by Station"
-    },
-    TF_VAR_environment_name = {
-      value       = var.environment_name
-      category    = "env"
-      description = "Name of the current deployment environment. Often dev/test/stage/prod."
-    },
     # DOCS: https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud
     TFC_AZURE_PROVIDER_AUTH = {
       value       = true
@@ -45,7 +29,30 @@ module "station-tfe" {
     },
   }, )
 
-  workspace_vars = merge(try(var.tfe.workspace_vars, {}),
+  workspace_vars = merge(try(var.tfe.workspace_vars, {}), {
+    # Terraform variables are prefixed with TF_VAR_ to suppress TFC Runner warning of unused variables.
+    station_id = {
+      value       = random_id.workload.hex
+      category    = "terraform"
+      description = "Station ID"
+      hcl         = false
+      sensitive   = false
+    },
+    workload_resource_group_name = {
+      value       = azurerm_resource_group.workload.name
+      category    = "terraform"
+      description = "Name of the resource group created by Station"
+      hcl         = false
+      sensitive   = false
+    },
+    environment_name = {
+      value       = var.environment_name
+      category    = "terraform"
+      description = "Name of the current deployment environment. Often dev/test/stage/prod."
+      hcl         = false
+      sensitive   = false
+    },
+    },
     # Optionals
     try(var.tfe.module_outputs_to_workspace_var.groups, false) ? {
       groups = {
