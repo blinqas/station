@@ -65,6 +65,10 @@ module "station-tfe" {
           application_id = v.application.application_id
           object_id      = v.application.object_id
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
+        category    = "terraform"
+        description = "User Assigned Identities provisioned by Station"
+        hcl         = true
+        sensitive   = false
       }
     } : {},
     try(var.tfe.module_outputs_to_workspace_var.user_assigned_identities, false) ? {
@@ -74,6 +78,10 @@ module "station-tfe" {
           client_id    = v.identities.client_id
           principal_id = v.identities.principal_id
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
+        category    = "terraform"
+        description = "Applications provisioned by Station"
+        hcl         = true
+        sensitive   = false
       }
     } : {}
   )
