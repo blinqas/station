@@ -5,10 +5,7 @@ locals {
     },
     bitbucket = {
       project_name = "station-bitbucket"
-    },
-    eriks_test = {
-      project_name = "station-erik"
-    },
+    }
   }
 }
 
