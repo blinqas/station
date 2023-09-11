@@ -10,7 +10,3 @@ variable "tfc_workspace_name" {
   type        = string
   description = "The name of the workspace you have created in Terraform Cloud."
 }
-variable "station_repo_url" {
-  type        = string
-  description = "URL to the repository of the sation codebase"
-}
