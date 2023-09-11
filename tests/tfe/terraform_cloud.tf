@@ -72,15 +72,44 @@ module "station-tfe" {
       github_app_installation_id = var.github_app_installation_id
     }
     module_outputs_to_workspace_var = {
-      groups = true
+      groups                   = true
+      user_assigned_identities = true
+      applications             = true
     }
     create_federated_identity_credential = true
+  }
+  applications = {
+    "web" = {
+      settings = {
+        application_name = "tfe_test_tfc"
+
+        web = {
+          redirect_uris = ["http://localhost:7007/api/auth/microsoft/handler/frame"]
+
+          implicit_grant = {
+            access_token_issuance_enabled = true
+            id_token_issuance_enabled     = true
+          }
+        }
+      }
+
+    }
+  }
+
+  user_assigned_identities = {
+    "container-app-x" = {
+      name = "id-ca-x"
+      role_assignments = [
+        "GroupMember.Read.All",
+        "User.Read.All"
+      ]
+    }
   }
 
   groups = {
     admins = {
       settings = {
-        display_name = "tfe-testing Administrators"
+        display_name     = "tfe-testing Administrators"
         security_enabled = true
         owners           = [data.azurerm_client_config.current.object_id]
       }
