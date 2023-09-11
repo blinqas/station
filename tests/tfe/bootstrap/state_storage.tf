@@ -1,14 +1,19 @@
+resource "random_id" "storage_account" {
+  byte_length = 8
+}
+
 resource "azurerm_storage_account" "state" {
-  name                     = "stationtfetests"
+  name                     = "station${random_id.storage_account.hex}"
   resource_group_name      = var.state_resource_group_name
   location                 = "norwayeast"
   account_tier             = "Standard"
   account_replication_type = "LRS"
-  tags                     = {
-    "createdBy" = "Manually in https://github.com/kimfy/station/tree/trunk/tests/bootstrap"
-    "repoUrl" = "https://github.com/kimfy/station"
+  tags = {
+    "createdBy" = "Manually in ${var.station_repo_url}/tree/trunk/tests/bootstrap"
+    "repoUrl"   = var.station_repo_url
   }
 }
+
 
 resource "azurerm_storage_container" "state" {
   name                 = "station-tfe-tests-remote-state"

@@ -9,6 +9,11 @@ terraform {
       source  = "hashicorp/azuread"
       version = "2.36.0"
     }
+
+    random = {
+      source  = "hashicorp/random"
+      version = "3.5.1"
+    }
   }
 }
 
@@ -21,4 +26,3 @@ provider "azurerm" {
 data "azuread_client_config" "current" {}
 
 data "azurerm_client_config" "current" {}
-

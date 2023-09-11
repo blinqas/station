@@ -11,7 +11,7 @@ output "subscription_id" {
 }
 
 output "state_resource_group_name" {
-  value = var.state_resource_group_name 
+  value = var.state_resource_group_name
 }
 
 output "state_storage_account_name" {
@@ -21,4 +21,3 @@ output "state_storage_account_name" {
 output "state_storage_container_name" {
   value = azurerm_storage_container.state.name
 }
-
