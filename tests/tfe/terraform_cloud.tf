@@ -41,27 +41,6 @@ module "station-tfe" {
   for_each         = local.tfe_tests
   source           = "../../"
   environment_name = each.value.environment_name
-  # Step 1: Create GitHub/BitBucket repositories
-
-  # Step 2: Federated Identity Credential
-
-  # Step 3: Terraform Cloud integration
-
-  #  federated_identity_credential_config = {
-  #    "plan" = {
-  #      display_name = "plan"
-  #      audiences    = ["api://AzureADTokenExchange"]
-  #      issuer       = "https://app.terraform.io"
-  #      subject      = "organization:managed-devops:project:Station Development:workspace:Test:run_phase:plan"
-  #    },
-  #    "apply" = {
-  #      display_name = "apply"
-  #      audiences    = ["api://AzureADTokenExchange"]
-  #      issuer       = "https://app.terraform.io"
-  #      subject      = "organization:managed-devops:project:Station Development:workspace:Test:run_phase:apply"
-  #    }
-  #  }
-
   tfe = {
     organization_name     = "managed-devops"
     project_name          = local.tfe_projects.tfe_tests.project_name
@@ -72,48 +51,11 @@ module "station-tfe" {
       github_app_installation_id = var.github_app_installation_id
     }
     module_outputs_to_workspace_var = {
-      groups                   = true
-      user_assigned_identities = true
-      applications             = true
+      groups                   = false
+      user_assigned_identities = false
+      applications             = false
     }
     create_federated_identity_credential = true
-  }
-  applications = {
-    "web" = {
-      settings = {
-        application_name = "tfe_test_tfc"
-
-        web = {
-          redirect_uris = ["http://localhost:7007/api/auth/microsoft/handler/frame"]
-
-          implicit_grant = {
-            access_token_issuance_enabled = true
-            id_token_issuance_enabled     = true
-          }
-        }
-      }
-
-    }
-  }
-
-  user_assigned_identities = {
-    "container-app-x" = {
-      name = "id-ca-x"
-      role_assignments = [
-        "GroupMember.Read.All",
-        "User.Read.All"
-      ]
-    }
-  }
-
-  groups = {
-    admins = {
-      settings = {
-        display_name     = "tfe-testing Administrators"
-        security_enabled = true
-        owners           = [data.azurerm_client_config.current.object_id]
-      }
-    }
   }
 
   tags = {
@@ -124,22 +66,22 @@ module "station-tfe" {
   ]
 }
 
-module "station-bitbucket" {
-  source           = "../../"
-  environment_name = "prod"
-
-  tfe = {
-    project_name          = local.tfe_projects.bitbucket.project_name
-    workspace_name        = "testing-bitbucket-integration"
-    workspace_description = "asd"
-    vcs_repo = {
-      identifier     = "blinq-kim/min-service"
-      oauth_token_id = var.VCS_OAUTH_TOKEN_ID
-    }
-  }
-
-  depends_on = [tfe_project.projects]
-}
+#module "station-bitbucket" {
+#  source           = "../../"
+#  environment_name = "prod"
+#
+#  tfe = {
+#    project_name          = local.tfe_projects.bitbucket.project_name
+#    workspace_name        = "testing-bitbucket-integration"
+#    workspace_description = "asd"
+#    vcs_repo = {
+#      identifier     = "blinq-kim/min-service"
+#      oauth_token_id = var.VCS_OAUTH_TOKEN_ID
+#    }
+#  }
+#
+#  depends_on = [tfe_project.projects]
+#}
 
 
 variable "VCS_OAUTH_TOKEN_ID" {
