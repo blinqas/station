@@ -5,7 +5,7 @@ locals {
     },
     bitbucket = {
       project_name = "station-bitbucket"
-    },
+    }
   }
 }
 

@@ -41,27 +41,6 @@ module "station-tfe" {
   for_each         = local.tfe_tests
   source           = "../../"
   environment_name = each.value.environment_name
-  # Step 1: Create GitHub/BitBucket repositories
-
-  # Step 2: Federated Identity Credential
-
-  # Step 3: Terraform Cloud integration
-
-  #  federated_identity_credential_config = {
-  #    "plan" = {
-  #      display_name = "plan"
-  #      audiences    = ["api://AzureADTokenExchange"]
-  #      issuer       = "https://app.terraform.io"
-  #      subject      = "organization:managed-devops:project:Station Development:workspace:Test:run_phase:plan"
-  #    },
-  #    "apply" = {
-  #      display_name = "apply"
-  #      audiences    = ["api://AzureADTokenExchange"]
-  #      issuer       = "https://app.terraform.io"
-  #      subject      = "organization:managed-devops:project:Station Development:workspace:Test:run_phase:apply"
-  #    }
-  #  }
-
   tfe = {
     organization_name     = "managed-devops"
     project_name          = local.tfe_projects.tfe_tests.project_name
@@ -70,6 +49,11 @@ module "station-tfe" {
     vcs_repo = {
       identifier                 = "kimfy/tfe-testing"
       github_app_installation_id = var.github_app_installation_id
+    }
+    module_outputs_to_workspace_var = {
+      groups                   = false
+      user_assigned_identities = false
+      applications             = false
     }
     create_federated_identity_credential = true
   }
@@ -82,22 +66,23 @@ module "station-tfe" {
   ]
 }
 
-module "station-bitbucket" {
-  source           = "../../"
-  environment_name = "prod"
+#module "station-bitbucket" {
+#  source           = "../../"
+#  environment_name = "prod"
+#
+#  tfe = {
+#    project_name          = local.tfe_projects.bitbucket.project_name
+#    workspace_name        = "testing-bitbucket-integration"
+#    workspace_description = "asd"
+#    vcs_repo = {
+#      identifier     = "blinq-kim/min-service"
+#      oauth_token_id = var.VCS_OAUTH_TOKEN_ID
+#    }
+#  }
+#
+#  depends_on = [tfe_project.projects]
+#}
 
-  tfe = {
-    project_name          = local.tfe_projects.bitbucket.project_name
-    workspace_name        = "testing-bitbucket-integration"
-    workspace_description = "asd"
-    vcs_repo = {
-      identifier     = "blinq-kim/min-service"
-      oauth_token_id = var.VCS_OAUTH_TOKEN_ID
-    }
-  }
-
-  depends_on = [tfe_project.projects]
-}
 
 variable "VCS_OAUTH_TOKEN_ID" {
   type      = string
