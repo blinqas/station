@@ -66,6 +66,15 @@ module "station-tfe" {
           object_id      = v.application.object_id
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
       }
+    } : {},
+    try(var.tfe.module_outputs_to_workspace_var.user_assigned_identities, false) ? {
+      applications = {
+        value = replace(jsonencode({ for k, v in module.user_assigned_identities : k => {
+          id           = v.identities.id
+          client_id    = v.identities.client_id
+          principal_id = v.identities.principal_id
+        } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
+      }
     } : {}
   )
 }
