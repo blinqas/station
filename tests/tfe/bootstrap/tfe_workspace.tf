@@ -4,6 +4,7 @@ resource "tfe_workspace" "bootstrap" {
   project_id     = tfe_project.station.id
   description    = "This workspace contains state for the bootstrap procedure for Station. Repo URL: ${var.bootstrap_repo_url}"
   execution_mode = "local"
+  force_delete   = true
 }
 
 resource "tfe_workspace" "deployments" {

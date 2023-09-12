@@ -30,11 +30,6 @@ variable "bootstrap_repo_url" {
   default     = "Not provided. Set `var.bootstrap_repo_url`."
 }
 
-variable "deployments_repo_url" {
-  type        = string
-  description = "The url of the git repository where the deployments code is stored."
-}
-
 variable "vcs_repo_identifier" {
   type        = string
   description = "A reference to your VCS repository in the format <vcs organization>/<repository> where <vcs organization> and <repository> refer to the organization and repository in your VCS provider. The format for Azure DevOps is <ado organization>/<ado project>/_git/<ado repository>."
