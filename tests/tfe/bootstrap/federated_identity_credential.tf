@@ -4,7 +4,7 @@ resource "azuread_application_federated_identity_credential" "tfc-plan" {
   description           = "Authenticate Station from Terraform Cloud to Azure"
   audiences             = ["api://AzureADTokenExchange"]
   issuer                = "https://app.terraform.io"
-  subject               = "organization:${var.tfc_organization_name}:project:${var.tfc_project_name}:workspace:${var.tfc_workspace_name}:run_phase:plan"
+  subject               = "organization:${var.tfc_organization_name}:project:${var.tfc_project_name}:workspace:${var.deployments_tfc_workspace_name}:run_phase:plan"
 }
 
 resource "azuread_application_federated_identity_credential" "tfc-apply" {
@@ -13,5 +13,5 @@ resource "azuread_application_federated_identity_credential" "tfc-apply" {
   description           = "Authenticate Station from Terraform Cloud to Azure"
   audiences             = ["api://AzureADTokenExchange"]
   issuer                = "https://app.terraform.io"
-  subject               = "organization:${var.tfc_organization_name}:project:${var.tfc_project_name}:workspace:${var.tfc_workspace_name}:run_phase:apply"
+  subject               = "organization:${var.tfc_organization_name}:project:${var.tfc_project_name}:workspace:${var.deployments_tfc_workspace_name}:run_phase:apply"
 }
