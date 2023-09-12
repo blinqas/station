@@ -1,7 +1,7 @@
 #!/bin/bash
 
-read -p 'Terraform Cloud Organization Name: ' tfc_organization_name
-read -p 'Name of TFC workspace to store bootstrap state: ' tfc_bootstrap_workspace_name
+read -pr 'Terraform Cloud Organization Name: ' tfc_organization_name
+read -pr 'Name of TFC workspace to store bootstrap state: ' tfc_bootstrap_workspace_name
 
 cp "./providers/providers_local_state.tf" "./providers.tf"
 
