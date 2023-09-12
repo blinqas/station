@@ -2,12 +2,17 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "3.49.0"
+      version = "~> 3.49"
     }
 
     azuread = {
       source  = "hashicorp/azuread"
-      version = "2.36.0"
+      version = "~> 2.36"
+    }
+
+    tfe = {
+      source  = "hashicorp/tfe"
+      version = "~> 0.48"
     }
   }
 }
@@ -18,6 +23,7 @@ provider "azurerm" {
   }
 }
 
-data "azuread_client_config" "current" {}
+provider "tfe" {
+  # Configuration options
+}
 
-data "azurerm_client_config" "current" {}

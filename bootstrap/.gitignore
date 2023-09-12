@@ -1,0 +1,4 @@
+*.tfplan
+testing/
+
+local.bootstrap.sh
