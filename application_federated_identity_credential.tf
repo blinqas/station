@@ -26,5 +26,5 @@ resource "azuread_application_federated_identity_credential" "oidc-tfe" {
   description           = "Terraform Cloud OIDC Station Project ${random_id.workload.hex} (${each.value.phase} phase)"
   audiences             = ["api://AzureADTokenExchange"]
   issuer                = "https://app.terraform.io"
-  subject               = "organization:${module.station-tfe.organization_name}:project:${var.tfe.project_name}:workspace:${var.tfe.workspace_name}:run_phase:${each.value.phase}"
+  subject               = "organization:${var.tfe.organization_name}:project:${var.tfe.project_name}:workspace:${var.tfe.workspace_name}:run_phase:${each.value.phase}"
 }

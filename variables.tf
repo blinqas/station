@@ -49,6 +49,33 @@ variable "user_assigned_identities" {
 
 variable "tfe" {
   description = "Terraform Cloud configuration. See submodule ./hashicorp/tfe/variables.tf for settings"
-  default     = {}
+  default     = null
+  type = object({
+    organization_name     = string
+    project_name          = string
+    workspace_name        = string
+    workspace_description = string
+    create_federated_identity_credential = optional(bool)
+    vcs_repo = optional(object({
+      identifier                 = string
+      branch                     = optional(string)
+      ingress_submodules         = optional(string)
+      oauth_token_id             = optional(string)
+      github_app_installation_id = optional(string)
+      tags_regex                 = optional(string)
+    }))
+    workspace_env_vars = optional(map(object({
+      value       = string
+      category    = string
+      description = string
+    })))
+    workspace_vars = optional(map(object({
+      value       = any
+      category    = string
+      description = string
+      hcl         = bool
+      sensitive   = bool
+    })))
+  })
 }
 
