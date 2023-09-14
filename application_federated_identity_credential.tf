@@ -20,7 +20,7 @@ locals {
 }
 
 resource "azuread_application_federated_identity_credential" "oidc-tfe" {
-  for_each              = try(var.tfe.create_federated_identity_credential, true) ? local.oidc_tfe : {}
+  for_each              = can(var.tfe.create_federated_identity_credential) ? local.oidc_tfe : {}
   application_object_id = azuread_application.workload.object_id
   display_name          = "ficc-station-proj-id-${random_id.workload.hex}-tfc-${each.value.phase}"
   description           = "Terraform Cloud OIDC Station Project ${random_id.workload.hex} (${each.value.phase} phase)"
