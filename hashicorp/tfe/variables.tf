@@ -1,9 +1,6 @@
-variable "provider_configuration" {
-  description = "See the official docs: https://registry.terraform.io/providers/hashicorp/tfe/latest/docs"
-  type = object({
-    organization = optional(string)
-  })
-  default = {}
+variable "organization_name" {
+  description = "The name of the Terraform Cloud organization to work in"
+  type        = string
 }
 
 variable "project_name" {
@@ -28,7 +25,7 @@ variable "workspace_env_vars" {
     category    = string
     description = string
   }))
-  default = {}
+  default = null
 }
 
 variable "workspace_vars" {
@@ -40,7 +37,7 @@ variable "workspace_vars" {
     hcl         = bool
     sensitive   = bool
   }))
-  default = {}
+  default = null
 }
 
 variable "vcs_repo" {

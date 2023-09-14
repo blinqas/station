@@ -6,7 +6,3 @@ output "workspace" {
   value = tfe_workspace.workload
 }
 
-output "organization_name" {
-  value = data.tfe_organization.this.name
-}
-
