@@ -23,10 +23,7 @@ output "applications" {
 }
 
 output "groups" {
-  value = { for k, v in module.ad_groups : k => {
-    display_name = v.group.display_name
-    object_id    = v.group.object_id
-  } }
+  value = module.ad_groups
 }
 
 output "user_assigned_identities" {
