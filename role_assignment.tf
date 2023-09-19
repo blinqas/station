@@ -19,7 +19,7 @@ resource "azurerm_role_assignment" "user_input" {
   scope                                  = each.value.scope
   role_definition_id                     = each.value.role_definition_id
   role_definition_name                   = each.value.role_definition_name
-  principal_id                           = each.value.principal_id
+  principal_id                           = each.value.assign_to_workload_principal == true ? azuread_service_principal.workload.object_id : each.value.principal_id
   condition                              = each.value.condition
   condition_version                      = each.value.condition_version
   delegated_managed_identity_resource_id = each.value.delegated_managed_identity_resource_id
