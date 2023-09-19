@@ -76,6 +76,11 @@ variable "tfe" {
       hcl         = bool
       sensitive   = bool
     })))
+    module_outputs_to_workspace_var = optional(object({
+      groups                   = optional(bool)
+      applications             = optional(bool)
+      user_assigned_identities = optional(bool)
+    }))
   })
 }
 
