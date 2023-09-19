@@ -51,10 +51,10 @@ variable "tfe" {
   description = "Terraform Cloud configuration. See submodule ./hashicorp/tfe/variables.tf for settings"
   default     = null
   type = object({
-    organization_name     = string
-    project_name          = string
-    workspace_name        = string
-    workspace_description = string
+    organization_name                    = string
+    project_name                         = string
+    workspace_name                       = string
+    workspace_description                = string
     create_federated_identity_credential = optional(bool)
     vcs_repo = optional(object({
       identifier                 = string
@@ -79,3 +79,8 @@ variable "tfe" {
   })
 }
 
+variable "group_membership" {
+  type        = list(string)
+  description = "List of group object ids the workload identity should be member of"
+  default     = []
+}
