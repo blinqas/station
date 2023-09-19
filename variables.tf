@@ -97,7 +97,7 @@ variable "role_assignment" {
     role_definition_id                     = optional(string)
     role_definition_name                   = optional(string)
     principal_id                           = optional(string) # If null, user must set assign_to_workload_principal
-    use_workload_principal                 = optional(bool)
+    assign_to_workload_principal           = optional(bool)
     condition                              = optional(string)
     condition_version                      = optional(string)
     delegated_managed_identity_resource_id = optional(string)
