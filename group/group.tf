@@ -1,7 +1,7 @@
 resource "azuread_group" "group" {
   display_name     = var.settings.display_name
   owners           = var.owners
-  security_enabled = can(var.settings.security_enabled) != null ? var.settings.security_enabled : true
+  security_enabled = try(var.settings.security_enabled, true)
   types            = try(var.settings.types, null) != null ? var.settings.types : []
 
   dynamic "dynamic_membership" {
