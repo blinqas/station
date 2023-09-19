@@ -15,7 +15,7 @@ resource "azuread_group" "group" {
 }
 
 resource "azuread_group_member" "members" {
-  for_each         = try(var.settings.members, null) != null ? toset(var.settings.members) : []
+  for_each         = try(var.settings.members, null) != null ? toset(var.settings.members) : toset([])
   group_object_id  = azuread_group.group.object_id
   member_object_id = each.key
 }
