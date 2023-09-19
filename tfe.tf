@@ -55,7 +55,7 @@ module "station-tfe" {
     },
     },
     # Optionals
-    try(var.tfe.module_outputs_to_workspace_var.groups, false) ? {
+    try(var.tfe.module_outputs_to_workspace_var.groups == true, false) ? {
       groups = {
         value = replace(jsonencode({ for k, v in module.ad_groups : k => {
           display_name = v.group.display_name
@@ -67,7 +67,7 @@ module "station-tfe" {
         sensitive   = false
       }
     } : {},
-    try(var.tfe.module_outputs_to_workspace_var.applications, false) ? {
+    try(var.tfe.module_outputs_to_workspace_var.applications == true, false) ? {
       applications = {
         value = replace(jsonencode({ for k, v in module.applications : k => {
           application_id = v.application.application_id
@@ -79,7 +79,7 @@ module "station-tfe" {
         sensitive   = false
       }
     } : {},
-    try(var.tfe.module_outputs_to_workspace_var.user_assigned_identities, false) ? {
+    try(var.tfe.module_outputs_to_workspace_var.user_assigned_identities == true, false) ? {
       user_assigned_identities = {
         value = replace(jsonencode({ for k, v in module.user_assigned_identities : k => {
           id           = v.identities.id
