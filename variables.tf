@@ -89,3 +89,20 @@ variable "group_membership" {
   description = "List of group object ids the workload identity should be member of"
   default     = []
 }
+
+variable "role_assignment" {
+  type = map(object({
+    name                                   = optional(string)
+    scope                                  = string
+    role_definition_id                     = optional(string)
+    role_definition_name                   = optional(string)
+    principal_id                           = string
+    condition                              = optional(string)
+    condition_version                      = optional(string)
+    delegated_managed_identity_resource_id = optional(string)
+    description                            = optional(string)
+    skip_service_principal_aad_check       = optional(bool)
+  }))
+  description = "Map of azurerm_role_assignments"
+  default     = {}
+}
