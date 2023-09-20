@@ -6,4 +6,5 @@ module "user_assigned_identities" {
   location            = try(each.value.location, azurerm_resource_group.workload.location)
   tags                = local.tags
   role_assignments    = try(each.value.role_assignments, [])
+  group_membership    = try(each.value.group_membership, [])
 }
