@@ -19,4 +19,5 @@ jobs:
         terraform fmt -recursive | xargs -I {} git add {}
         git commit -m "Automatic linting and formatting [skip ci]"
         git push
+      continue-on-error: true
 
