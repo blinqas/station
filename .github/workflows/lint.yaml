@@ -13,5 +13,10 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: format terraform files recursively
-      run: terraform fmt -recursive
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        terraform fmt -recursive | xargs git add $1
+        git commit -m "Automatic linting and formatting [skip ci]"
+        git push
 
