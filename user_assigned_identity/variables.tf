@@ -26,4 +26,5 @@ variable "role_assignments" {
 variable "group_membership" {
   description = "List of Object IDs that represent the Azure AD groups to which the assigned user identity should be added as a member"
   default = []
+  type = set(string)
 }
