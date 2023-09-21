@@ -1,6 +1,6 @@
 name: 🧹 Terraform lint
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   lint:
@@ -17,7 +17,7 @@ jobs:
       continue-on-error: true
 
     - name: format and push formatted files back to repo
-      if: ${{ steps.fmt.exitcode }} !=  0
+      if: ${{ steps.fmt.exitcode }} ==  3 # Terraform exits with code 3 if there are files to format
       run: |
         terraform fmt -recursive | xargs -I {} git add {}
         git config user.name github-actions
