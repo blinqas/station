@@ -19,7 +19,8 @@ jobs:
     - name: format and push formatted files back to repo
       if: ${{ steps.fmt.outputs.exitcode }} ==  3 # Terraform exits with code 3 if there are files to format
       run: |
-        terraform fmt -recursive | xargs -I {} git add {}
+        terraform fmt -recursive
+        git status
         git config user.name github-actions
         git config user.email github-actions@github.com
         git commit -m "Automatic linting and formatting [skip ci]"
