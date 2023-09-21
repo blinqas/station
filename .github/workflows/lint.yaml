@@ -31,5 +31,5 @@ jobs:
         git config user.name github-actions
         git config user.email github-actions@github.com
         git commit -am "Automatic linting and formatting [skip ci]"
-        git push
+        git push origin HEAD:${{ env.GITHUB_REF_NAME }}
 
