@@ -1,0 +1,17 @@
+name: Terraform lint
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.7
+    
+    - uses: actions/checkout@v4
+
+    - name: format terraform files recursively
+      run: terraform fmt -recursive
+
