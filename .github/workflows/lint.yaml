@@ -1,6 +1,14 @@
 name: 🧹 Terraform lint
 
-on: [pull_request]
+on:
+  pull_request:
+    paths:
+      - '**.tf*'
+  push:
+    branches:
+      - 'trunk'
+    paths:
+      - '**.tf*'
 
 jobs:
   lint:
@@ -20,9 +28,8 @@ jobs:
       if: ${{ steps.fmt.outputs.exitcode }} ==  3 # Terraform exits with code 3 if there are files to format
       run: |
         terraform fmt -recursive
-        git status
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git commit -m "Automatic linting and formatting [skip ci]"
+        git commit -am "Automatic linting and formatting [skip ci]"
         git push
 
