@@ -22,3 +22,8 @@ variable "role_assignments" {
   description = "Application Roles to assign the Managed Identity"
   type        = list(string)
 }
+
+variable "group_membership" {
+  description = "List of Object IDs that represent the Azure AD groups to which the assigned user identity should be added as a member"
+  type        = set(string)
+}
