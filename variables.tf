@@ -107,9 +107,22 @@ variable "applications" {
 }
 
 variable "groups" {
-  description = "List of Azure AD groups to create"
-  default     = {}
+  description = "Map of Azure AD groups to create"
+  type = map(object({
+    display_name     = string
+    owners           = optional(list(string))
+    members          = optional(list(string))
+    security_enabled = optional(bool)
+    types            = optional(set(string))
+    dynamic_membership = optional(object({
+      enabled = bool
+      rule    = string
+    }))
+  }))
+  default = {}
 }
+
+
 
 variable "user_assigned_identities" {
   description = "User Assigned Identities to create."
