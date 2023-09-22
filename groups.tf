@@ -1,7 +1,11 @@
 module "ad_groups" {
   for_each = var.groups
-  source   = "./group"
-  settings = each.value.settings
-  owners   = try(each.value.settings.add_workload_sp_to_owners, true) ? concat(try(each.value.settings.owners, []), [azuread_service_principal.workload.object_id]) : each.value.settings.owners
-}
 
+  source             = "./group"
+  display_name       = each.value.display_name
+  owners             = try(each.value.owners, toset([]))
+  members            = try(each.value.members, toset([]))
+  security_enabled   = each.value.security_enabled != null ? each.value.security_enabled : true
+  types              = each.value.types
+  dynamic_membership = try(each.value.dynamic_membership, [])
+}
