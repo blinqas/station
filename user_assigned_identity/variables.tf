@@ -28,5 +28,5 @@ variable "role_assignments" {
 variable "group_membership" {
   description = "Set of group memberships for the User Assigned Identity."
   type        = set(string)
-  default     = toset([])
+  default     = []
 }
