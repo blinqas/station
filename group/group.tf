@@ -1,11 +1,12 @@
 resource "azuread_group" "group" {
-  display_name     = var.settings.display_name
+  display_name     = var.azuread_group.display_name
   owners           = var.owners
-  security_enabled = try(var.settings.security_enabled, true)
-  types            = try(var.settings.types, null) != null ? var.settings.types : []
+  security_enabled = var.azuread_group.security_enabled
+  mail_enabled     = var.azuread_group.mail_enabled
+  types            = var.azuread_group.types
 
   dynamic "dynamic_membership" {
-    for_each = try(var.settings.dynamic_membership, {})
+    for_each = var.azuread_group.dynamic_membership == null ? [] : [var.azuread_group.dynamic_membership]
 
     content {
       enabled = dynamic_membership.value.enabled
@@ -15,8 +16,7 @@ resource "azuread_group" "group" {
 }
 
 resource "azuread_group_member" "members" {
-  for_each         = try(var.settings.members, null) != null ? toset(var.settings.members) : toset([])
+  for_each         = var.azuread_group.members == null ? [] : var.azuread_group.members
   group_object_id  = azuread_group.group.object_id
   member_object_id = each.key
 }
-
