@@ -42,7 +42,7 @@ variable "groups" {
   type = map(object({
     display_name     = string
     owners           = optional(list(string))
-    members          = optional(list(string))
+    members          = optional(set(string))
     security_enabled = optional(bool)
     types            = optional(set(string))
     dynamic_membership = optional(object({

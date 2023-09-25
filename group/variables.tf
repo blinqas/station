@@ -1,35 +1,18 @@
-variable "display_name" {
-  description = "Display name of the AD Group"
-  type        = string
+variable "azuread_group" {
+  type        = any
+  description = <<EOF
+    The configuration for the azuread_group to create.
+
+    See Station's applications variable type constraint on how to structure this object. Type constraint has not been set internally at this point to ensure Stations "DRY"-ness.
+  EOF
 }
 
 variable "owners" {
-  description = "Object IDs of the owners for the group"
   type        = set(string)
-}
-
-variable "members" {
-  description = "Object IDs of the members for the group"
-  type        = set(string)
-}
-
-variable "security_enabled" {
-  description = "Whether the security is enabled for the AD Group"
-  type        = bool
-}
-
-
-variable "dynamic_membership" {
-  description = "Dynamic membership settings for the AD Group"
-  type = object({
-    enabled = bool,
-    rule    = string
-  })
-}
-
-variable "types" {
-  description = "A set of group types to configure for the group."
-  type        = set(string)
-  nullable    = true
+  default     = null
+  description = <<EOF
+    (Optional) A set of object IDs of principals that will be granted ownership of the group. Supported object types are users or service principals. By default, the principal being used to execute Terraform is assigned as the sole owner. Groups cannot be created with no owners or have all their owners removed.
+    - https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/group#owners
+  EOF
 }
 
