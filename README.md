@@ -1,15 +1,18 @@
-
 # Station Terraform Module
 
-The Station Terraform module can be used to provision workload environments in Azure. Station takes care of creating a set of must-have resources for a successful workload deployment. With automatic Terraform Cloud integration and OIDC configuration, Station makes deploying easy and fast. Start writing your workload code right away.
+Terraform Station is a flexible module you can use to provision and manage workload environments in Azure. Quickly create environments for different workloads with automatic provisioning of applications, service principals, groups, user assigned identities and more. Station focuses on a modern approach for infrastructure deployment; Station lets you create Terraform Cloud workspaces which are automatically configured to deploy with your workload identity, powered by OIDC (yay for secret-less). Station uses a flat structure with preferrably a monorepo for your different workloads. You can deploy multiple versions of Station if you need to. 
 
-To learn the basics of Station, check out our [tutorial](./docs/tutorial.md) (COMING!).
+This module is aimed at small teams who manage Azure workload environments. You can think of Station as a train station, and Azure as your destination. To get to Azure, your IaC deployments must start with Station.
 
-Think of Station as a train station, and Azure as your destination. To get to Azure your IaC deployments must start with Station.
+Check out our Design Decision document [here.](https://github.com/blinqas/station/blob/trunk/DESIGN_DESICIONS.md)
 
 Station is maintained by the DevOps team at blinQ (https://blinq.no).
 
 ## Usage
+
+```terraform
+
+```
 
 ### Requirements
 
@@ -29,3 +32,4 @@ Station is maintained by the DevOps team at blinQ (https://blinq.no).
 ## Contact
 
 - Kim Iversen | [kim.iversen@blinq.no](mailto:kim.iversen@blinq.no)
+
