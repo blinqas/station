@@ -19,6 +19,11 @@ variable "role_definition_name_on_workload_rg" {
 variable "resource_groups" {
   description = "Resource Groups to create."
   default     = {}
+  type = map(object({
+    name     = string
+    location = optional(string)
+    tags     = optional(map(string))
+  }))
 }
 
 variable "federated_identity_credential_config" {
