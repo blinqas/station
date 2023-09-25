@@ -2,10 +2,11 @@ resource "azuread_group" "group" {
   display_name     = var.azuread_group.display_name
   owners           = var.owners
   security_enabled = var.azuread_group.security_enabled
+  mail_enabled     = var.azuread_group.mail_enabled
   types            = var.azuread_group.types
 
   dynamic "dynamic_membership" {
-    for_each = var.azuread_group.dynamic_membership == null ? [] : [1]
+    for_each = var.azuread_group.dynamic_membership == null ? [] : [var.azuread_group.dynamic_membership]
 
     content {
       enabled = dynamic_membership.value.enabled
