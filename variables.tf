@@ -35,6 +35,75 @@ variable "tags" {
 variable "applications" {
   description = "Applications to create. See https://registry.terraform.io/modules/aztfmod/caf/azurerm/5.7.0-preview0/submodules/applications?tab=inputs for documentation."
   default     = {}
+  type = map(object({
+    display_name                   = string
+    owners                         = optional(list(string))
+    sign_in_audience               = optional(string)
+    group_membership_claims        = optional(list(string))
+    identifier_uris                = optional(list(string))
+    prevent_duplicate_names        = optional(bool)
+    fallback_public_client_enabled = optional(bool)
+
+    single_page_application = optional(object({
+      redirect_uris = optional(list(string))
+    }))
+
+    api = optional(object({
+      known_client_applications      = optional(list(string))
+      mapped_claims_enabled          = optional(bool)
+      requested_access_token_version = optional(number)
+
+      oauth2_permission_scope = optional(list(object({
+        admin_consent_description  = string
+        admin_consent_display_name = string
+        id                         = string
+        enabled                    = optional(bool)
+        type                       = optional(string)
+        user_consent_description   = optional(string)
+        user_consent_display_name  = optional(string)
+        value                      = string
+      })))
+    }))
+
+    required_resource_access = optional(set(object({
+      resource_app_id = string
+      resource_access = map(object({
+        id   = string
+        type = string
+      }))
+    })))
+
+    optional_claims = optional(object({
+      access_token = optional(set(object({
+        name                  = string
+        source                = optional(string)
+        essential             = optional(bool)
+        additional_properties = optional(list(string))
+      })))
+      id_token = optional(set(object({
+        name                  = string
+        source                = optional(string)
+        essential             = optional(bool)
+        additional_properties = optional(list(string))
+      })))
+      saml2_token = optional(set(object({
+        name                  = string
+        source                = optional(string)
+        essential             = optional(bool)
+        additional_properties = optional(list(string))
+      })))
+    }))
+
+    web = optional(object({
+      homepage_url  = optional(string)
+      logout_url    = optional(string)
+      redirect_uris = optional(set(string))
+      implicit_grant = optional(object({
+        access_token_issuance_enabled = optional(bool)
+        id_token_issuance_enabled     = optional(bool)
+      }))
+    }))
+  }))
 }
 
 variable "groups" {
