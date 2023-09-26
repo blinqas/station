@@ -16,7 +16,7 @@ variable "resource_group_name" {
   description = <<EOF
     (Optional) The name of the resource group to create for the workload. The final name is prefixed with `rg-`.
 
-    If a value is not provided, Station will set the name to `rg-${var.tfe.workspace_name}-${var.environment_name}`
+    If a value is not provided, Station will set the name to `rg-var.tfe.workspace_name-var.environment_name`
   EOF
 }
 
