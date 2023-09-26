@@ -144,8 +144,8 @@ variable "user_assigned_identities" {
     name                = string
     resource_group_name = optional(string)
     location            = optional(string)
-    role_assignments    = optional(list(string))
-    group_membership    = optional(set(string))
+    role_assignments    = optional(set(string))
+    group_memberships   = optional(set(string))
   }))
 
   default = {}

@@ -9,7 +9,7 @@ module "station-uai" {
   }
 
   user_assigned_identities = {
-    minimal = {
+    minimum = {
       name = "uai-01"
     }
 

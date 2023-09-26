@@ -21,11 +21,11 @@ variable "tags" {
 
 variable "role_assignments" {
   description = "Application Roles to assign the Managed Identity."
-  type        = list(string)
+  type        = set(string)
   default     = []
 }
 
-variable "group_membership" {
+variable "group_memberships" {
   description = "Set of group memberships for the User Assigned Identity."
   type        = set(string)
   default     = []
