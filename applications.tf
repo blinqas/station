@@ -5,7 +5,7 @@ module "applications" {
   # Add workload identity service principal to the list of owners
   owners = concat(
     each.value.owners == null ? [] : each.value.owners,
-    [azuread_service_principal.workload.object_id]
+    [module.user_assigned_identity.principal_id]
   )
 }
 

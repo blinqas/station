@@ -14,7 +14,7 @@ module "station-tfe" {
       description = "Is true when using dynamic credentials to authenticate to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
     },
     TFC_AZURE_RUN_CLIENT_ID = {
-      value       = azuread_service_principal.workload.application_id
+      value       = module.user_assigned_identity.client_id
       category    = "env"
       description = "The client ID for the Service Principal / Application used when authenticating to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
     },

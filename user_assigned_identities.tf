@@ -1,3 +1,13 @@
+module "user_assigned_identity" {
+  source              = "./user_assigned_identity"
+  name                = "mi-workload-identity"
+  resource_group_name = azurerm_resource_group.workload.name
+  location            = azurerm_resource_group.workload.location
+  tags                = local.tags
+  role_assignments    = []
+  group_membership    = []
+}
+
 module "user_assigned_identities" {
   for_each            = var.user_assigned_identities
   source              = "./user_assigned_identity/"
