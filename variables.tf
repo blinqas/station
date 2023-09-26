@@ -12,7 +12,7 @@ variable "environment_name" {
 
 variable "role_definition_name_on_workload_rg" {
   type        = string
-  description = "Which role to assign the workload Service Principal on the workload Resource Group"
+  description = "Which role to assign the workload principal on the workload resource group"
   default     = "Owner"
 }
 
