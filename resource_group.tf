@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "workload" {
-  name     = "rg-${random_id.workload.hex}-${var.environment_name}"
+  name     = var.resource_group_name == null ? "rg-${var.tfe.workspace_name}-${var.environment_name}" : "rg-${var.resource_group_name}"
   location = var.default_location
   tags     = local.tags
 }

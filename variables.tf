@@ -10,6 +10,16 @@ variable "environment_name" {
   default     = "dev"
 }
 
+variable "resource_group_name" {
+  type        = string
+  default     = null
+  description = <<EOF
+    (Optional) The name of the resource group to create for the workload. The final name is prefixed with `rg-`.
+
+    If a value is not provided, Station will set the name to `rg-var.tfe.workspace_name-var.environment_name`
+  EOF
+}
+
 variable "role_definition_name_on_workload_rg" {
   type        = string
   description = "Which role to assign the workload principal on the workload resource group"
