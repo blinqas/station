@@ -39,6 +39,13 @@ variable "resource_groups" {
 variable "federated_identity_credential_config" {
   description = "The Application Federated Identity Credential configuration. Configure this for secret-less automation by setting create to `true` and filling in the object values."
   default     = {}
+  type = map(object({
+    display_name = string
+    description  = optional(string)
+    audiences    = list(string)
+    issuer       = string
+    subject      = string
+  }))
 }
 
 variable "tags" {
