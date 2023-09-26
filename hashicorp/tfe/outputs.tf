@@ -5,3 +5,4 @@ output "project_name" {
 output "workspace" {
   value = tfe_workspace.workload
 }
+

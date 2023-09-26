@@ -1,6 +1,7 @@
 module "station-tfe" {
   source = "./hashicorp/tfe/"
 
+  organization_name     = var.tfe.organization_name
   project_name          = var.tfe.project_name
   workspace_name        = var.tfe.workspace_name
   workspace_description = var.tfe.workspace_description
@@ -13,7 +14,7 @@ module "station-tfe" {
       description = "Is true when using dynamic credentials to authenticate to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
     },
     TFC_AZURE_RUN_CLIENT_ID = {
-      value       = azuread_service_principal.workload.application_id
+      value       = module.user_assigned_identity.client_id
       category    = "env"
       description = "The client ID for the Service Principal / Application used when authenticating to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
     },
@@ -54,7 +55,7 @@ module "station-tfe" {
     },
     },
     # Optionals
-    try(var.tfe.module_outputs_to_workspace_var.groups, false) ? {
+    try(var.tfe.module_outputs_to_workspace_var.groups == true, false) ? {
       groups = {
         value = replace(jsonencode({ for k, v in module.ad_groups : k => {
           display_name = v.group.display_name
@@ -66,7 +67,7 @@ module "station-tfe" {
         sensitive   = false
       }
     } : {},
-    try(var.tfe.module_outputs_to_workspace_var.applications, false) ? {
+    try(var.tfe.module_outputs_to_workspace_var.applications == true, false) ? {
       applications = {
         value = replace(jsonencode({ for k, v in module.applications : k => {
           application_id = v.application.application_id
@@ -78,7 +79,7 @@ module "station-tfe" {
         sensitive   = false
       }
     } : {},
-    try(var.tfe.module_outputs_to_workspace_var.user_assigned_identities, false) ? {
+    try(var.tfe.module_outputs_to_workspace_var.user_assigned_identities == true, false) ? {
       user_assigned_identities = {
         value = replace(jsonencode({ for k, v in module.user_assigned_identities : k => {
           id           = v.identities.id
