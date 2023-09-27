@@ -11,7 +11,23 @@ Station is maintained by the DevOps team at blinQ (https://blinq.no).
 ## Usage
 
 ```terraform
-
+module "common" {
+  source              = "git::https://github.com/blinqas/station.git?ref=1.3.0"
+  environment_name    = "prod"
+  resource_group_name = "common"
+  tags                = local.tags.common
+  tfe = {
+    organization_name     = "my-tfc-organization"
+    project_name          = "Azure"
+    workspace_name        = "common"
+    workspace_description = "Common resources which are shared between workloads."
+    vcs_repo = {
+      identifier     = github_repository.repos["common"].full_name
+      branch         = "trunk"
+      oauth_token_id = var.vcs_repo_oauth_token_id
+    }
+  }
+}
 ```
 
 ### Requirements
