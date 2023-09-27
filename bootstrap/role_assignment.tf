@@ -1,9 +1,6 @@
-data "azurerm_subscription" "deployment" {
-  subscription_id = data.azurerm_client_config.current.subscription_id
-}
-
 resource "azurerm_role_assignment" "station_subscription_owner" {
-  scope                = data.azurerm_subscription.deployment.id
+  for_each             = var.subscription_ids
+  scope                = each.value
   principal_id         = azuread_service_principal.workload.object_id
   role_definition_name = "Owner"
 }

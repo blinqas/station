@@ -27,6 +27,7 @@ IMPORTANT! Do not scripts from the internet without understanding what it does.
 Before you begin:
 - Log in to Azure with `az login`
 - Log in to Terraform Cloud CLI with `terraform login`
+- Log in to Github and create an oauth token or an app installation. You will have to provide this inside the `varibles.tfvars.json`` file
 - This script is not idempotent, only run this once!
 - You might want to modify it to include all `-var` from `variables.tf`.
 
