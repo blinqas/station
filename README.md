@@ -10,7 +10,7 @@ To quickly enable users to deploy workload environments in Azure. Isolating Entr
 - Deployments: Where workload environments are defined and deployed. (Application Team/DevOps/SRE/Platform Engineer/Cloud Engineer)
 - Workload Environment: The workload environment where infrastructure is deployed to. (Application Team)
 
-Station was designed with isolation in mind. We want our environments to work with least-privilege in mind. That's why your workload identity is restricted to permissions inside its own resource group(s). The module is highly flexible and also support Cloud Adoption Framework-like modularization. See our COMING! examples folder for more!
+Station was designed with isolation in mind. We want our environments to work with least-privilege principle. That's why your workload identity is restricted to permissions inside its own resource group(s). The module is highly flexible and also support Cloud Adoption Framework-like modularization. See our COMING! examples folder for more!
 
 ## Who uses Station? 
 
