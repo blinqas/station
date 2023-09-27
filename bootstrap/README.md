@@ -16,22 +16,37 @@ This folder contains Terraform files to bootstrap Azure and Terraform Cloud for 
 
 ## Why the need for this?
 
-Provisioning all these resources and linking them together and what not is very cumbersome. This hopfully solves that and makes it easier to understand what Station requires.
+Provisioning all these resources and linking them together and what not is very cumbersome. This hopefully solves that and makes it easier to understand what Station requires.
 
 Demoing Station is also very fast now!
 
+
 ## Usage
 
-IMPORTANT! Do not scripts from the internet without understanding what it does.
+**IMPORTANT!** Do not run scripts from the internet without understanding what they do.
 
-Before you begin:
-- Log in to Azure with `az login`
-- Log in to Terraform Cloud CLI with `terraform login`
-- Log in to Github and create an oauth token or an app installation. You will have to provide this inside the `varibles.tfvars.json`` file
-- This script is not idempotent, only run this once!
-- You might want to modify it to include all `-var` from `variables.tf`.
+### Before you begin:
+1. **Update the Bootstrap Script**:  
+   Update the bootstrap script with your own values. Carefully read the variable names and comments to enter the correct values.
 
-```bash
-./bootstrap.sh
+2. **Log in to Azure**:  
+   ```bash
+   az login --tenant YourTenantID
+   ```
+
+3. **Log in to Terraform Cloud CLI**:  
+   ```bash
+   terraform login
+   ```
+
+4. **Setup Repository**:  
+   Create a new repository in your organization to hold station deployments and ensure that Terraform Cloud (TFC) has been integrated with your organization. Also, confirm that the GitHub app for TFC is installed.
+
+5. **Run the Script**:  
+   ```bash
+   ./bootstrap.sh
+   ```
+
 ```
+
 
