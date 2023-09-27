@@ -1,14 +1,41 @@
 # Station Terraform Module
 
-Terraform Station is a flexible module you can use to provision and manage workload environments in Azure. Quickly create environments for different workloads with automatic provisioning of applications, service principals, groups, user assigned identities and more. Station focuses on a modern approach for infrastructure deployment; Station lets you create Terraform Cloud workspaces which are automatically configured to deploy with your workload identity, powered by OIDC. Station uses a flat structure with preferrably a monorepo for your different workloads. You can deploy multiple versions of Station if you need to. 
+Station is a Terraform module that lets you quickly spin up new workload environments in Azure and Terraform Cloud. Station enables high level of automation for something as simple as a workload environment.
 
-This module is aimed at small teams who manage Azure workload environments. You can think of Station as a train station, and Azure as your destination. To get to Azure, your IaC deployments must start with Station.
+## Why does Station exist?
+
+To quickly enable users to deploy workload environments safely into Azure. Isolating Entra ID and Azure Subscription interactions from the actual workload environment. Station consists of three parts; bootstrap, deployments and workload environment.
+
+- Bootstrap: setting up a Station for your Azure subscription(s) and tenant. (Administrator with permissions on Subscription and Entra ID/Azure AD)
+- Deployments: Where workload environments are defined and deployed. (Application Team/DevOps/SRE/Platform Engineer/Cloud Engineer)
+- Workload Environment: The workload environment where infrastructure is deployed to. (Application Team)
+
+## Who uses Station? 
+
+Station is used primarily in context of application development and hosting; DevOps, GitOps, SRE's or Platform Engineers. There is nothing wrong with using Station in operations; we encourage it!
+
+---
 
 Check out our Design Decision document [here.](https://github.com/blinqas/station/blob/trunk/DESIGN_DESICIONS.md)
 
 Station is maintained by the DevOps team at blinQ (https://blinq.no).
 
 ## Usage
+
+The following example deploys a workload environment for common resources, in this environment we would deploy Container Registries for example.
+
+Consider the following file structure:
+
+```bash
+common.tf
+github_repositories.tf
+tags.tf
+variables.tf
+```
+
+```bash
+cat common.tf
+```
 
 ```terraform
 module "common" {
@@ -30,22 +57,32 @@ module "common" {
 }
 ```
 
+This file would provision the following:
+
+- Resource Group
+- Managed Identity
+    - Service Principal is assigned Owner on Resource Group
+- Federated Credential (OIDC to authenticate Terraform Cloud runners)
+- Terraform Cloud (TFC) Workspace
+    - Configured to run on commits to trunk branch
+    - Configured to authenticate to VCS with token already in Terraform Cloud
+- TFC Environment Variables for OIDC authentication with Managed Identity
+
 ### Requirements
 
 - Terraform Cloud account
+    - Permission to create Team Token
 - Azure- Tenant and Subscription
-- Global Administrator on Azure AD
-- Owner on Subscription
-
-### Example
-
-```terraform
-
-```
-
-## How it works
+    - Global Administrator on Azure AD
+    - Owner on Subscription
 
 ## Contact
 
 - Kim Iversen | [kim.iversen@blinq.no](mailto:kim.iversen@blinq.no)
+- Sander Blomvågnes | [sander@blinq.no](mailto:sander@blinq.no)
+- Erik Hansen | [erik.hansen@blinq.no](mailto:erik.hansen@blinq.no)
 
+
+## License
+
+MIT
