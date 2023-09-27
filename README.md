@@ -1,14 +1,16 @@
 # Station Terraform Module
 
-Station is a Terraform module that lets you quickly spin up new workload environments in Azure and Terraform Cloud. Station enables high level of automation for something as simple as a workload environment.
+Station is a Terraform module that lets you quickly spin up new workload environments in Azure and Terraform Cloud. Station gives you a high level of automation for workload environment provisioning.
 
 ## Why does Station exist?
 
-To quickly enable users to deploy workload environments safely into Azure. Isolating Entra ID and Azure Subscription interactions from the actual workload environment. Station consists of three parts; bootstrap, deployments and workload environment.
+To quickly enable users to deploy workload environments in Azure. Isolating Entra ID and Azure Subscription interactions from the actual workload environment. Station consists of three parts; bootstrap, deployments and workload environment.
 
 - Bootstrap: setting up a Station for your Azure subscription(s) and tenant. (Administrator with permissions on Subscription and Entra ID/Azure AD)
 - Deployments: Where workload environments are defined and deployed. (Application Team/DevOps/SRE/Platform Engineer/Cloud Engineer)
 - Workload Environment: The workload environment where infrastructure is deployed to. (Application Team)
+
+Station was designed with isolation in mind. We want our environments to work with least-privilege in mind. That's why your workload identity is restricted to permissions inside its own resource group(s). The module is highly flexible and also support Cloud Adoption Framework-like modularization. See our COMING! examples folder for more!
 
 ## Who uses Station? 
 
