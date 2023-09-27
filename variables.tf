@@ -149,8 +149,18 @@ variable "groups" {
 
 variable "user_assigned_identities" {
   description = "User Assigned Identities to create."
-  default     = {}
+
+  type = map(object({
+    name                = string
+    resource_group_name = optional(string)
+    location            = optional(string)
+    role_assignments    = optional(set(string))
+    group_memberships   = optional(set(string))
+  }))
+
+  default = {}
 }
+
 
 variable "tfe" {
   description = "Terraform Cloud configuration. See submodule ./hashicorp/tfe/variables.tf for settings"

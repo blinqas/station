@@ -16,14 +16,17 @@ variable "location" {
 variable "tags" {
   description = "A mapping of tags which should be assigned to the User Assigned Identity."
   type        = map(string)
+  default     = {}
 }
 
 variable "role_assignments" {
-  description = "Application Roles to assign the Managed Identity"
-  type        = list(string)
+  description = "Application Roles to assign the Managed Identity."
+  type        = set(string)
+  default     = []
 }
 
-variable "group_membership" {
-  description = "List of Object IDs that represent the Azure AD groups to which the assigned user identity should be added as a member"
+variable "group_memberships" {
+  description = "Set of group memberships for the User Assigned Identity."
   type        = set(string)
+  default     = []
 }
