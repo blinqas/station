@@ -63,7 +63,10 @@ variable "tags" {
 }
 
 variable "applications" {
-  description = "Map of applications to create. The body of each object is more or less identical to azuread_application with the exception of map usage instead of blocks (as blocks are impossible to define with HCL)"
+  description = <<EOT
+  Map of applications to create. The body of each object is more or less identical to azuread_application 
+  with the exception of map usage instead of blocks (as blocks are impossible to define with HCL)
+  EOT
   default     = {}
   type = map(object({
     display_name                   = string
@@ -168,7 +171,9 @@ variable "tfe" {
   - Either of tfe.vcs_repo.(oauth_token_id|github_app_installation_id) must be provided, both can not be used at the same time.
   - tfe.workspace_env_vars lets you configure Environment Variables for the Terraform Cloud runtime environment
   - tfe.workspace_vars lets you configure Terraform variables
-  - tfe.module_outputs_to_workspace_var.(groups|applications|user_assigned_identities) sets output from the respective resource into respective Terraform variables on the Terraform Cloud workspace. Useful when you need group object ids for the groups Station Deployments provisioned in your workload environment.
+  - tfe.module_outputs_to_workspace_var.(groups|applications|user_assigned_identities) sets output from the respective 
+    resource into respective Terraform variables on the Terraform Cloud workspace. Useful when you need group object ids
+    for the groups Station Deployments provisioned in your workload environment.
   EOF
   default     = null
   type = object({
@@ -213,7 +218,8 @@ variable "group_membership" {
 
 variable "role_assignment" {
   description = <<EOF
-    Map of role_assignments to create. Be careful of who is allowed to provision role_assignments, you might want to consider Sentinel policies in TFC.
+    Map of role_assignments to create. Be careful of who is allowed to provision role_assignments, you might want to 
+    consider Sentinel policies in TFC.
 
     - assign_to_workload_principal assigns the role to the workload identity. Can not be used with principal_id.
   EOF
@@ -223,7 +229,7 @@ variable "role_assignment" {
     scope                                  = string
     role_definition_id                     = optional(string)
     role_definition_name                   = optional(string)
-    principal_id                           = optional(string) # If null, user must set assign_to_workload_principal
+    principal_id                           = optional(string)
     assign_to_workload_principal           = optional(bool)
     condition                              = optional(string)
     condition_version                      = optional(string)
