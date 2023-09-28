@@ -64,3 +64,9 @@ variable "vcs_repo_owner" {
   description = "Name of the GitHub Organization to manage"
   default     = null
 }
+  
+variable "subscription_ids" {
+  type        = set(string)
+  description = "Set of Subscription ID's the Station identity can manage."
+  default     = []
+}
