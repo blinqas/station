@@ -160,7 +160,7 @@ variable "groups" {
 
 variable "user_assigned_identities" {
   description = "User Assigned Identities to create."
-
+  default     = {}
   type = map(object({
     name                = string
     resource_group_name = optional(string)
@@ -168,8 +168,6 @@ variable "user_assigned_identities" {
     role_assignments    = optional(set(string))
     group_memberships   = optional(set(string))
   }))
-
-  default = {}
 }
 
 
