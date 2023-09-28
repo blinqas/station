@@ -1,33 +1,33 @@
 variable "default_location" {
-  type        = string
   description = "The name of the default location to deploy workload resources to."
   default     = "norwayeast"
+  type        = string
 }
 
 variable "environment_name" {
-  type        = string
-  description = "The name of the current environment. Ex: dev/staging/production"
+  description = "The name of the deployment environment for the workload. Ex: dev/staging/production"
   default     = "dev"
+  type        = string
 }
 
 variable "resource_group_name" {
-  type        = string
-  default     = null
   description = <<EOF
-    (Optional) The name of the resource group to create for the workload. The final name is prefixed with `rg-`.
+    The name of the workload resource group. The final name is prefixed with `rg-`.
 
     If a value is not provided, Station will set the name to `rg-var.tfe.workspace_name-var.environment_name`
   EOF
+  default     = null
+  type        = string
 }
 
 variable "role_definition_name_on_workload_rg" {
-  type        = string
-  description = "Which role to assign the workload principal on the workload resource group"
+  description = "The name of an in-built role to assign the workload identity on the workload resource group"
   default     = "Owner"
+  type        = string
 }
 
 variable "resource_groups" {
-  description = "Resource Groups to create."
+  description = "Map of resource groups to create"
   default     = {}
   type = map(object({
     name     = string
@@ -37,7 +37,7 @@ variable "resource_groups" {
 }
 
 variable "federated_identity_credential_config" {
-  description = "The Application Federated Identity Credential configuration. Configure this for secret-less automation by setting create to `true` and filling in the object values."
+  description = "Map of Federated Credentials to create on the workload identity"
   default     = {}
   type = map(object({
     display_name = string
@@ -49,13 +49,24 @@ variable "federated_identity_credential_config" {
 }
 
 variable "tags" {
-  type        = map(string)
-  description = "Additional tags to append to the default tags."
+  description = <<EOF
+    Tags to merge with the default tags configured by Station.
+
+    Station configures the following map in tags.tf:
+    {
+      "station-id"  = random_id.workload.hex
+      "environment" = var.environment_name
+    }
+  EOF
   default     = {}
+  type        = map(string)
 }
 
 variable "applications" {
-  description = "Applications to create. See https://registry.terraform.io/modules/aztfmod/caf/azurerm/5.7.0-preview0/submodules/applications?tab=inputs for documentation."
+  description = <<EOT
+  Map of applications to create. The body of each object is more or less identical to azuread_application 
+  with the exception of map usage instead of blocks (as blocks are impossible to define with HCL)
+  EOT
   default     = {}
   type = map(object({
     display_name                   = string
@@ -129,7 +140,7 @@ variable "applications" {
 }
 
 variable "groups" {
-  description = "Map of Azure AD groups to create"
+  description = "Map of Entra ID (Azure AD) groups to create"
   default     = {}
   type = map(object({
     display_name     = string
@@ -163,7 +174,17 @@ variable "user_assigned_identities" {
 
 
 variable "tfe" {
-  description = "Terraform Cloud configuration. See submodule ./hashicorp/tfe/variables.tf for settings"
+  description = <<EOF
+  Terraform Cloud configuration for the workload environment
+
+  - tfe.create_federated_identity_credential configures Federated Credentials on the workload identity for plan and apply phases.
+  - Either of tfe.vcs_repo.(oauth_token_id|github_app_installation_id) must be provided, both can not be used at the same time.
+  - tfe.workspace_env_vars lets you configure Environment Variables for the Terraform Cloud runtime environment
+  - tfe.workspace_vars lets you configure Terraform variables
+  - tfe.module_outputs_to_workspace_var.(groups|applications|user_assigned_identities) sets output from the respective 
+    resource into respective Terraform variables on the Terraform Cloud workspace. Useful when you need group object ids
+    for the groups Station Deployments provisioned in your workload environment.
+  EOF
   default     = null
   type = object({
     organization_name                    = string
@@ -200,18 +221,25 @@ variable "tfe" {
 }
 
 variable "group_membership" {
-  type        = list(string)
   description = "List of group object ids the workload identity should be member of"
   default     = []
+  type        = list(string)
 }
 
 variable "role_assignment" {
+  description = <<EOF
+    Map of role_assignments to create. Be careful of who is allowed to provision role_assignments, you might want to 
+    consider Sentinel policies in TFC.
+
+    - assign_to_workload_principal assigns the role to the workload identity. Can not be used with principal_id.
+  EOF
+  default     = {}
   type = map(object({
     name                                   = optional(string)
     scope                                  = string
     role_definition_id                     = optional(string)
     role_definition_name                   = optional(string)
-    principal_id                           = optional(string) # If null, user must set assign_to_workload_principal
+    principal_id                           = optional(string)
     assign_to_workload_principal           = optional(bool)
     condition                              = optional(string)
     condition_version                      = optional(string)
@@ -219,6 +247,4 @@ variable "role_assignment" {
     description                            = optional(string)
     skip_service_principal_aad_check       = optional(bool)
   }))
-  description = "Map of azurerm_role_assignments"
-  default     = {}
 }
