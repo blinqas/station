@@ -61,6 +61,6 @@ variable "vcs_repo_tags_regex" {
 
 variable "subscription_ids" {
   type        = set(string)
-  description = "A set of subscriptions that station should be able to manage"
+  description = "Set of Subscription ID's the Station identity can manage."
   default     = []
 }
