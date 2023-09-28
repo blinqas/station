@@ -58,3 +58,9 @@ variable "vcs_repo_tags_regex" {
   description = "Optional) A regular expression used to trigger a Workspace run for matching Git tags. This option conflicts with trigger_patterns and trigger_prefixes. Should only set this value if the former is not being used."
   default     = null
 }
+
+variable "vcs_repo_owner" {
+  type        = string
+  description = "Name of the GitHub Organization to manage"
+  default     = null
+}

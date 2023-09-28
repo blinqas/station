@@ -14,8 +14,8 @@ resource "tfe_workspace" "deployments" {
   description  = "This workspace contains Station Deployments. This workspace was bootstrapped from ${var.bootstrap_repo_url}"
 
   vcs_repo {
-    identifier                 = var.vcs_repo_identifier
-    branch                     = try(var.vcs_repo_branch, null)
+    identifier                 = github_repository.deployments.name
+    branch                     = github_repository.deployments.default_branch
     oauth_token_id             = try(var.vcs_repo_oauth_token_id, null)
     github_app_installation_id = try(var.vcs_repo_github_app_installation_id, null)
     tags_regex                 = try(var.vcs_repo_tags_regex, null)
