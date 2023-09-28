@@ -58,3 +58,9 @@ variable "vcs_repo_tags_regex" {
   description = "Optional) A regular expression used to trigger a Workspace run for matching Git tags. This option conflicts with trigger_patterns and trigger_prefixes. Should only set this value if the former is not being used."
   default     = null
 }
+
+variable "subscription_ids" {
+  type        = set(string)
+  description = "Set of Subscription ID's the Station identity can manage."
+  default     = []
+}
