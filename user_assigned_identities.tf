@@ -5,7 +5,7 @@ module "user_assigned_identity" {
   location            = azurerm_resource_group.workload.location
   tags                = local.tags
   role_assignments    = []
-  group_membership    = []
+  group_memberships   = []
 }
 
 module "user_assigned_identities" {

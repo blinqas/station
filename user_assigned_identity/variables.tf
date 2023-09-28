@@ -26,7 +26,7 @@ variable "role_assignments" {
 }
 
 variable "group_memberships" {
-  description = "Set of group memberships for the User Assigned Identity."
+  description = "Groups the Managed Identity should be member of. (Object IDs)"
   type        = set(string)
   default     = []
 }
