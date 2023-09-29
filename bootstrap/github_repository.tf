@@ -3,10 +3,4 @@ resource "github_repository" "deployments" {
   description = "Station deployments"
 
   visibility = "private"
-
-  template {
-    owner                = "blinqas"
-    repository           = "gh-template-station-workload"
-    include_all_branches = true
-  }
 }
