@@ -53,8 +53,16 @@ module "station-tfe" {
       hcl         = false
       sensitive   = false
     },
+    tags = {
+      value       = replace(jsonencode(local.tags), "/(\".*?\"):/", "$1 = ")
+      category    = "terraform"
+      description = "Default tags from Station Deployment"
+      hcl         = true
+      sensitive   = false
+    }
     },
     # Optionals
+    #var.tfe.module_outputs_to_workspace_var.groups ? {
     try(var.tfe.module_outputs_to_workspace_var.groups == true, false) ? {
       groups = {
         value = replace(jsonencode({ for k, v in module.ad_groups : k => {
