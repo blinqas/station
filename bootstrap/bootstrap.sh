@@ -1,24 +1,26 @@
 #!/bin/bash
 
-# Provider authentication (`tfe`)
-export TF_CLOUD_ORGANIZATION="your-org" #Name of your Terraform Cloud organization 
-export TF_WORKSPACE="station-bootstrap" # Name of the station bootstrap workspace. This is used to store the state for the bootstrap 
+# Terraform Cloud (TFC) Authentication details
+export TF_CLOUD_ORGANIZATION="your-org"                      # Organization name in Terraform Cloud.
+export TF_WORKSPACE="station-bootstrap"                      # Workspace for storing the bootstrap state.
 
-# Terraform variables
-export TF_VAR_tfc_organization_name=$TF_CLOUD_ORGANIZATION
-export TF_VAR_bootstrap_tfc_workspace_name=$TF_WORKSPACE
-# 
-export TF_VAR_tfc_project_name="station" #The name of the new TFC project for station
-export TF_VAR_deployments_tfc_workspace_name="station-deployments" #Workspace name for station deployments
-export TF_VAR_vcs_repo_github_app_installation_id="ghain-yourKey" #This can be found here https://app.terraform.io/api/v2/github-app/installations. This requeries that the github terraform app has allready beenn installed the github org you want to use
-export TF_VAR_subscription_ids="[\"YourSubscriptionID1\"], \"YourSubscriptionID2\"]" #Set of Azure Subscription that Station should be added as owner of. Use this command to get the subscriptions: az account list --query "[?tenantId=='yourTenantID'].{Name:name, ID:id}" --output table
-export TF_VAR_vcs_repo_PAT="ghp_GithubPersonalAccessToken" #Create a PAT that will be passed to TFC to be able to create repositories. https://docs.github.com/en/enterprise-server@3.6/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
-export TF_VAR_tfc_token="" #This can be both a team or org token
-# Github variables
-export GITHUB_OWNER="Github-username-or-org" #Used for the github provider to select what org/user to target
-export GITHUB_TOKEN=$TF_VAR_vcs_repo_PAT #Used for the github provider for auth
-export TF_VAR_vcs_repo_owner=$GITHUB_OWNER
-export TF_VAR_vcs_repo_name="station-deployments_test" #this is set as a default in varibles.tf
+# Terraform-specific variables
+export TF_VAR_tfc_organization_name=$TF_CLOUD_ORGANIZATION   # Set organization name from above variable.
+export TF_VAR_bootstrap_tfc_workspace_name=$TF_WORKSPACE     # Set workspace name from above variable.
+export TF_VAR_tfc_project_name="station"                     # Project name in Terraform Cloud for 'station'.
+export TF_VAR_deployments_tfc_workspace_name="station-deployments"    # Workspace for station deployments.
+export TF_VAR_vcs_repo_github_app_installation_id="ghain-yourKey"     # ID for GitHub app installation in TFC. Ensure GitHub Terraform app is pre-installed: https://app.terraform.io/api/v2/github-app/installations.
+# export TF_VAR_vcs_repo_oauth_token_id=""                   # Alternative to GitHub app installation ID. Use either this or the above.
+export TF_VAR_subscription_ids="[\"YourSubscriptionID1\"], \"YourSubscriptionID2\"]" # Azure Subscriptions where Station should have owner permissions. Fetch using: az account list --query "[?tenantId=='yourTenantID'].{Name:name, ID:id}" --output table
+export TF_VAR_vcs_repo_PAT="ghp_GithubPersonalAccessToken"  # Personal Access Token (PAT) for TFC to create repositories. Documentation: https://docs.github.com/en/enterprise-server@3.6/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+export TF_VAR_tfc_token=""                                  # Token for Terraform Cloud, can be a team or organization token.
+
+# GitHub-related variables
+export GITHUB_OWNER="Github-username-or-org"                # Target GitHub username or organization for the provider.
+export GITHUB_TOKEN=$TF_VAR_vcs_repo_PAT                    # Authentication token for GitHub provider.
+export TF_VAR_vcs_repo_owner=$GITHUB_OWNER                  # Set repository owner from above variable.
+export TF_VAR_vcs_repo_name="station-deployments_test"      # Default repository name (can be overridden in variables.tf).
+
 
 # Color definitions
 RED='\e[31m'
