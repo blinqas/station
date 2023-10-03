@@ -20,7 +20,7 @@ jobs:
     - uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: 1.5.7
-    
+
     - uses: actions/checkout@v4
 
     - run: terraform fmt -recursive -check
@@ -28,11 +28,10 @@ jobs:
       continue-on-error: true
 
     - name: format and push formatted files back to repo
-      if: ${{ steps.fmt.outputs.exitcode }} ==  3 # Terraform exits with code 3 if there are files to format
+      if: ${{ steps.fmt.outputs.exitcode }} == 3 # Terraform exits with code 3 if there are files to format
       run: |
         terraform fmt -recursive
         git config user.name github-actions
         git config user.email github-actions@github.com
         git commit -am "Automatic linting and formatting [skip ci]"
-        git push origin HEAD:${{ github.ref }}
-
+        git push https://${{ secrets.GITHUB_TOKEN }}@github.com/blinqas/station.git HEAD:${{ github.head_ref }}
