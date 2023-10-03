@@ -13,9 +13,6 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    permissions: 
-      contents: write
-      pull-requests: write
     steps:
     - uses: hashicorp/setup-terraform@v2
       with:
