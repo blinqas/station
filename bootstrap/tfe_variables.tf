@@ -36,7 +36,7 @@ locals {
       category    = "env"
     },
     GITHUB_OWNER = {
-      value       = vatfe_organization_namer.vcs_repo_owner
+      value       = var.tfe_organization_namer.vcs_repo_owner
       description = "Name of the GitHub Organization to manage. https://registry.terraform.io/providers/integrations/github/latest/docs#owner"
       sensitive   = false
       category    = "env"
@@ -61,7 +61,7 @@ locals {
     }
     vcs_repo_github_app_installation_id = {
       value       = var.vcs_repo_github_app_installation_id
-      description = ""
+      description = "ID for GitHub app installation in TFC. Ensure that the GitHub Terraform app is already installed: https://app.terraform.io/api/v2/github-app/installations."
       sensitive   = true
       category    = "terraform"
     }
