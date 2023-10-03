@@ -16,9 +16,9 @@ resource "tfe_workspace" "deployments" {
   vcs_repo {
     identifier                 = github_repository.deployments.name
     branch                     = github_repository.deployments.default_branch
-    oauth_token_id             = try(var.vcs_repo_oauth_token_id, null)
-    github_app_installation_id = try(var.vcs_repo_github_app_installation_id, null)
-    tags_regex                 = try(var.vcs_repo_tags_regex, null)
+    oauth_token_id             = var.vcs_repo_oauth_token_id
+    github_app_installation_id = var.vcs_repo_github_app_installation_id
+    tags_regex                 = var.vcs_repo_tags_regex
   }
 }
 
