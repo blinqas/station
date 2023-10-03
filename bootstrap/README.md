@@ -8,7 +8,7 @@ This folder contains Terraform files to bootstrap Azure and Terraform Cloud for 
 2. Assigns it Global Administrator on the logged in Azure AD tenant
 3. Assigns it Owner on the logged in subscription
 4. Create two Federated Identity Credential configurations for OIDC between the Terraform Cloud Workspace it provisions for Station Deployments.
-5. Creates a Github repository to hold station deployments.
+5. Creates a Github repository to hold Station deployments.
 6. Creates a Terraform Cloud Project in the logged in Terraform Cloud Organization
 7. Creates a Terraform Cloud Workspace for the bootstrap state
 8. Creates a Terraform Cloud Workspace for the deployment state
