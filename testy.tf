@@ -1,6 +1,6 @@
 variable "delete_me" {
-  type = string
-  default = "" 
+  type    = string
+  default = ""
 
-  
+
 }
