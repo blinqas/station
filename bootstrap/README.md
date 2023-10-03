@@ -63,11 +63,8 @@ You will have to set either `TF_VAR_vcs_repo_github_app_installation_id` or `TF_
    ```bash
    terraform login
    ```
-
-3. **Setup Repository**:  
-   Create a new repository in your organization to hold station deployments and ensure that Terraform Cloud (TFC) has been integrated with your organization. Also, confirm that the GitHub app for TFC is installed.
-
-4. **Run the Script**:  
+   
+3. **Run the Script**:  
    ```bash
    ./bootstrap.sh
    ```

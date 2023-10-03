@@ -2,6 +2,7 @@ resource "github_repository" "deployments" {
   name        = var.vcs_repo_name
   description = "Station deployments"
   visibility  = "private"
+  auto_init   = true
 }
 
 resource "github_branch" "deployments" {
