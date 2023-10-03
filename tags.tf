@@ -5,7 +5,5 @@ locals {
       "environment" = var.environment_name,
     },
     var.tags
-
-
   )
 }
