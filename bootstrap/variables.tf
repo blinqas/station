@@ -8,6 +8,11 @@ variable "tfc_project_name" {
   description = "The name of a Terraform Cloud project. Provisioned on initial bootstrap run."
 }
 
+variable "tfc_token" {
+  type        = string
+  description = "Token "
+}
+
 variable "bootstrap_tfc_workspace_name" {
   type        = string
   description = "The name of a single Terraform Cloud workspace. Provisioned on initial bootstrap run."
@@ -30,9 +35,9 @@ variable "bootstrap_repo_url" {
   default     = "Not provided. Set `var.bootstrap_repo_url`."
 }
 
-variable "vcs_repo_identifier" {
+variable "vcs_repo_name" {
   type        = string
-  description = "A reference to your VCS repository in the format <vcs organization>/<repository> where <vcs organization> and <repository> refer to the organization and repository in your VCS provider. The format for Azure DevOps is <ado organization>/<ado project>/_git/<ado repository>."
+  description = "The name you want to give the repository that should hold you Station deployments"
 }
 
 variable "vcs_repo_branch" {
@@ -63,6 +68,13 @@ variable "vcs_repo_owner" {
   type        = string
   description = "Name of the GitHub Organization to manage"
   default     = null
+}
+
+variable "vcs_repo_PAT" {
+  type        = string
+  description = "Personal Access Token (PAT) for TFC to create repositories. Documentation: https://docs.github.com/en/enterprise-server@3.6/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"
+  default     = null
+  sensitive   = true
 }
 
 variable "subscription_ids" {

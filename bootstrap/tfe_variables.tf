@@ -36,7 +36,7 @@ locals {
       category    = "env"
     },
     GITHUB_OWNER = {
-      value       = var.tfe_organization_namer.vcs_repo_owner
+      value       = var.vcs_repo_owner
       description = "Name of the GitHub Organization to manage. https://registry.terraform.io/providers/integrations/github/latest/docs#owner"
       sensitive   = false
       category    = "env"
@@ -54,7 +54,7 @@ locals {
       category    = "env"
     }
     TFE_TOKEN = {
-      value       = var.tfc_team_token
+      value       = var.tfc_token
       description = "Terraform token for the 'owners' team."
       sensitive   = true
       category    = "env"
