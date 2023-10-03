@@ -35,6 +35,5 @@ jobs:
         terraform fmt -recursive
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git pull
         git commit -am "Automatic linting and formatting [skip ci]"
         git push https://${{ secrets.GITHUB_TOKEN }}@github.com/blinqas/station.git HEAD:${{ github.head_ref }}
