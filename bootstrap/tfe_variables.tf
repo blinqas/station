@@ -55,31 +55,31 @@ locals {
     },
     TFE_TOKEN = {
       value       = var.tfc_token
-      description = "Terraform token for the 'owners' team."
+      description = "Terraform access token for the 'owners' team."
       sensitive   = true
       category    = "env"
     }
   }
 
-  optional_env_vars = [
-    #You have to set either of them. Both can not be null 
+  optional_env_vars = merge(
     var.vcs_repo_github_app_installation_id != null ? {
       vcs_repo_github_app_installation_id = {
         value       = var.vcs_repo_github_app_installation_id
-        description = "ID for GitHub app installation in TFC. Ensure that the GitHub Terraform app is already installed: https://app.terraform.io/api/v2/github-app/installations."
+        description = "The Github application ID used to authenticate with Github for org ${var.vcs_repo_owner}"
         sensitive   = false
         category    = "terraform"
       }
-    } : null,
+    } : {},
+
     var.vcs_repo_oauth_token_id != null ? {
       vcs_repo_oauth_token_id = {
         value       = var.vcs_repo_oauth_token_id
-        description = "ID for GitHub app installation in TFC. Ensure that the GitHub Terraform app is already installed: https://app.terraform.io/api/v2/github-app/installations."
+        description = "The oauth token ID used to authenticate with Github for org ${var.vcs_repo_owner}"
         sensitive   = false
         category    = "terraform"
       }
-    } : null
-  ]
+    } : {}
+  )
 
-  env_vars = merge(local.base_env_vars, [for env in local.optional_env_vars : env if env != null]...)
+  env_vars = merge(local.base_env_vars, local.optional_env_vars)
 }
