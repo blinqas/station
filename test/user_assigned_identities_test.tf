@@ -14,10 +14,12 @@ module "station-uai" {
     }
 
     maximum = {
-      name              = "uai-02"
-      location          = "germanywestcentral"
-      role_assignments  = ["User.Read.All"]
-      group_memberships = [module.station-groups.groups["static"].object_id]
+      name             = "uai-02"
+      location         = "germanywestcentral"
+      role_assignments = ["User.Read.All"]
+      group_memberships = {
+        "static" = module.station-groups.groups["static"].object_id
+      }
     }
   }
 }

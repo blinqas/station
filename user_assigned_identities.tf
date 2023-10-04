@@ -5,7 +5,7 @@ module "user_assigned_identity" {
   location            = azurerm_resource_group.workload.location
   tags                = local.tags
   role_assignments    = []
-  group_memberships   = []
+  group_memberships   = {}
 }
 
 module "user_assigned_identities" {
@@ -16,5 +16,5 @@ module "user_assigned_identities" {
   location            = each.value.location == null ? azurerm_resource_group.workload.location : each.value.location
   tags                = local.tags
   role_assignments    = each.value.role_assignments == null ? [] : each.value.role_assignments
-  group_memberships   = each.value.group_memberships == null ? [] : each.value.group_memberships
+  group_memberships   = each.value.group_memberships == null ? {} : each.value.group_memberships
 }
