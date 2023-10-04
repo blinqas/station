@@ -159,14 +159,30 @@ variable "groups" {
 
 
 variable "user_assigned_identities" {
-  description = "User Assigned Identities to create."
+  description = <<EOF
+  User Assigned Identities to create."
+
+  Example:
+
+  user_assigned_identities = {
+    my_app = {
+      name                = "uai-my-identity"
+      resource_group_name = "rg-name"
+      location            = "norwayeast"
+      role_assignments    = ["IdentityRiskEvent.ReadWrite.All"]
+      group_memberships = {
+        "Kubernetes Administrators" = azuread_group.k8s_admins.object_id
+      }
+    }
+  }
+  EOF
   default     = {}
   type = map(object({
     name                = string
     resource_group_name = optional(string)
     location            = optional(string)
     role_assignments    = optional(set(string))
-    group_memberships   = optional(set(string))
+    group_memberships   = optional(map(string))
   }))
 }
 
