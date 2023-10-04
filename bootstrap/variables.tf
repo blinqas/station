@@ -72,7 +72,7 @@ variable "vcs_repo_owner" {
 
 variable "vcs_repo_PAT" {
   type        = string
-  description = "Personal Access Token (PAT) for TFC to create repositories. Documentation: https://docs.github.com/en/enterprise-server@3.6/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"
+  description = "Personal Access Token (PAT) for TFC to create repositories. Documentation: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"
   default     = null
   sensitive   = true
 }
