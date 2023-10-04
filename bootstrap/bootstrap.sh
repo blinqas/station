@@ -11,7 +11,7 @@ export TF_VAR_tfc_project_name="station"                     # Project name in T
 export TF_VAR_deployments_tfc_workspace_name="station-deployments"    # Workspace for station deployments.
 export TF_VAR_vcs_repo_github_app_installation_id="ghain-yourKey"     # ID for GitHub app installation in TFC. Ensure GitHub Terraform app is pre-installed: https://app.terraform.io/api/v2/github-app/installations.
 # export TF_VAR_vcs_repo_oauth_token_id=""                   # Alternative to GitHub app installation ID. Use either this or the above.
-export TF_VAR_subscription_ids="[\"Subscription_1\"], [\"Subscription_2\"]" # Azure Subscriptions where Station should have owner permissions. Fetch using: az account list --query "[?tenantId=='yourTenantID'].{Name:name, ID:efde04e6-789f-4c67-8f59-afd73496a267id}" --output table
+export TF_VAR_subscription_ids="[\"Subscription_1\"], [\"Subscription_2\"]" # Azure Subscriptions where Station should have owner permissions. Fetch using: az account list --query "[?tenantId=='yourTenantID'].{Name:name, ID:id}" --output table
 export TF_VAR_vcs_repo_PAT="ghp_GithubPersonalAccessToken"  # Personal Access Token (PAT) for TFC to create repositories. Documentation: https://docs.github.com/en/enterprise-server@3.6/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 export TF_VAR_tfc_token="YourTFCToken"                                  # Token for Terraform Cloud, can be a team or organization token. https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens
 
