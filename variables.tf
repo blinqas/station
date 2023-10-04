@@ -235,9 +235,17 @@ variable "tfe" {
 }
 
 variable "group_membership" {
-  description = "List of group object ids the workload identity should be member of"
-  default     = []
-  type        = list(string)
+  description = <<EOF
+  Map of group object ids the workload identity should be member of.
+
+  Example:
+
+  group_membership = {
+    "Kubernetes Administrators" = azuread_group.k8s_admins.object_id
+  }
+  EOF
+  default     = {}
+  type        = map(string)
 }
 
 variable "role_assignment" {
