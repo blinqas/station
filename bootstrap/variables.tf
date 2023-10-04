@@ -10,7 +10,7 @@ variable "tfc_project_name" {
 
 variable "tfc_token" {
   type        = string
-  description = "Token "
+  description = "Access token for TFC. This can be either a team or organziation token. https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens"
 }
 
 variable "bootstrap_tfc_workspace_name" {
