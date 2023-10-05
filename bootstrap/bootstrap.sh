@@ -11,9 +11,9 @@ export TF_VAR_tfc_project_name="station"                     # Project name in T
 export TF_VAR_deployments_tfc_workspace_name="station-deployments"    # Workspace for station deployments.
 export TF_VAR_vcs_repo_github_app_installation_id="ghain-yourKey"     # ID for GitHub app installation in TFC. Ensure GitHub Terraform app is pre-installed: https://app.terraform.io/api/v2/github-app/installations.
 # export TF_VAR_vcs_repo_oauth_token_id=""                   # Alternative to GitHub app installation ID. Use either this or the above.
-export TF_VAR_subscription_ids="[\"YourSubscriptionID1\"], \"YourSubscriptionID2\"]" # Azure Subscriptions where Station should have owner permissions. Fetch using: az account list --query "[?tenantId=='yourTenantID'].{Name:name, ID:id}" --output table
+export TF_VAR_subscription_ids="[\"Subscription_1\"], [\"Subscription_2\"]" # Azure Subscriptions where Station should have owner permissions. Fetch using: az account list --query "[?tenantId=='yourTenantID'].{Name:name, ID:id}" --output table
 export TF_VAR_vcs_repo_PAT="ghp_GithubPersonalAccessToken"  # Personal Access Token (PAT) for TFC to create repositories. Documentation: https://docs.github.com/en/enterprise-server@3.6/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
-export TF_VAR_tfc_token=""                                  # Token for Terraform Cloud, can be a team or organization token.
+export TF_VAR_tfc_token="YourTFCToken"                                  # Token for Terraform Cloud, can be a team or organization token. https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens
 
 # GitHub-related variables
 export GITHUB_OWNER="Github-username-or-org"                # Target GitHub username or organization for the provider.
@@ -25,6 +25,7 @@ export TF_VAR_vcs_repo_name="station-deployments_test"      # Default repository
 # Color definitions
 RED='\e[31m'
 GREEN='\e[32m'
+
 YELLOW='\e[33m'
 BLUE='\e[34m'
 RESET='\e[0m'
@@ -41,7 +42,20 @@ fi
 
 echo -e "${YELLOW}Azure Account Information:${RESET}"
 az account show | jq '. | {tenantId, name, user}'
-echo -e "\n"
+
+# Removing the escaping and converting to a single array
+SUBSCRIPTION_IDS_CLEANED=$(echo $TF_VAR_subscription_ids | sed 's/\\//g')
+
+echo -e "${YELLOW}Selected Azure subscription(s):${RESET} ${GREEN}$SUBSCRIPTION_IDS_CLEANED${RESET}"
+
+# Splitting the values and querying Azure for each
+IFS=',' read -ra SUBSCRIPTIONS <<< "$SUBSCRIPTION_IDS_CLEANED"
+for sub in "${SUBSCRIPTIONS[@]}"; do
+    SUB_CLEAN=$(echo $sub | tr -d '[]" ')
+    echo -en " \n ${YELLOW} Details for subscription ID $SUB_CLEAN: ${RESET}"
+    az account show --subscription $SUB_CLEAN | jq '. | {tenantId, name, user}'
+done
+
 
 # Display environment variables to the user
 echo -e "\n${YELLOW}Environment Variables:${RESET}"

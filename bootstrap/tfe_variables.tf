@@ -10,7 +10,7 @@ resource "tfe_variable" "deployments" {
 
 # These are set to enable authentication between Terraform Cloud and Azure with OIDC.
 locals {
-  env_vars = {
+  base_env_vars = {
     TFC_AZURE_PROVIDER_AUTH = {
       value       = true
       description = "Is true when using dynamic credentials to authenticate to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
@@ -36,7 +36,7 @@ locals {
       category    = "env"
     },
     GITHUB_OWNER = {
-      value       = var.tfe_organization_namer.vcs_repo_owner
+      value       = var.vcs_repo_owner
       description = "Name of the GitHub Organization to manage. https://registry.terraform.io/providers/integrations/github/latest/docs#owner"
       sensitive   = false
       category    = "env"
@@ -46,30 +46,40 @@ locals {
       description = "Personal access token from Github"
       sensitive   = true
       category    = "env"
-    }
+    },
     TFE_ORGANIZATION = {
       value       = var.tfc_organization_name
       description = "Name of the Terraform Cloud organization to manage"
       sensitive   = false
       category    = "env"
-    }
+    },
     TFE_TOKEN = {
-      value       = var.tfc_team_token
-      description = "Terraform token for the 'owners' team."
+      value       = var.tfc_token
+      description = "Terraform access token for the 'owners' team."
       sensitive   = true
       category    = "env"
     }
-    vcs_repo_github_app_installation_id = {
-      value       = var.vcs_repo_github_app_installation_id
-      description = "ID for GitHub app installation in TFC. Ensure that the GitHub Terraform app is already installed: https://app.terraform.io/api/v2/github-app/installations."
-      sensitive   = true
-      category    = "terraform"
-    }
-    tfe_organization_name = {
-      value       = var.tfc_organization_name
-      description = "The Terraform Cloud organization to provision resources in (used by Stations station-tfe module)"
-      sensitive   = true
-      category    = "terraform"
-    }
   }
+
+  optional_env_vars = merge(
+    var.vcs_repo_github_app_installation_id != null ? {
+      vcs_repo_github_app_installation_id = {
+        value       = var.vcs_repo_github_app_installation_id
+        description = "The Github application ID used to authenticate with Github for org ${var.vcs_repo_owner}"
+        sensitive   = false
+        category    = "terraform"
+      }
+    } : {},
+
+    var.vcs_repo_oauth_token_id != null ? {
+      vcs_repo_oauth_token_id = {
+        value       = var.vcs_repo_oauth_token_id
+        description = "The oauth token ID used to authenticate with Github for org ${var.vcs_repo_owner}"
+        sensitive   = false
+        category    = "terraform"
+      }
+    } : {}
+  )
+
+  env_vars = merge(local.base_env_vars, local.optional_env_vars)
 }
