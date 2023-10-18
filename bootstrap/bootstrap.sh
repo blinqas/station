@@ -23,12 +23,11 @@ export TF_VAR_vcs_repo_name="station-deployments_test"      # Default repository
 
 
 # Color definitions
-RED='\e[31m'
-GREEN='\e[32m'
-
-YELLOW='\e[33m'
-BLUE='\e[34m'
-RESET='\e[0m'
+RED='\033[31m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+BLUE='\033[34m'
+RESET='\033[0m'
 
 # Validation to ensure you're not trying to bootstrap into the wrong Azure tenant 
 echo -e "${GREEN}Starting the bootstrap process against this tenant:${RESET} \n \n "
