@@ -230,6 +230,7 @@ variable "tfe" {
       groups                   = optional(bool)
       applications             = optional(bool)
       user_assigned_identities = optional(bool)
+      resource_groups          = optional(bool)
     }))
   })
 }

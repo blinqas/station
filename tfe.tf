@@ -99,6 +99,18 @@ module "station-tfe" {
         hcl         = true
         sensitive   = false
       }
+    } : {},
+    try(var.tfe.module_outputs_to_workspace_var.resource_groups == true, false) ? {
+      user_assigned_identities = {
+        value = replace(jsonencode({ for key, rg in azurerm_resource_group.user_specified : key => {
+          name     = rg.name
+          location = rg.location
+        } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
+        category    = "terraform"
+        description = "User specified resource groups provisioned by Station"
+        hcl         = true
+        sensitive   = false
+      }
     } : {}
   )
 }
