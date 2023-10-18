@@ -101,7 +101,7 @@ module "station-tfe" {
       }
     } : {},
     try(var.tfe.module_outputs_to_workspace_var.resource_groups == true, false) ? {
-      user_assigned_identities = {
+      resource_groups = {
         value = replace(jsonencode({ for key, rg in azurerm_resource_group.user_specified : key => {
           name     = rg.name
           location = rg.location
