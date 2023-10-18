@@ -6,7 +6,7 @@ resource "azurerm_resource_group" "workload" {
 
 resource "azurerm_resource_group" "user_specified" {
   for_each = var.resource_groups
-  name     = "rg-${random_id.workload.hex}-${each.key}-${var.environment_name}"
+  name     = "rg-${each.value.name}-${var.environment_name}"
   location = each.value.location == null ? var.default_location : each.value.location
   tags = merge(
     each.value.tags == null ? {} : each.value.tags,
