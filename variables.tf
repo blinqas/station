@@ -272,7 +272,7 @@ variable "role_assignment" {
   }))
 }
 
-variable "role_definition" {
+variable "role_definitions" {
   description = <<EOT
     Map of Role Definitions to create.
 
