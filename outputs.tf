@@ -35,6 +35,10 @@ output "tfe" {
 }
 
 output "role_definitions" {
-  value = module.role_definitions
+  value = { for key, role_definition in azurerm_role_definition.user_created : key => {
+    id                          = role_definition.id
+    role_definition_id          = role_definition.role_definition_id
+    role_definition_resource_id = role_definition.role_definition_resource_id
+  } }
 }
 
