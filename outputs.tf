@@ -34,3 +34,7 @@ output "tfe" {
   value = module.station-tfe
 }
 
+output "role_definitions" {
+  value = module.role_definitions
+}
+
