@@ -282,8 +282,8 @@ variable "role_definitions" {
   default     = {}
   type = map(object({
     role_definition_id = optional(string)
-    name               = optional(string)
-    scope              = optional(string)
+    name               = string
+    scope              = string
     description        = optional(string)
     permissions = optional(object({
       actions          = optional(list(string))
