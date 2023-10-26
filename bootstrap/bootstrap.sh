@@ -23,12 +23,11 @@ export TF_VAR_vcs_repo_name="station-deployments_test"      # Default repository
 
 
 # Color definitions
-RED='\e[31m'
-GREEN='\e[32m'
-
-YELLOW='\e[33m'
-BLUE='\e[34m'
-RESET='\e[0m'
+RED='\033[31m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+BLUE='\033[34m'
+RESET='\033[0m'
 
 # Validation to ensure you're not trying to bootstrap into the wrong Azure tenant 
 echo -e "${GREEN}Starting the bootstrap process against this tenant:${RESET} \n \n "
@@ -66,7 +65,7 @@ echo -e "${BLUE}TF_VAR_tfc_project_name:${RESET} ${GREEN}$TF_VAR_tfc_project_nam
 echo -e "${BLUE}TF_VAR_deployments_tfc_workspace_name:${RESET} ${GREEN}$TF_VAR_deployments_tfc_workspace_name${RESET}"
 echo -e "${BLUE}TF_VAR_vcs_repo_github_app_installation_id:${RESET} ${GREEN}$TF_VAR_vcs_repo_github_app_installation_id${RESET}"
 echo -e "${BLUE}TF_VAR_subscription_ids:${RESET} ${GREEN}$TF_VAR_subscription_ids${RESET}"
-echo -e "${BLUE}TF_VAR_vcs_repo_PAT:${RESET} ${GREEN}$TF_VAR_vcs_repo_PAT${RESET}"
+echo -e "${BLUE}TF_VAR_vcs_repo_PAT:${RESET} ${GREEN}[hidden for security]${RESET}"
 echo -e "${BLUE}TF_VAR_tfc_token:${RESET} ${GREEN}[hidden for security]${RESET}" 
 echo -e "${BLUE}GITHUB_OWNER:${RESET} ${GREEN}$GITHUB_OWNER${RESET}"
 echo -e "${BLUE}GITHUB_TOKEN:${RESET} ${GREEN}[hidden for security]${RESET}" 
