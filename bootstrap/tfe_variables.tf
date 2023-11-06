@@ -18,7 +18,7 @@ locals {
       category    = "env"
     },
     TFC_AZURE_RUN_CLIENT_ID = {
-      value       = azuread_service_principal.workload.application_id
+      value       = azuread_service_principal.workload.client_id
       description = "The client ID for the Service Principal / Application used when authenticating to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
       sensitive   = false
       category    = "env"

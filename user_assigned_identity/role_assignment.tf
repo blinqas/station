@@ -1,8 +1,8 @@
 data "azuread_application_published_app_ids" "well_known" {}
 
 resource "azuread_service_principal" "msgraph" {
-  application_id = data.azuread_application_published_app_ids.well_known.result.MicrosoftGraph
-  use_existing   = true
+  client_id    = data.azuread_application_published_app_ids.well_known.result.MicrosoftGraph
+  use_existing = true
 }
 
 resource "azuread_app_role_assignment" "app_workload_roles" {
