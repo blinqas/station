@@ -12,19 +12,19 @@ module "station_role_definitions" {
   role_definitions = {
     minimum = {
       name  = "Minimum Custom Role provisioned with Station"
-      scope = data.azurerm_client_config.current.subscription_id
+      scope = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
     }
 
     maximum = {
-      name              = "Maximum Custom Role provisioned with Station"
-      scope             = data.azurerm_client_config.current.subscription_id
-      description       = "This role was provisioned with Station"
-      assignable_scopes = [data.azurerm_client_config.current.subscription_id]
+      name        = "Maximum Custom Role provisioned with Station"
+      scope       = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
+      description = "This role was provisioned with Station"
+      assignable_scopes = ["/subscriptions/${data.azurerm_client_config.current.subscription_id}"]
       permissions = {
-        actions          = ["*"]
-        data_actions     = ["*"]
-        not_actions      = ["Microsoft.Authorization/*/read"]
-        not_data_actions = ["Microsoft.Authorization/*/read"]
+        actions          = ["Microsoft.Resources/subscriptions/resourceGroups/read","Microsoft.Compute/virtualMachines/start/action"]
+        data_actions     = ["Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read"]
+        not_actions      = ["Microsoft.Compute/virtualMachines/delete"]
+        not_data_actions = ["Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete"]
       }
     }
   }
