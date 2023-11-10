@@ -16,14 +16,15 @@ module "station_role_definitions" {
     }
 
     maximum = {
-      name        = "Maximum Custom Role provisioned with Station"
-      scope       = data.azurerm_client_config.current.subscription_id
-      description = "This role was provisioned with Station"
+      name              = "Maximum Custom Role provisioned with Station"
+      scope             = data.azurerm_client_config.current.subscription_id
+      description       = "This role was provisioned with Station"
+      assignable_scopes = [data.azurerm_client_config.current.subscription_id]
       permissions = {
-        # actions
-        # not_actions
-        # data_actions
-        # not_data_actions
+        actions          = ["*"]
+        data_actions     = ["*"]
+        not_actions      = ["Microsoft.Authorization/*/read"]
+        not_data_actions = ["Microsoft.Authorization/*/read"]
       }
     }
   }
