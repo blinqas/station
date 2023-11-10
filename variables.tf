@@ -291,7 +291,7 @@ variable "role_definitions" {
       not_actions      = optional(list(string))
       not_data_actions = optional(list(string))
     }))
-    assignable_scope = optional(string)
+    assignable_scopes = optional(list(string))
   }))
 }
 
