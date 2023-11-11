@@ -83,7 +83,7 @@ module "station-new-feature" {
       required_param = "basic_value"
     },
 
-    # Comprehensive Configuration Example
+    # Maximum Configuration Example
     maximum = {
       required_param = "value"
       optional_param1 = "advanced_value1"
