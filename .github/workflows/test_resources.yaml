@@ -55,7 +55,7 @@ jobs:
       working-directory: test
 
     - name: terraform apply
-      run: terraform apply plan.tfplan --auto-approve
+      run: terraform apply --auto-approve plan.tfplan 
       working-directory: test
 
     - name: terraform destroy
