@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - trunk
+      - 12-automate-testing
   workflow_dispatch:
 
 
