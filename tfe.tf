@@ -78,8 +78,8 @@ module "station-tfe" {
     try(var.tfe.module_outputs_to_workspace_var.applications == true, false) ? {
       applications = {
         value = replace(jsonencode({ for k, v in module.applications : k => {
-          application_id = v.application.application_id
-          object_id      = v.application.object_id
+          client_id = v.application.client_id
+          object_id = v.application.object_id
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "User Assigned Identities provisioned by Station"
@@ -111,19 +111,7 @@ module "station-tfe" {
         hcl         = true
         sensitive   = false
       }
-    } : {},
-    try(var.tfe.module_outputs_to_workspace_var.role_definitions == true, false) ? {
-      role_definitions = {
-        value = replace(jsonencode({ for key, role_definition in azurerm_role_definition.user_created : key => {
-          id                          = role_definition.id
-          role_definition_id          = role_definition.role_definition_id
-          role_definition_resource_id = role_definition.role_definition_resource_id
-        } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
-        category    = "terraform"
-        description = "User defined roles provisioned by Station"
-        hcl         = true
-        sensitive   = false
-      }
     } : {}
   )
 }
+

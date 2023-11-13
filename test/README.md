@@ -1,103 +1,22 @@
 # Terraform Station Tests
 
-## Overview
+This folder contains all testing done with Station. As of now, these are ran locally from a developer's machine. This folder is supposed to make development and testing much easier. In the future this will run in GHA as well.
 
-This folder contains all tests for the Terraform Station module. Currently, tests are executed locally on a developer's machine, with plans to integrate them into GitHub Actions (GHA) in the future. The aim is to simplify the development and testing process for contributors.
+## How to run
 
-## How It Works
+```bash
+az login
 
-1. **Terraform Cloud (TFC) Project Creation**: The process begins by creating a TFC project. This project's name should match the value set in the `TF_VAR_tfc_project_name` environment variable. It's recommended to use a name like `station-tests`.
+terraform login
 
-2. **Workspace and Resource Creation**: For each test (files ending with `_test.tf`), a new workspace is created, and the defined Azure and/or Entra ID resources are provisioned.
+terraform init
 
-## Prerequisites
+# Replace empty strings with your environment's values.
+TFE_ORGANIZATION="" \
+TF_VAR_tfc_organization_name="" \
+TF_VAR_tfc_project_name="" \
+terraform plan -out plan.tfplan
 
-- Azure CLI installed and configured
-- Terraform CLI installed
-- Access to a Terraform Cloud account and an Azure subscription
-
-## How to Run Tests
-
-1. **Login to Azure and Terraform**:
-    ```bash
-    az login --tenant YourTenantIdHere
-    terraform login
-    ```
-
-2. **Initialize Terraform**:
-    ```bash
-    terraform init
-    ```
-
-3. **Set Environment Variables**:
-   Replace empty strings with appropriate values for your environment.
-    ```bash
-    export TFE_ORGANIZATION=""
-    export TF_VAR_tfc_organization_name=""
-    export TF_VAR_tfc_project_name=""
-    ```
-
-4. **Plan and Apply**:
-    ```bash
-    terraform plan -out=plan.tfplan
-    terraform apply plan.tfplan
-    ```
-
-5. **Clean Up**:
-   Destroy resources after testing is completed.
-    ```bash
-    terraform destroy
-    ```
-
-
-## Testing Approach for New Features in the Station Module
-
-When adding new features to the Station module, it's crucial to validate their functionality. Contributors should create tests that encompass at least two fundamental configurations:
-
-1. **Minimal Configuration**: Focus on the core functionality of the feature by using only the essential parameters. This configuration aims to verify that the feature works with the bare minimum setup.
-
-2. **Maximum Configuration**: Expand the test to include all possible parameters. This approach is designed to showcase the feature's full capabilities and ensures compatibility with a wide range of options and settings.
-
-### Additional Configurations
-
-- **Scenario-Specific Tests**: If the feature includes multiple optional values that cannot all be used simultaneously or has different modes of operation, create additional test configurations to cover these scenarios. 
-- **Combination Tests**: For features with parameters that interact in complex ways, design tests that combine these parameters in various forms. This helps in understanding the interactions and dependencies between different options.
-
-### Example Test Case Structure
-
-```hcl
-module "station-new-feature" {
-  depends_on = [tfe_project.test]
-  source     = "./.."
-
-  tfe = {
-    project_name          = tfe_project.test.name
-    organization_name     = data.tfe_organization.test.name
-    workspace_description = "This workspace contains groups_tests from https://github.com/blinqas/station.git"
-    workspace_name        = "station-tests-role_definitions"
-  }
-
-  new_feature = {
-    # Minimal Configuration Example
-    minimal = {
-      required_param = "basic_value"
-    },
-
-    # Maximum Configuration Example
-    maximum = {
-      required_param = "value"
-      optional_param1 = "advanced_value1"
-      optional_param2 = "advanced_value2"
-      ...
-    },
-
-    # Additional Scenario-Specific Configurations
-    scenario_specific = {
-      ...
-    }
-  }
-}
-
-
+terraform apply -out plan.tfplan
 ```
-Use this structure as a template when adding tests for new functionalities to ensure both basic and advanced use cases are covered.
+
