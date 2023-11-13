@@ -1,15 +1,11 @@
 name: 🥼 Validate and test apply Station
 
 on:
-  workflow_dispatch:
-  push:
+  pull_request:
     branches:
-      - 'trunk'
-    paths-ignore:
-      - 'README.md'
-      - '.gitignore'
-    tags:
-      - '0.*.*'
+      - trunk
+  workflow_dispatch:
+
 
 permissions:
   id-token: write
@@ -17,8 +13,13 @@ permissions:
 
 jobs:
   terraform:
-    environment: Tests
+    environment: E2E_testing
     runs-on: ubuntu-latest
+
+    env:
+      TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
+      TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
+
     steps:
     - name: 'Azure: login'
       uses: azure/login@v1
@@ -29,27 +30,33 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v3
-
+    
+      # We crate a new TFC project name that includes the github run id.
+    - name: Append Run ID to Project Name
+      run: echo "TF_VAR_tfc_project_name=${{ secrets.TF_VAR_TFC_PROJECT_NAME }}-${{ github.run_id }}" >> $GITHUB_ENV
+    
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v2
       with:
-        terraform_version: 1.5.0
+        terraform_version: 1.6.3
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
     - name: terraform init
       run: terraform init
-      working-directory: tests
-      env:
-        ARM_CLIENT_ID:       ${{ secrets.AZ_CLIENT_ID }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.AZ_SUBSCRIPTION_ID }}
-        ARM_TENANT_ID:       ${{ secrets.AZ_TENANT_ID }}
-        ARM_USE_OIDC:        true
+      working-directory: test
+        
+    - name: terraform validate
+      run: terraform validate
+      working-directory: test
 
     - name: terraform plan
       run: terraform plan -out plan.tfplan
-      working-directory: tests
-      env:
-        ARM_CLIENT_ID:       ${{ secrets.AZ_CLIENT_ID }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.AZ_SUBSCRIPTION_ID }}
-        ARM_TENANT_ID:       ${{ secrets.AZ_TENANT_ID }}
-        ARM_USE_OIDC:        true
+      working-directory: test
 
+    - name: terraform apply
+      run: terraform apply plan.tfplan --auto-approve
+      working-directory: test
+
+    - name: terraform destroy
+      run: terraform destroy --auto-approve
+      working-directory: test
