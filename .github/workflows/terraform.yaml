@@ -1,12 +1,16 @@
 name: Terraform Workflow
 
 on:
-  pull_request:
-    branches:
-      - trunk
-  workflow_dispatch:
-  release:
-    types: [created]
+    push:
+      branches:
+        - trunk
+    pull_request:
+      branches:
+        - trunk
+    workflow_dispatch:
+    release:
+      types: [created]
+  
 
 permissions:
   id-token: write
@@ -82,7 +86,7 @@ jobs:
           working-directory: test
 
   apply_and_destroy:
-    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/trunk')
     environment: E2E_testing
     runs-on: ubuntu-latest
     name: 🥼 End-to-End (E2E) Terraform Testing
