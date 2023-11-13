@@ -1,4 +1,4 @@
-name: 🥼 Validate and test apply Station
+name: 🥼 End-to-End (E2E) Terraform Testing
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: 🥼 Terraform plan test
+name: 📈 Terraform Plan Execution for tests
 
 on:
   pull_request:

@@ -1,4 +1,4 @@
-name: 🥼 Validates terraform code
+name: 🔍 Terraform Code Validation 
 
 on:
   pull_request:
