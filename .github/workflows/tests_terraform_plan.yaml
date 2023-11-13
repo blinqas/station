@@ -1,10 +1,9 @@
-name: 🥼 Validate and test apply Station
+name: 🥼 Terraform plan test
 
 on:
   pull_request:
     branches:
       - trunk
-      - 12-automate-testing
   workflow_dispatch:
 
 concurrency: 
@@ -48,20 +47,7 @@ jobs:
     - name: terraform init
       run: terraform init
       working-directory: test
-        
-    - name: terraform validate
-      run: terraform validate
-      working-directory: test
 
     - name: terraform plan
       run: terraform plan -out plan.tfplan
-      working-directory: test
-
-    - name: terraform apply
-      run: terraform apply --auto-approve plan.tfplan 
-      working-directory: test
-
-    - name: terraform destroy
-      if: always()
-      run: terraform destroy --auto-approve
       working-directory: test
