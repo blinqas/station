@@ -113,7 +113,7 @@ module "station-tfe" {
       }
     } : {},
     try(var.tfe.module_outputs_to_workspace_var.role_definitions == true, false) ? {
-      resource_groups = {
+      role_definitions = {
         value = replace(jsonencode({ for key, role_definition in azurerm_role_definition.user_created : key => {
           id                          = role_definition.id
           role_definition_id          = role_definition.role_definition_id
