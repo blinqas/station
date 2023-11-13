@@ -14,12 +14,12 @@ module "station_role_definitions" {
 
   role_definitions = {
     minimum = {
-      name  = "Minimum Custom Role provisioned with Station"
+      name  = "Station test: Minimum Custom Role provisioned with Station "
       scope = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
     }
 
     maximum = {
-      name              = "Maximum Custom Role provisioned with Station"
+      name              = "Station test: Maximum Custom Role provisioned with Station"
       scope             = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
       description       = "This role was provisioned with Station"
       assignable_scopes = ["/subscriptions/${data.azurerm_client_config.current.subscription_id}"]
