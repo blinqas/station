@@ -89,10 +89,10 @@ module "station-tfe" {
     } : {},
     try(var.tfe.module_outputs_to_workspace_var.user_assigned_identities == true, false) ? {
       user_assigned_identities = {
-        value = replace(jsonencode({ for k, identity in module.user_assigned_identities : k => {
-          id           = identity.id
-          client_id    = identity.client_id
-          principal_id = identity.principal_id
+        value = replace(jsonencode({ for k, v in module.user_assigned_identities : k => {
+          id           = v.identity.id
+          client_id    = v.identity.client_id
+          principal_id = v.identity.principal_id
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "Applications provisioned by Station"
@@ -102,9 +102,9 @@ module "station-tfe" {
     } : {},
     try(var.tfe.module_outputs_to_workspace_var.resource_groups == true, false) ? {
       resource_groups = {
-        value = replace(jsonencode({ for key, rg in azurerm_resource_group.user_specified : key => {
-          name     = rg.name
-          location = rg.location
+        value = replace(jsonencode({ for key, v in azurerm_resource_group.user_specified : key => {
+          name     = v.rg.name
+          location = v.rg.location
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "User specified resource groups provisioned by Station"
@@ -114,10 +114,10 @@ module "station-tfe" {
     } : {},
     try(var.tfe.module_outputs_to_workspace_var.role_definitions == true, false) ? {
       role_definitions = {
-        value = replace(jsonencode({ for key, role_definition in azurerm_role_definition.user_created : key => {
-          id                          = role_definition.id
-          role_definition_id          = role_definition.role_definition_id
-          role_definition_resource_id = role_definition.role_definition_resource_id
+        value = replace(jsonencode({ for key, v in azurerm_role_definition.user_created : key => {
+          id                          = v.role_definition.id
+          role_definition_id          = v.role_definition.role_definition_id
+          role_definition_resource_id = v.role_definition.role_definition_resource_id
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "User defined roles provisioned by Station"
