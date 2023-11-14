@@ -45,7 +45,7 @@ jobs:
         ARM_USE_OIDC:        true
 
     - name: terraform plan
-      run: terraform plan -out plan.tfplan
+      run: terraform apply -auto-approve
       working-directory: tests
       env:
         ARM_CLIENT_ID:       ${{ secrets.AZ_CLIENT_ID }}
