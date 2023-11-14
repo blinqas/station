@@ -112,7 +112,11 @@ jobs:
           with:
             terraform_version: 1.6.3
             cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-    
+        
+        - name: terraform init
+          run: terraform init
+          working-directory: test
+          
         - name: terraform plan
           run: terraform plan -out plan.tfplan
           working-directory: test
