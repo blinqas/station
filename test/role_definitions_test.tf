@@ -8,7 +8,7 @@ module "station_role_definitions" {
     workspace_description = "This workspace contains groups_tests from https://github.com/blinqas/station.git"
     workspace_name        = "station-tests-role_definitions"
     module_outputs_to_workspace_var = {
-      role_definitions = true
+      role_definitions = false
     }
   }
 
