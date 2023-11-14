@@ -90,9 +90,9 @@ module "station-tfe" {
     try(var.tfe.module_outputs_to_workspace_var.user_assigned_identities == true, false) ? {
       user_assigned_identities = {
         value = replace(jsonencode({ for k, v in module.user_assigned_identities : k => {
-          id           = v.identity.id
-          client_id    = v.identity.client_id
-          principal_id = v.identity.principal_id
+          id           = v.id
+          client_id    = v.client_id
+          principal_id = v.principal_id
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "Applications provisioned by Station"
