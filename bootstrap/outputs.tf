@@ -1,5 +1,5 @@
 output "client_id" {
-  value = azuread_service_principal.workload.application_id
+  value = azuread_service_principal.workload.client_id
 }
 
 output "tenant_id" {

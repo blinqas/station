@@ -1,4 +1,4 @@
 resource "azuread_service_principal" "workload" {
-  application_id = azuread_application.workload.application_id
+  client_id = azuread_application.workload.client_id
 }
 
