@@ -2,7 +2,7 @@
 
 ## Overview
 
-This folder contains all tests for the Terraform Station module. Currently, tests are executed locally on a developer's machine, with plans to integrate them into GitHub Actions (GHA) in the future. The aim is to simplify the development and testing process for contributors.
+This folder contains all tests for the Terraform Station module. The aim is to simplify the development and testing process for contributors.
 
 ## How It Works
 
