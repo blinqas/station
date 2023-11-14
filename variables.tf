@@ -218,6 +218,7 @@ variable "tfe" {
       value       = string
       category    = string
       description = string
+      sensitive   = optional(bool)
     })))
     workspace_vars = optional(map(object({
       value       = any
