@@ -19,7 +19,7 @@ module "station_tfe_test" {
       applications             = true
       resource_groups          = true
     }
-    
+
     #Creates environment variables in the terraform workspace
     workspace_env_vars = {
       tfe_test_env_var_1 = {
@@ -86,9 +86,9 @@ module "station_tfe_test" {
   }
   resource_groups = {
     test_rg = {
-      name = "station_tfe_test_rg",
+      name     = "station_tfe_test_rg",
       location = "norwayeast"
-      tags = tomap({testkey1 = "testValue1", testkey2 = "testValue2"})
+      tags     = tomap({ testkey1 = "testValue1", testkey2 = "testValue2" })
     }
   }
 }
