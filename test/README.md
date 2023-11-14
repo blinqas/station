@@ -49,6 +49,8 @@ This folder contains all tests for the Terraform Station module. The aim is to s
     terraform destroy
     ```
 
+6. **Tips**
+   You can also test each module separately by running `terraform plan -target module.module_you_want_to_test`
 
 ## Testing Approach for New Features in the Station Module
 
