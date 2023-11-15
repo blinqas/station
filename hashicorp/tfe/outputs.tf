@@ -6,3 +6,6 @@ output "workspace" {
   value = tfe_workspace.workload
 }
 
+output "workspace_variables" {
+  value = local.tfc_variables
+}
