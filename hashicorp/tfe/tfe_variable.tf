@@ -11,7 +11,7 @@ resource "tfe_variable" "workload" {
 
 data "tfe_variables" "workload" {
   workspace_id = tfe_workspace.workload.id
-  depends_on = [ tfe_variable.workload ]
+  depends_on   = [tfe_variable.workload]
 }
 
 
@@ -23,5 +23,5 @@ locals {
     id        = v.id
     sensitive = v.sensitive
     value     = v.value
-  }}
+  } }
 }
