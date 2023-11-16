@@ -285,7 +285,7 @@ variable "role_definitions" {
   type = map(object({
     role_definition_id = optional(string)
     name               = string
-    scope              = string
+    scope              = optional(string) #Sets scope to current subscription if empty
     description        = optional(string)
     permissions = optional(object({
       actions          = optional(list(string))
