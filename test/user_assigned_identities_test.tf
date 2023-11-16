@@ -14,11 +14,17 @@ module "station-uai" {
     }
 
     maximum = {
-      name             = "uai-02"
-      location         = "germanywestcentral"
-      role_assignments = ["User.Read.All"]
+      name                 = "uai-02"
+      location             = "norwayeast"
+      app_role_assignments = ["User.Read.All"]
       group_memberships = {
-        "static" = module.station-groups.groups["static"].object_id
+        static = module.station-groups.groups.static.object_id
+      }
+      role_assignments = {
+        subscription_reader = {
+          role_definition_name = "Reader"
+          scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
+        }
       }
     }
   }
