@@ -4,7 +4,7 @@ module "user_assigned_identity" {
   resource_group_name  = azurerm_resource_group.workload.name
   location             = azurerm_resource_group.workload.location
   tags                 = local.tags
-  role_assignments     = each.value.role_assignments
+  role_assignments     = {}
   app_role_assignments = {}
   group_memberships    = {}
 }
