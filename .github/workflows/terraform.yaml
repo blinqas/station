@@ -1,16 +1,20 @@
-name: Terraform Workflow
+name: 🌐 Terraform Workflow
 
 on:
-    push:
-      branches:
-        - trunk
-    pull_request:
-      branches:
-        - trunk
-    workflow_dispatch:
-    release:
-      types: [created]
-  
+  push:
+    branches:
+      - trunk
+  pull_request:
+    branches:
+      - trunk
+    paths:
+      #This should only run when terraform files have been changed.
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '**/*.json'
+  workflow_dispatch:
+  release:
+    types: [created]
 
 permissions:
   id-token: write
