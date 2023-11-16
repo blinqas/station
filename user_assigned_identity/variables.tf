@@ -33,6 +33,6 @@ variable "group_memberships" {
 
 variable "role_assignments" {
   description = "Azure Roles to assign the Managed Identity."
-  type        = map(object())
+  type        = map(object)
   default     = {}
 }
