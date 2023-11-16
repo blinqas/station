@@ -101,8 +101,7 @@ variables {
 
 run "setup_create_tfc_test_project" {
   variables {
-    project_name      = "tests_tfe"
-    organization_name = "blinq-west-lab"
+    tfc_project_name      = "tests_tfe"
   }
   module {
     source = "./tests/setup-tfe-project"
