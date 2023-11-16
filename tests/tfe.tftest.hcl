@@ -101,7 +101,7 @@ variables {
 
 run "setup_create_tfc_test_project" {
   variables {
-    tfc_project_name      = "tests_tfe"
+    tfc_project_name = "tests_tfe"
   }
   module {
     source = "./tests/setup-tfe-project"

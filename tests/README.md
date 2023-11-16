@@ -66,7 +66,6 @@ provider "azurerm" {
 provider "azuread" {
 
 }
-
 ```
 Call the module like how you would use it but inside a variables block
 
