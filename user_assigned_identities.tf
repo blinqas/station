@@ -5,7 +5,7 @@ module "user_assigned_identity" {
   location             = azurerm_resource_group.workload.location
   tags                 = local.tags
   role_assignments     = {}
-  app_role_assignments = {}
+  app_role_assignments = []
   group_memberships    = {}
 }
 
@@ -16,7 +16,7 @@ module "user_assigned_identities" {
   resource_group_name  = each.value.resource_group_name == null ? azurerm_resource_group.workload.name : each.value.resource_group_name
   location             = each.value.location == null ? azurerm_resource_group.workload.location : each.value.location
   tags                 = local.tags
-  app_role_assignments = each.value.app_role_assignments == null ? [] : each.value.app_role_assignments
   role_assignments     = each.value.role_assignments == null ? {} : each.value.role_assignments
+  app_role_assignments = each.value.app_role_assignments == null ? [] : each.value.app_role_assignments
   group_memberships    = each.value.group_memberships == null ? {} : each.value.group_memberships
 }
