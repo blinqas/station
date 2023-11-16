@@ -18,6 +18,14 @@ output "workload_resource_group_name" {
   value = azurerm_resource_group.workload.name
 }
 
+output "resource_group" {
+  value = azurerm_resource_group.workload
+}
+
+output "resource_groups_user_specified" {
+  value = azurerm_resource_group.user_specified
+}
+
 output "applications" {
   value = module.applications
 }
