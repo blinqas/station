@@ -19,7 +19,7 @@ variable "tags" {
   default     = {}
 }
 
-variable "role_assignments" {
+variable "app_role_assignments" {
   description = "Application Roles to assign the Managed Identity."
   type        = set(string)
   default     = []
@@ -28,5 +28,11 @@ variable "role_assignments" {
 variable "group_memberships" {
   description = "Groups the Managed Identity should be member of. (Object IDs)"
   type        = map(string)
+  default     = {}
+}
+
+variable "role_assignments" {
+  description = "Azure Roles to assign the Managed Identity."
+  type        = map(object())
   default     = {}
 }
