@@ -6,7 +6,7 @@ module "station-tfe" {
   workspace_name        = var.tfe.workspace_name
   workspace_description = var.tfe.workspace_description
   vcs_repo              = try(var.tfe.vcs_repo, null)
-  workspace_env_vars = merge(try(var.tfe.env_vars, {}), {
+  workspace_env_vars = merge(try(var.tfe.workspace_env_vars, {}), {
     # DOCS: https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud
     TFC_AZURE_PROVIDER_AUTH = {
       value       = true
