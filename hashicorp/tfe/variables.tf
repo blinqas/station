@@ -24,6 +24,7 @@ variable "workspace_env_vars" {
     value       = string
     category    = string
     description = string
+    sensitive   = bool
   }))
   default = null
 }
