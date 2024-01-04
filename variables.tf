@@ -169,7 +169,7 @@ variable "user_assigned_identities" {
       name                = "uai-my-identity"
       resource_group_name = "rg-name"
       location            = "norwayeast"
-      role_assignments    = ["IdentityRiskEvent.ReadWrite.All"]
+      app_role_assignments    = ["IdentityRiskEvent.ReadWrite.All"]
       group_memberships = {
         "Kubernetes Administrators" = azuread_group.k8s_admins.object_id
       }
@@ -178,11 +178,24 @@ variable "user_assigned_identities" {
   EOF
   default     = {}
   type = map(object({
-    name                = string
-    resource_group_name = optional(string)
-    location            = optional(string)
-    role_assignments    = optional(set(string))
-    group_memberships   = optional(map(string))
+    name                 = string
+    resource_group_name  = optional(string)
+    location             = optional(string)
+    app_role_assignments = optional(set(string))
+    role_assignments = optional(map(object({
+      name                                   = optional(string)
+      scope                                  = string
+      role_definition_id                     = optional(string)
+      role_definition_name                   = optional(string)
+      assign_to_workload_principal           = optional(bool)
+      condition                              = optional(string)
+      condition_version                      = optional(string)
+      delegated_managed_identity_resource_id = optional(string)
+      description                            = optional(string)
+      skip_service_principal_aad_check       = optional(bool)
+      //principal_id                           = optional(string)
+    })))
+    group_memberships = optional(map(string))
   }))
 }
 

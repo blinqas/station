@@ -6,7 +6,7 @@ resource "azuread_service_principal" "msgraph" {
 }
 
 resource "azuread_app_role_assignment" "app_workload_roles" {
-  for_each            = var.role_assignments
+  for_each            = var.app_role_assignments
   app_role_id         = azuread_service_principal.msgraph.app_role_ids[each.value]
   principal_object_id = azurerm_user_assigned_identity.identity.principal_id
   resource_object_id  = azuread_service_principal.msgraph.object_id
