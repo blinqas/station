@@ -3,7 +3,7 @@ resource "azurerm_role_definition" "user_created" {
   role_definition_id = each.value.role_definition_id
   name               = each.value.name
   description        = each.value.description
-  scope              = each.value.scope == null ? "/subscriptions/${data.azurerm_client_config.current.subscription_id}" : each.value.scope
+  scope              = each.value.scope == null ? "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${azurerm_resource_group.workload.name}" : each.value.scope
   assignable_scopes  = each.value.assignable_scopes
   dynamic "permissions" {
     for_each = each.value.permissions == null ? [] : [1]
