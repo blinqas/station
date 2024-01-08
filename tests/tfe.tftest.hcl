@@ -203,7 +203,7 @@ run "tfe_module_outputs_to_workspace_var" {
   module {
     source = "./"
   }
-  /* 
+   
     # Assertions for the output variable from the application
     assert {
         condition     = module.station-tfe.workspace_variables.applications.value != null
@@ -216,7 +216,7 @@ run "tfe_module_outputs_to_workspace_var" {
     assert {
         condition     = module.station-tfe.workspace_variables.applications.category == "terraform"
         error_message = "The application workspace variable was NOT set as type terraform"
-    } */
+    }
 
   # Assertions for the output variable from the groups
   assert {
