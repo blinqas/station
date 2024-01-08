@@ -20,6 +20,16 @@ variable "resource_group_name" {
   type        = string
 }
 
+variable "managed_identity_name" {
+  description = <<EOF
+    The name of the managed identity (identity provided to the workload) that is created. The final name is prefixed with `mi-`.
+
+    If a value is not provided, Station will set the name to `mi-var.tfe.workspace_name-var.environment_name`
+  EOF
+  default     = null
+  type        = string
+}
+
 variable "role_definition_name_on_workload_rg" {
   description = "The name of an in-built role to assign the workload identity on the workload resource group"
   default     = "Owner"
