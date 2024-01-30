@@ -6,6 +6,7 @@ module "station-tfe" {
   workspace_name        = var.tfe.workspace_name
   workspace_description = var.tfe.workspace_description
   vcs_repo              = try(var.tfe.vcs_repo, null)
+  file_triggers_enabled = try(var.tfe.vcs_repo.tags_regex, null) == null ? true : false # if tags_regex is supplied, set to false, this removes an uneccessary step
   workspace_env_vars = merge(try(var.tfe.env_vars, {}), {
     # DOCS: https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud
     TFC_AZURE_PROVIDER_AUTH = {
@@ -127,3 +128,4 @@ module "station-tfe" {
     } : {}
   )
 }
+
