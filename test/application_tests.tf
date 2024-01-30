@@ -23,7 +23,7 @@ module "station-applications" {
       group_membership_claims        = ["All"]
       prevent_duplicate_names        = true
       fallback_public_client_enabled = true
-
+      notes                          = "This is a test application created by Station"
       single_page_application = {
         redirect_uris = ["https://station-test.example/spa"]
       }
