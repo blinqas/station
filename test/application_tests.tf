@@ -24,6 +24,7 @@ module "station-applications" {
       prevent_duplicate_names        = true
       fallback_public_client_enabled = true
       notes                          = "This is a test application created by Station"
+
       single_page_application = {
         redirect_uris = ["https://station-test.example/spa"]
       }
