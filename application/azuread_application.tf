@@ -7,7 +7,7 @@ resource "azuread_application" "app" {
   prevent_duplicate_names        = var.azuread_application.prevent_duplicate_names
   fallback_public_client_enabled = var.azuread_application.fallback_public_client_enabled
   notes                          = var.azuread_application.notes
-  
+
   dynamic "single_page_application" {
     for_each = var.azuread_application.single_page_application == null ? [] : [1]
 
