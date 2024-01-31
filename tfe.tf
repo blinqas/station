@@ -13,21 +13,25 @@ module "station-tfe" {
       value       = true
       category    = "env"
       description = "Is true when using dynamic credentials to authenticate to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
+      sensitive   = false
     },
     TFC_AZURE_RUN_CLIENT_ID = {
       value       = module.user_assigned_identity.client_id
       category    = "env"
       description = "The client ID for the Service Principal / Application used when authenticating to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
+      sensitive   = false
     },
     ARM_SUBSCRIPTION_ID = {
       value       = data.azurerm_client_config.current.subscription_id
       category    = "env"
       description = "The Subscription ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
+      sensitive   = false
     },
     ARM_TENANT_ID = {
       value       = data.azurerm_client_config.current.tenant_id
       category    = "env"
       description = "The Azure Tenant ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
+      sensitive   = false
     },
   }, )
 
