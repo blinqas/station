@@ -230,6 +230,7 @@ variable "tfe" {
     workspace_name                       = string
     workspace_description                = string
     create_federated_identity_credential = optional(bool)
+    file_triggers_enabled                = optional(bool)
     vcs_repo = optional(object({
       identifier                 = string
       branch                     = optional(string)

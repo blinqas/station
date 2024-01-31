@@ -1,7 +1,8 @@
 resource "tfe_workspace" "workload" {
-  name        = var.workspace_name
-  description = var.workspace_description
-  project_id  = data.tfe_project.workload.id
+  name                  = var.workspace_name
+  description           = var.workspace_description
+  project_id            = data.tfe_project.workload.id
+  file_triggers_enabled = var.file_triggers_enabled
 
   dynamic "vcs_repo" {
     for_each = var.vcs_repo == null ? [] : [var.vcs_repo]
