@@ -8,7 +8,6 @@ on:
     branches:
       - trunk
     paths:
-      #This should only run when terraform files have been changed.
       - '**/*.tf'
       - '**/*.tfvars'
       - '**/*.json'
@@ -21,13 +20,8 @@ permissions:
   id-token: write
   contents: read
 
-concurrency: 
-  group: terraform-plan-apply-destroy
-  cancel-in-progress: false
-
 jobs:
   validate:
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/trunk')
     runs-on: ubuntu-latest
     name: 🔍 Terraform Code Validation
     steps:
@@ -47,7 +41,7 @@ jobs:
     
         - name: terraform init station tests
           run: terraform init
-          working-directory: test
+          working-directory: tests
     
         - name: terraform validate test tests
           run: terraform validate
@@ -56,7 +50,6 @@ jobs:
 
 
   terraform_test:
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/trunk')
     environment: E2E_testing
     needs: validate
     runs-on: ubuntu-latest
