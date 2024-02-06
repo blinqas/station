@@ -1,0 +1,91 @@
+name: 🌐 Terraform Tests
+
+on:
+  push:
+    branches:
+      - trunk
+  pull_request:
+    branches:
+      - trunk
+    paths:
+      #This should only run when terraform files have been changed.
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '**/*.json'
+      - '**/*.yaml'
+  workflow_dispatch:
+  release:
+    types: [created]
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency: 
+  group: terraform-plan-apply-destroy
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/trunk')
+    runs-on: ubuntu-latest
+    name: 🔍 Terraform Code Validation
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+    
+        - name: Set up Terraform
+          uses: hashicorp/setup-terraform@v3
+          with:
+            terraform_version: "~1.7.0"
+    
+        - name: terraform init station module
+          run: terraform init
+    
+        - name: terraform validate station
+          run: terraform validate
+    
+        - name: terraform init station tests
+          run: terraform init
+          working-directory: test
+    
+        - name: terraform validate test tests
+          run: terraform validate
+          working-directory: test      
+
+
+
+  terraform_test:
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/trunk')
+    environment: E2E_testing
+    needs: validate
+    runs-on: ubuntu-latest
+    name: 🥼 Terraform tests
+    env:
+        TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
+        TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
+    steps:
+        - name: 'Azure: login'
+          uses: azure/login@v1
+          with:
+            client-id:       ${{ secrets.AZ_CLIENT_ID }}
+            subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+            tenant-id:       ${{ secrets.AZ_TENANT_ID }}
+    
+        - name: Checkout
+          uses: actions/checkout@v4
+        
+        - name: Append Run ID to Project Name
+          run: echo "TF_VAR_tfc_project_name=${{ secrets.TF_VAR_TFC_PROJECT_NAME }}-${{ github.run_id }}" >> $GITHUB_ENV
+        
+        - name: Set up Terraform
+          uses: hashicorp/setup-terraform@v3
+          with:
+            terraform_version: "~1.7.0"
+            cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        
+        - name: Terraform init
+          run: terraform init
+          
+        - name: Terraform test
+          run: terraform test
