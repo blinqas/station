@@ -31,12 +31,12 @@ jobs:
     name: 🔍 Terraform Code Validation
     steps:
         - name: Checkout
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
     
         - name: Set up Terraform
-          uses: hashicorp/setup-terraform@v2
+          uses: hashicorp/setup-terraform@v3
           with:
-            terraform_version: 1.6.3
+            terraform_version: "~1.7.0"
     
         - name: terraform init station module
           run: terraform init
@@ -70,15 +70,15 @@ jobs:
             tenant-id:       ${{ secrets.AZ_TENANT_ID }}
     
         - name: Checkout
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
         
         - name: Append Run ID to Project Name
           run: echo "TF_VAR_tfc_project_name=${{ secrets.TF_VAR_TFC_PROJECT_NAME }}-${{ github.run_id }}" >> $GITHUB_ENV
         
         - name: Set up Terraform
-          uses: hashicorp/setup-terraform@v2
+          uses: hashicorp/setup-terraform@v3
           with:
-            terraform_version: 1.6.3
+            terraform_version: "~1.7.0"
             cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
     
         - name: terraform init
@@ -107,15 +107,15 @@ jobs:
             tenant-id:       ${{ secrets.AZ_TENANT_ID }}
     
         - name: Checkout
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
         
         - name: Append Run ID to Project Name
           run: echo "TF_VAR_tfc_project_name=${{ secrets.TF_VAR_TFC_PROJECT_NAME }}-${{ github.run_id }}" >> $GITHUB_ENV
         
         - name: Set up Terraform
-          uses: hashicorp/setup-terraform@v2
+          uses: hashicorp/setup-terraform@v3
           with:
-            terraform_version: 1.6.3
+            terraform_version: "~1.7.0"
             cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
         
         - name: terraform init
