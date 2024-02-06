@@ -1,4 +1,4 @@
-name: 🌐 Terraform Tests
+name: 🧪 Terraform Tests
 
 on:
   push:
@@ -38,8 +38,6 @@ jobs:
     
         - name: Terraform validate station and TF tests
           run: terraform validate
-
-
 
   terraform_test:
     environment: E2E_testing
