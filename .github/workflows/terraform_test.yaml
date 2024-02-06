@@ -39,13 +39,13 @@ jobs:
         - name: terraform validate station
           run: terraform validate
     
-        - name: terraform init station tests
+        - name: Terraform init tests
           run: terraform init
           working-directory: tests
     
-        - name: terraform validate test tests
+        - name: Terraform validate tests
           run: terraform validate
-          working-directory: test      
+          working-directory: tests      
 
 
 
