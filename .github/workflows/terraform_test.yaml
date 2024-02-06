@@ -33,19 +33,11 @@ jobs:
           with:
             terraform_version: "~1.7.0"
     
-        - name: terraform init station module
+        - name: Terraform init station module
           run: terraform init
     
-        - name: terraform validate station
+        - name: Terraform validate station and TF tests
           run: terraform validate
-    
-        - name: Terraform init tests
-          run: terraform init
-          working-directory: tests
-    
-        - name: Terraform validate tests
-          run: terraform validate
-          working-directory: tests      
 
 
 
