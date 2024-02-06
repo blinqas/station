@@ -243,13 +243,14 @@ variable "tfe" {
       value       = string
       category    = string
       description = string
+      sensitive   = optional(bool, false)
     })))
     workspace_vars = optional(map(object({
       value       = any
       category    = string
       description = string
-      hcl         = bool
-      sensitive   = bool
+      hcl         = optional(bool, false)
+      sensitive   = optional(bool, false)
     })))
     module_outputs_to_workspace_var = optional(object({
       groups                   = optional(bool)
