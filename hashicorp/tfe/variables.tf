@@ -24,7 +24,7 @@ variable "workspace_env_vars" {
     value       = string
     category    = string
     description = string
-    sensitive   = bool
+    sensitive   = optional(bool))
   }))
   default = null
 }
@@ -36,7 +36,7 @@ variable "workspace_vars" {
     category    = string
     description = string
     hcl         = bool
-    sensitive   = bool
+    sensitive   = optional(bool)
   }))
   default = null
 }
