@@ -86,6 +86,7 @@ variable "applications" {
     identifier_uris                = optional(list(string))
     prevent_duplicate_names        = optional(bool)
     fallback_public_client_enabled = optional(bool)
+    notes                          = optional(string) #This can be used as description for the application. 1024 character limit.
 
     single_page_application = optional(object({
       redirect_uris = optional(list(string))
@@ -242,13 +243,14 @@ variable "tfe" {
       value       = string
       category    = string
       description = string
+      sensitive   = optional(bool, false)
     })))
     workspace_vars = optional(map(object({
       value       = any
       category    = string
       description = string
-      hcl         = bool
-      sensitive   = bool
+      hcl         = optional(bool, false)
+      sensitive   = optional(bool, false)
     })))
     module_outputs_to_workspace_var = optional(object({
       groups                   = optional(bool)
@@ -308,7 +310,7 @@ variable "role_definitions" {
   type = map(object({
     role_definition_id = optional(string)
     name               = string
-    scope              = string
+    scope              = optional(string) #Sets scope to current subscription if empty
     description        = optional(string)
     permissions = optional(object({
       actions          = optional(list(string))

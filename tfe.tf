@@ -7,27 +7,31 @@ module "station-tfe" {
   workspace_description = var.tfe.workspace_description
   vcs_repo              = try(var.tfe.vcs_repo, null)
   file_triggers_enabled = try(var.tfe.vcs_repo.tags_regex, null) == null ? true : false # if tags_regex is supplied, set to false, this removes an uneccessary step
-  workspace_env_vars = merge(try(var.tfe.env_vars, {}), {
+  workspace_env_vars = merge(try(var.tfe.workspace_env_vars, {}), {
     # DOCS: https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud
     TFC_AZURE_PROVIDER_AUTH = {
       value       = true
       category    = "env"
       description = "Is true when using dynamic credentials to authenticate to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
+      sensitive   = false
     },
     TFC_AZURE_RUN_CLIENT_ID = {
       value       = module.user_assigned_identity.client_id
       category    = "env"
       description = "The client ID for the Service Principal / Application used when authenticating to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
+      sensitive   = false
     },
     ARM_SUBSCRIPTION_ID = {
       value       = data.azurerm_client_config.current.subscription_id
       category    = "env"
       description = "The Subscription ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
+      sensitive   = false
     },
     ARM_TENANT_ID = {
       value       = data.azurerm_client_config.current.tenant_id
       category    = "env"
       description = "The Azure Tenant ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
+      sensitive   = false
     },
   }, )
 
@@ -90,10 +94,10 @@ module "station-tfe" {
     } : {},
     try(var.tfe.module_outputs_to_workspace_var.user_assigned_identities == true, false) ? {
       user_assigned_identities = {
-        value = replace(jsonencode({ for k, identity in module.user_assigned_identities : k => {
-          id           = identity.id
-          client_id    = identity.client_id
-          principal_id = identity.principal_id
+        value = replace(jsonencode({ for k, v in module.user_assigned_identities : k => {
+          id           = v.id
+          client_id    = v.client_id
+          principal_id = v.principal_id
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "Applications provisioned by Station"
@@ -103,9 +107,9 @@ module "station-tfe" {
     } : {},
     try(var.tfe.module_outputs_to_workspace_var.resource_groups == true, false) ? {
       resource_groups = {
-        value = replace(jsonencode({ for key, rg in azurerm_resource_group.user_specified : key => {
-          name     = rg.name
-          location = rg.location
+        value = replace(jsonencode({ for key, v in azurerm_resource_group.user_specified : key => {
+          name     = v.name
+          location = v.location
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "User specified resource groups provisioned by Station"
@@ -115,10 +119,10 @@ module "station-tfe" {
     } : {},
     try(var.tfe.module_outputs_to_workspace_var.role_definitions == true, false) ? {
       role_definitions = {
-        value = replace(jsonencode({ for key, role_definition in azurerm_role_definition.user_created : key => {
-          id                          = role_definition.id
-          role_definition_id          = role_definition.role_definition_id
-          role_definition_resource_id = role_definition.role_definition_resource_id
+        value = replace(jsonencode({ for key, v in azurerm_role_definition.user_created : key => {
+          id                          = v.id
+          role_definition_id          = v.role_definition_id
+          role_definition_resource_id = v.role_definition_resource_id
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "User defined roles provisioned by Station"
@@ -128,4 +132,5 @@ module "station-tfe" {
     } : {}
   )
 }
+
 

@@ -16,9 +16,9 @@ jobs:
     permissions:
       contents: write
     steps:
-    - uses: hashicorp/setup-terraform@v2
+    - uses: hashicorp/setup-terraform@v3
       with:
-        terraform_version: 1.5.7
+        terraform_version: "~1.7.0"
 
     - uses: actions/checkout@v4
       with:
