@@ -1,0 +1,31 @@
+name: Feature Request
+description: Suggest an idea for this project
+title: "Feature: Your feature here "
+body:
+  - type: markdown
+    attributes:
+      value: "Thank you for contributing your ideas to Station!"
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Description
+      description: Briefly describe the feature you want to add.
+      placeholder: "A clear and concise description of the feature."
+    validations:
+      required: true
+  - type: textarea
+    id: problem-motivation
+    attributes:
+      label: Problem and Motivation
+      description: "Explain the problem your feature solves or why this feature would be beneficial."
+      placeholder: "A detailed explanation of what problem this feature solves or its benefits."
+    validations:
+      required: true
+  - type: textarea
+    id: possible-implementation
+    attributes:
+      label: Possible Implementation
+      description: "(Optional) Suggest how this feature might be implemented."
+      placeholder: "If you have ideas about how to implement this, share them here."
+    validations:
+      required: false
