@@ -12,6 +12,7 @@ on:
       - '**/*.tf'
       - '**/*.tfvars'
       - '**/*.json'
+      - '**/*.yaml'
   workflow_dispatch:
   release:
     types: [created]
@@ -90,7 +91,7 @@ jobs:
           working-directory: test
 
   apply_and_destroy:
-    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/trunk')
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/trunk')
     environment: E2E_testing
     needs: plan
     runs-on: ubuntu-latest
