@@ -5,6 +5,6 @@ resource "tfe_variable" "workload" {
   description  = each.value.description
   category     = each.value.category
   workspace_id = tfe_workspace.workload.id
-  hcl          = each.value.hcl
+  hcl          = each.value.hcl == null ? false : each.value.hcl
   sensitive    = each.value.sensitive
 }
