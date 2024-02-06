@@ -7,7 +7,7 @@ module "station-uai" {
     workspace_description = "This workspace contains groups_tests from https://github.com/blinqas/station.git"
     workspace_name        = "station-tests-uai_tests"
   }
-
+  managed_identity_name = "testName"
   user_assigned_identities = {
     minimum = {
       name = "uai-01"

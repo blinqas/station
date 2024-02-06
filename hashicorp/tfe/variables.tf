@@ -24,7 +24,7 @@ variable "workspace_env_vars" {
     value       = string
     category    = string
     description = string
-    sensitive   = optional(bool)
+    sensitive   = optional(bool, false)
   }))
   default = null
 }
@@ -35,8 +35,8 @@ variable "workspace_vars" {
     value       = any
     category    = string
     description = string
-    hcl         = bool
-    sensitive   = bool
+    hcl         = optional(bool, false)
+    sensitive   = optional(bool, false)
   }))
   default = null
 }
@@ -52,4 +52,9 @@ variable "vcs_repo" {
     tags_regex                 = optional(string)
   })
   default = null
+}
+
+variable "file_triggers_enabled" {
+  description = "(Optional) Whether to filter runs based on the changed files in a VCS push. Defaults to true. If enabled, the working directory and trigger prefixes describe a set of paths which must contain changes for a VCS push to trigger a run. If disabled, any push will trigger a run."
+  default     = true
 }
