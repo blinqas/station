@@ -203,20 +203,20 @@ run "tfe_module_outputs_to_workspace_var" {
   module {
     source = "./"
   }
-   
-    # Assertions for the output variable from the application
-    assert {
-        condition     = module.station-tfe.workspace_variables.applications.value != null
-        error_message = "The application output variable is empty. "
-    }
-    assert {
-        condition     = module.station-tfe.workspace_variables.applications.hcl == true
-        error_message = "The application workspace variable is not of type hcl"
-    }
-    assert {
-        condition     = module.station-tfe.workspace_variables.applications.category == "terraform"
-        error_message = "The application workspace variable was NOT set as type terraform"
-    }
+
+  # Assertions for the output variable from the application
+  assert {
+    condition     = module.station-tfe.workspace_variables.applications.value != null
+    error_message = "The application output variable is empty. "
+  }
+  assert {
+    condition     = module.station-tfe.workspace_variables.applications.hcl == true
+    error_message = "The application workspace variable is not of type hcl"
+  }
+  assert {
+    condition     = module.station-tfe.workspace_variables.applications.category == "terraform"
+    error_message = "The application workspace variable was NOT set as type terraform"
+  }
 
   # Assertions for the output variable from the groups
   assert {
