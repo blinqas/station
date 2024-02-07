@@ -1,0 +1,85 @@
+name: 🧪 Terraform Tests Bootstrap
+
+on:
+  push:
+    branches:
+      - trunk
+    paths:
+      - 'bootstrap/**'      
+  pull_request:
+    branches:
+      - trunk
+    paths:
+      - 'bootstrap/**'
+  workflow_dispatch:
+  release:
+    types: [created]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: 🔍 Terraform Code Validation
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+    
+        - name: Set up Terraform
+          uses: hashicorp/setup-terraform@v3
+          with:
+            terraform_version: "~1.7.0"
+    
+        - name: Terraform init station module
+          run: terraform init
+          working-directory: bootstrap
+    
+        - name: Terraform validate station and TF tests
+          run: terraform validate
+          working-directory: bootstrap
+
+  terraform_test:
+    environment: testing_bootstrap
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+        TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
+        
+        # Terraform variables
+        TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
+        TF_VAR_vcs_repo_oauth_token_id: ${{ secrets.TF_VAR_VCS_REPO_OAUTH_TOKEN_ID }}
+        TF_VAR_subscription_ids: ${{ secrets.TF_VAR_SUBSCRIPTION_IDS }}
+        TF_VAR_vcs_repo_PAT: ${{ secrets.TF_VAR_VCS_REPO_PAT }}
+        TF_VAR_tfc_token: ${{ secrets.TF_VAR_TFC_TOKEN }}
+        TF_VAR_vcs_repo_owner: ${{ secrets.GITHUB_OWNER }}
+
+        #Github
+        GITHUB_OWNER: ${{ secrets.GITHUB_OWNER }}
+        GITHUB_TOKEN: ${{ secrets.TF_VAR_VCS_REPO_PAT }}
+        
+    steps:
+        - name: 'Azure: login'
+          uses: azure/login@v1
+          with:
+            client-id:       ${{ secrets.AZ_CLIENT_ID }}
+            subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+            tenant-id:       ${{ secrets.AZ_TENANT_ID }}
+    
+        - name: Checkout
+          uses: actions/checkout@v4
+        
+        - name: Set up Terraform
+          uses: hashicorp/setup-terraform@v3
+          with:
+            terraform_version: "~1.7.0"
+            cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        
+        - name: Terraform init
+          run: terraform init
+          working-directory: bootstrap
+          
+        - name: Terraform test
+          run: terraform test
+          working-directory: bootstrap
