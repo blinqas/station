@@ -26,11 +26,11 @@ provider "github" {
 # - TF_VAR_tfc_token "Team_or_org_token"                                   # Token for the Terraform Cloud organization where the workspaces will be created. 
 
 variables {
-    bootstrap_tfc_workspace_name = "test-station-bootstrap-workspace"
-    tfc_project_name = "test-station-bootstrap-project"
-    deployments_tfc_workspace_name = "test-station-deployments"
-    vcs_repo_name = "test-station-deployments"
-    vcs_repo_branch = null
+  bootstrap_tfc_workspace_name   = "test-station-bootstrap-workspace"
+  tfc_project_name               = "test-station-bootstrap-project"
+  deployments_tfc_workspace_name = "test-station-deployments"
+  vcs_repo_name                  = "test-station-deployments"
+  vcs_repo_branch                = null
 }
 
 
@@ -82,7 +82,7 @@ run "test_github_repo_default_branch_name" {
 }
 
 run "test_azure_app_registration" {
-  
+
   assert {
     condition     = azuread_application.workload.display_name == "app-station-bootstrap"
     error_message = "The app registration name does NOT match the default value"
@@ -90,14 +90,14 @@ run "test_azure_app_registration" {
 }
 
 run "test_azure_subscription" {
-  
+
   assert {
     condition     = length(data.azurerm_subscription.deployment) == length(var.subscription_ids)
     error_message = "The number of subscriptions does NOT match the input"
   }
 }
 run "test_azure_service_principal" {
-  
+
   assert {
     condition     = azuread_application.workload.display_name == "app-station-bootstrap"
     error_message = "The app registration name does NOT match the default value"
