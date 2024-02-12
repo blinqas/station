@@ -32,7 +32,12 @@ Station is used primarily in context of application development and hosting; Dev
 
 ## Usage
 
-The following example deploys a workload environment for common resources, in this environment we would deploy Container Registries for example.
+### Example architecture
+Here it's an example on how station can be utilized.
+![](./docs/diagrams/Station_example_1.drawio.png)
+
+### Code example to deploy the common workload
+The following example deploys a workload environment for common resources, in this environment we would deploy Container Registries, Log Analytic Workspaces and other common resources as an example.
 
 Consider the following file structure:
 
