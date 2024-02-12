@@ -1,10 +1,14 @@
 resource "tfe_workspace" "bootstrap" {
-  name           = var.bootstrap_tfc_workspace_name
-  organization   = data.tfe_organization.this.name
-  project_id     = tfe_project.station.id
-  description    = "This workspace contains state for the bootstrap procedure for Station. Repo URL: ${var.bootstrap_repo_url}"
+  name         = var.bootstrap_tfc_workspace_name
+  organization = data.tfe_organization.this.name
+  project_id   = tfe_project.station.id
+  description  = "This workspace contains state for the bootstrap procedure for Station. Repo URL: ${var.bootstrap_repo_url}"
+  force_delete = true
+}
+
+resource "tfe_workspace_settings" "bootstrap-settings" {
+  workspace_id   = tfe_workspace.bootstrap.id
   execution_mode = "local"
-  force_delete   = true
 }
 
 locals {
