@@ -155,6 +155,7 @@ variable "groups" {
   default     = {}
   type = map(object({
     display_name     = string
+    description      = optional(string)
     owners           = optional(list(string))
     members          = optional(set(string))
     security_enabled = optional(bool)
