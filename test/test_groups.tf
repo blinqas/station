@@ -16,6 +16,7 @@ module "station-groups" {
     static = {
       display_name     = "Station test: groups static"
       security_enabled = true
+      description      = "This group is static"
       owners           = [data.azuread_client_config.current.object_id]
       members          = [data.azuread_client_config.current.object_id]
     },
@@ -23,6 +24,7 @@ module "station-groups" {
     dynamic = {
       display_name     = "Station test: groups dynamic"
       security_enabled = true
+      description      = "This group is dynamic"
       types            = ["DynamicMembership"]
       owners           = [data.azuread_client_config.current.object_id]
       dynamic_membership = {

@@ -1,5 +1,6 @@
 resource "azuread_group" "group" {
   display_name     = var.azuread_group.display_name
+  description      = var.azuread_group.description
   owners           = var.owners
   security_enabled = var.azuread_group.security_enabled
   mail_enabled     = var.azuread_group.mail_enabled
