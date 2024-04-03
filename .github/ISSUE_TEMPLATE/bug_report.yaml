@@ -1,0 +1,55 @@
+name: Bug Report
+description: File a bug report
+title: "Bug: Your bug here"
+body:
+  - type: markdown
+    attributes:
+      value: "Thank you for helping to improve Station!"
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Briefly describe the bug.
+      placeholder: "A clear and concise description of what the bug is."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: "Please provide detailed steps to reproduce the bug."
+      placeholder: "1.\n2.\n3.\n"
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: "What you expected to happen."
+      placeholder: "Explain what you expected to happen."
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: "What actually happened, including error messages."
+      placeholder: "Describe what happened instead."
+    validations:
+      required: true
+  - type: input
+    id: terraform-version
+    attributes:
+      label: Terraform Version
+      description: "The version of Terraform you're using."
+      placeholder: "e.g., 1.6.1"
+    validations:
+      required: true
+  - type: input
+    id: station-version
+    attributes:
+      label: Station Version
+      description: "The version of the module."
+      placeholder: "e.g., 1.5.0"
+    validations:
+      required: true
