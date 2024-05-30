@@ -1,6 +1,9 @@
 module "station-applications" {
-  depends_on = [tfe_project.test]
-  source     = "./.."
+  depends_on      = [tfe_project.test]
+  source          = "./.."
+  tenant_id       = ""
+  subscription_id = ""
+
   tfe = {
     project_name          = tfe_project.test.name
     organization_name     = data.tfe_organization.test.name
