@@ -128,7 +128,7 @@ jobs:
           working-directory: test
     
         - name: terraform apply
-          run: terraform apply --auto-approve plan.tfplan 
+          run: terraform apply --auto-approve plan.tfplan -refresh=false
           working-directory: test
     
         - name: terraform destroy
