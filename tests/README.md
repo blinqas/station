@@ -35,6 +35,8 @@ This folder contains all tests for the Terraform Station module. The aim is to s
     export TFE_ORGANIZATION=""
     export TF_VAR_tfc_organization_name=""
     export TF_VAR_tfc_project_name=""
+    export TF_VAR_tenant_id=""
+    export TF_VAR_subscription_id=""
     ```
 
 4. **Starting the tests**:

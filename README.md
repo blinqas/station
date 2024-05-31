@@ -47,6 +47,8 @@ variables.tf
 # filename: common.tf
 module "common" {
   source              = "git::https://github.com/blinqas/station.git?ref=1.3.0"
+  tenant_id           = var.tenant_id
+  subscription_id     = var.subscription_id
   environment_name    = "prod"
   resource_group_name = "common"
   tags                = local.tags.common
