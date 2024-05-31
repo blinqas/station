@@ -128,10 +128,12 @@ jobs:
           working-directory: test
     
         - name: terraform apply
-          run: terraform apply --auto-approve plan.tfplan -refresh=false
+          run: terraform apply --auto-approve plan.tfplan
           working-directory: test
     
         - name: terraform destroy
           if: always()
-          run: terraform destroy --auto-approve
+          run: |
+            terraform plan -destroy -out plan.tfplan -input=false -refresh=false
+            terraform apply --auto-approve plan.tfplan
           working-directory: test
