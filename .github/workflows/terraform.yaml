@@ -87,7 +87,7 @@ jobs:
           working-directory: test
     
         - name: terraform plan
-          run: terraform plan -out plan.tfplan
+          run: terraform plan -out plan.tfplan -input=false
           working-directory: test
 
   apply_and_destroy:
@@ -124,7 +124,7 @@ jobs:
           working-directory: test
           
         - name: terraform plan
-          run: terraform plan -out plan.tfplan
+          run: terraform plan -out plan.tfplan -input=false
           working-directory: test
     
         - name: terraform apply

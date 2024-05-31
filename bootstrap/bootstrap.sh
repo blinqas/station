@@ -91,7 +91,7 @@ cp "./providers/providers_local_state.tf" "./providers.tf"
 
 terraform init -upgrade
 
-terraform plan -out "./plan.tfplan"
+terraform plan -out "./plan.tfplan" -input=false
 
 terraform apply "./plan.tfplan"
 
@@ -104,4 +104,4 @@ rm "terraform.tfstate"
 
 terraform init
 
-terraform plan -out "./plan.tfplan"
+terraform plan -out "./plan.tfplan" -input=false
