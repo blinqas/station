@@ -21,6 +21,10 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  TF_VAR_subscription_id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+  TF_VAR_tenant_id: ${{ secrets.AZ_TENANT_ID }}
+
 concurrency: 
   group: terraform-plan-apply-destroy
   cancel-in-progress: false
