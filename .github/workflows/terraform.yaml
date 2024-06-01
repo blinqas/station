@@ -132,6 +132,7 @@ jobs:
           working-directory: test
 
         - name: destroy role definitions
+          if: always()
           run: |
             # Deleting the two role definitions created by the test, using 
             # az cli is much faster than deleting them with Terraform for some reason.
