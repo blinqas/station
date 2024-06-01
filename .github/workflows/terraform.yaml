@@ -130,13 +130,30 @@ jobs:
         - name: terraform apply
           run: terraform apply --auto-approve plan.tfplan
           working-directory: test
+
+        - name: destroy role definitions
+          run: |
+            # Deleting the two role definitions created by the test, using 
+            # az cli is much faster than deleting them with Terraform for some reason.
+            terraform show -json > state.json
+            cat state.json | jq '.values.root_module.child_modules[0].resources[] | select (.type == "azurerm_role_definition") | .values.name' -r | xargs -I {} az role definition delete --name {}
+          working-directory: test
+
+        - name: upload state as artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: state.json
+            path: test/state.json
+            retention-days: 1
+
+        - name: terraform plan (destroy)
+          if: always()
+          run: |
+            terraform plan -destroy -out plan.tfplan -input=false -refresh=false
+          working-directory: test
     
         - name: terraform destroy
           if: always()
           run: |
-            # Deleting the two role definitions created by the test, using 
-            # az cli is much faster than deleting them with Terraform for some reason.
-            terraform show -json | jq '.values.root_module.child_modules[0].resources[] | select (.type == "azurerm_role_definition") | .values.name' -r | xargs -I {} az role definition delete --name {}
-            terraform plan -destroy -out plan.tfplan -input=false -refresh=false
             terraform apply --auto-approve plan.tfplan
           working-directory: test
