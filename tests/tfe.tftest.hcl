@@ -15,8 +15,8 @@ variables {
     create_federated_identity_credential = true # Configures Federated Credentials on the workload identity for plan and apply phases.
 
     module_outputs_to_workspace_var = {
-      applications             = true
-      groups                   = true
+      applications = true
+      groups       = true
       #role_definitions         = true
       user_assigned_identities = true
       resource_groups          = true
