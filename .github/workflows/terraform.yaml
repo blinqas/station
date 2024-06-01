@@ -135,9 +135,8 @@ jobs:
           run: |
             # Deleting the two role definitions created by the test, using 
             # az cli is much faster than deleting them with Terraform for some reason.
-            terraform show -json > state.json
-            cat state.json | jq '.values.root_module.child_modules[0].resources[] | select (.type == "azurerm_role_definition") | .values.name' -r
-            cat state.json | jq '.values.root_module.child_modules[0].resources[] | select (.type == "azurerm_role_definition") | .values.name' -r | xargs -I {} az role definition delete --name {}
+            az role definition delete --name "Maximum Custom Role provisioned with Station"
+            az role definition delete --name "Minimum Custom Role provisioned with Station"
           working-directory: test
 
 #        - name: upload state as artifact
@@ -150,7 +149,7 @@ jobs:
         - name: terraform plan (destroy)
           if: always()
           run: |
-            terraform plan -destroy -out plan.tfplan -input=false -refresh=false
+            terraform plan -destroy -out plan.tfplan -input=false
           working-directory: test
     
         - name: terraform destroy
