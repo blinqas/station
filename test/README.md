@@ -41,7 +41,7 @@ This folder contains all tests for the Terraform Station module. The aim is to s
 
 4. **Plan and Apply**:
     ```bash
-    terraform plan -out=plan.tfplan
+    terraform plan -out=plan.tfplan -input=false
     terraform apply plan.tfplan
     ```
 

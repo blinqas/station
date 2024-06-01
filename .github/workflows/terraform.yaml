@@ -91,7 +91,7 @@ jobs:
           working-directory: test
     
         - name: terraform plan
-          run: terraform plan -out plan.tfplan
+          run: terraform plan -out plan.tfplan -input=false
           working-directory: test
 
   apply_and_destroy:
@@ -128,14 +128,36 @@ jobs:
           working-directory: test
           
         - name: terraform plan
-          run: terraform plan -out plan.tfplan
+          run: terraform plan -out plan.tfplan -input=false
           working-directory: test
     
         - name: terraform apply
-          run: terraform apply --auto-approve plan.tfplan 
+          run: terraform apply --auto-approve plan.tfplan
+          working-directory: test
+
+        - name: destroy role definitions
+          run: |
+            # Deleting the two role definitions created by the test, using 
+            # az cli is much faster than deleting them with Terraform for some reason.
+            az role definition delete --name "Maximum Custom Role provisioned with Station"
+            az role definition delete --name "Minimum Custom Role provisioned with Station"
+          working-directory: test
+
+#        - name: upload state as artifact
+#          uses: actions/upload-artifact@v4
+#          with:
+#            name: state.json
+#            path: test/state.json
+#            retention-days: 1
+
+        - name: terraform plan (destroy)
+          if: always()
+          run: |
+            terraform plan -destroy -out plan.tfplan -input=false
           working-directory: test
     
         - name: terraform destroy
           if: always()
-          run: terraform destroy --auto-approve
+          run: |
+            terraform apply --auto-approve plan.tfplan
           working-directory: test
