@@ -23,7 +23,7 @@ resource "azuread_group_member" "members" {
 }
 
 resource "azurerm_role_assignment" "roles" {
-  for_each = var.role_assignments
+  for_each                               = var.role_assignments
   name                                   = each.value.name
   scope                                  = each.value.scope == null ? "/subscriptions/${data.azurerm_client_config.current.subscription_id}" : each.value.scope
   role_definition_id                     = each.value.role_definition_id

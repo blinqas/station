@@ -20,7 +20,7 @@ variables {
       display_name     = "Station test: groups minimal"
       security_enabled = true
     },
-    
+
     minimal_with_role_assignments = {
       display_name     = "Station test: groups minimal roles"
       security_enabled = true
@@ -63,17 +63,17 @@ run "groups" {
   }
 
   assert {
-    condition = contains([for role_assignment in values(module.ad_groups.minimal_with_role_assignments.group_with_roles.role_assignments) : role_assignment.role_name], "Reader")
+    condition     = contains([for role_assignment in values(module.ad_groups.minimal_with_role_assignments.group_with_roles.role_assignments) : role_assignment.role_name], "Reader")
     error_message = "No 'Reader' role assignments found for the minimal group with role assignments"
   }
 
   assert {
-    condition = contains([for role_assignment in values(module.ad_groups.minimal_with_role_assignments.group_with_roles.role_assignments) : role_assignment.role_name], "Storage Blob Data Contributor")
+    condition     = contains([for role_assignment in values(module.ad_groups.minimal_with_role_assignments.group_with_roles.role_assignments) : role_assignment.role_name], "Storage Blob Data Contributor")
     error_message = "No 'Storage Blob Data Contributor' role assignments found for the minimal group with role assignments"
   }
 
   assert {
-    condition = !contains([for role_assignment in values(module.ad_groups.minimal_with_role_assignments.group_with_roles.role_assignments) : role_assignment.role_name], "Owner")
+    condition     = !contains([for role_assignment in values(module.ad_groups.minimal_with_role_assignments.group_with_roles.role_assignments) : role_assignment.role_name], "Owner")
     error_message = "Unassigned role found for the minimal group with role assignments"
   }
 }
