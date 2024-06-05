@@ -30,10 +30,6 @@ output "applications" {
   value = module.applications
 }
 
-output "groups" {
-  value = module.ad_groups
-}
-
 output "user_assigned_identities" {
   value = module.user_assigned_identities
 }

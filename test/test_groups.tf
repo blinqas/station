@@ -31,6 +31,25 @@ module "station-groups" {
         enabled = true
         rule    = "user.jobTitle -eq \"DevOps Engineer\""
       }
+    },
+    minimal_with_role_assignments = {
+      display_name     = "Station test: groups minimal with role assignments"
+      security_enabled = true
+
+      role_assignments = {
+        subscription_reader = {
+          name                 = "group_owner"
+          scope                = data.azurerm_subscription.current.id
+          role_definition_name = "Reader"
+          description          = "Reader on the subscription"
+        },
+        backup_sa_contributor = {
+          name                 = "group_backup_sa_contributor"
+          scope                = data.azurerm_storage_account.test.id
+          role_definition_name = "Storage Blob Data Contributor"
+          description          = "Storage Blob Data Contributor on the storage account"
+        }
+      }
     }
   }
 }

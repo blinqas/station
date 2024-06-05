@@ -165,6 +165,18 @@ variable "groups" {
       enabled = bool
       rule    = string
     }))
+    role_assignments = optional(map(object({
+      name                                   = optional(string)
+      scope                                  = optional(string) #Sets scope to current subscription if empty
+      role_definition_id                     = optional(string)
+      role_definition_name                   = optional(string) #Either this or the above must be provided
+      assign_to_workload_principal           = optional(bool)
+      condition                              = optional(string)
+      condition_version                      = optional(string)
+      delegated_managed_identity_resource_id = optional(string)
+      description                            = optional(string)
+      skip_service_principal_aad_check       = optional(bool)
+    })))
   }))
 }
 
@@ -205,7 +217,6 @@ variable "user_assigned_identities" {
       delegated_managed_identity_resource_id = optional(string)
       description                            = optional(string)
       skip_service_principal_aad_check       = optional(bool)
-      //principal_id                           = optional(string)
     })))
     group_memberships = optional(map(string))
   }))
