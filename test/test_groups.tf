@@ -41,14 +41,12 @@ module "station-groups" {
 
       role_assignments = {
         subscription_reader = {
-          name                 = "group_owner"
-          scope                = data.azurerm_subscription.current.id
+          scope                = null #Will default to subscription
           role_definition_name = "Reader"
           description          = "Reader on the subscription"
         },
         backup_sa_contributor = {
-          name                 = "group_backup_sa_contributor"
-          scope                = data.azurerm_storage_account.test.id
+          scope                = null #Will default to subscription
           role_definition_name = "Storage Blob Data Contributor"
           description          = "Storage Blob Data Contributor on the storage account"
         }
