@@ -1,6 +1,8 @@
 module "station_role_definitions" {
-  depends_on = [tfe_project.test]
-  source     = "./.."
+  depends_on      = [tfe_project.test]
+  source          = "./.."
+  tenant_id       = var.tenant_id
+  subscription_id = var.subscription_id
 
   tfe = {
     project_name          = tfe_project.test.name

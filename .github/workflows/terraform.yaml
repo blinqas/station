@@ -21,6 +21,10 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  TF_VAR_subscription_id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+  TF_VAR_tenant_id: ${{ secrets.AZ_TENANT_ID }}
+
 concurrency: 
   group: terraform-plan-apply-destroy
   cancel-in-progress: false
@@ -37,7 +41,7 @@ jobs:
         - name: Set up Terraform
           uses: hashicorp/setup-terraform@v3
           with:
-            terraform_version: "~1.7.0"
+            terraform_version: "~1.7.0" 
     
         - name: terraform init station module
           run: terraform init
@@ -64,7 +68,7 @@ jobs:
         TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
     steps:
         - name: 'Azure: login'
-          uses: azure/login@v1
+          uses: azure/login@v2
           with:
             client-id:       ${{ secrets.AZ_CLIENT_ID }}
             subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
@@ -87,7 +91,7 @@ jobs:
           working-directory: test
     
         - name: terraform plan
-          run: terraform plan -out plan.tfplan
+          run: terraform plan -out plan.tfplan -input=false
           working-directory: test
 
   apply_and_destroy:
@@ -101,7 +105,7 @@ jobs:
         TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
     steps:
         - name: 'Azure: login'
-          uses: azure/login@v1
+          uses: azure/login@v2
           with:
             client-id:       ${{ secrets.AZ_CLIENT_ID }}
             subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
@@ -124,14 +128,37 @@ jobs:
           working-directory: test
           
         - name: terraform plan
-          run: terraform plan -out plan.tfplan
+          run: terraform plan -out plan.tfplan -input=false
           working-directory: test
     
         - name: terraform apply
-          run: terraform apply --auto-approve plan.tfplan 
+          run: terraform apply --auto-approve plan.tfplan
+          working-directory: test
+
+        - name: destroy role definitions
+          if: always()
+          run: |
+            # Deleting the two role definitions created by the test, using 
+            # az cli is much faster than deleting them with Terraform for some reason.
+            az role definition delete --name "Maximum Custom Role provisioned with Station"
+            az role definition delete --name "Minimum Custom Role provisioned with Station"
+          working-directory: test
+
+#        - name: upload state as artifact
+#          uses: actions/upload-artifact@v4
+#          with:
+#            name: state.json
+#            path: test/state.json
+#            retention-days: 1
+
+        - name: terraform plan (destroy)
+          if: always()
+          run: |
+            terraform plan -destroy -out plan.tfplan -input=false
           working-directory: test
     
         - name: terraform destroy
           if: always()
-          run: terraform destroy --auto-approve
+          run: |
+            terraform apply --auto-approve plan.tfplan
           working-directory: test

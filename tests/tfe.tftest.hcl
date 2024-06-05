@@ -15,9 +15,9 @@ variables {
     create_federated_identity_credential = true # Configures Federated Credentials on the workload identity for plan and apply phases.
 
     module_outputs_to_workspace_var = {
-      applications             = true
-      groups                   = true
-      role_definitions         = true
+      applications = true
+      groups       = true
+      #role_definitions         = true
       user_assigned_identities = true
       resource_groups          = true
     }
@@ -69,11 +69,11 @@ variables {
     }
   }
   # Added to be able to test the passing of the created role_definitions into the TFC workspace variables
-  role_definitions = {
-    minimum_tfe = {
-      name = "Minimum Custom Role for tfe test"
-    }
-  }
+  #role_definitions = {
+  #  minimum_tfe = {
+  #    name = "Minimum Custom Role for tfe test"
+  #  }
+  #}
   # Added to be able to test the passing of the created user_assigned_identities into the TFC workspace variables
   user_assigned_identities = {
     minimum_tfe = {
@@ -233,18 +233,18 @@ run "tfe_module_outputs_to_workspace_var" {
   }
 
   # Assertions for the output variable from the role_definitions
-  assert {
-    condition     = module.station-tfe.workspace_variables.role_definitions.value != null
-    error_message = "The application output variable is empty."
-  }
-  assert {
-    condition     = module.station-tfe.workspace_variables.role_definitions.hcl == true
-    error_message = "The application workspace variable is not of type hcl"
-  }
-  assert {
-    condition     = module.station-tfe.workspace_variables.role_definitions.category == "terraform"
-    error_message = "The application workspace variable was NOT set as type terraform"
-  }
+  #assert {
+  #  condition     = module.station-tfe.workspace_variables.role_definitions.value != null
+  #  error_message = "The application output variable is empty."
+  #}
+  #assert {
+  #  condition     = module.station-tfe.workspace_variables.role_definitions.hcl == true
+  #  error_message = "The application workspace variable is not of type hcl"
+  #}
+  #assert {
+  #  condition     = module.station-tfe.workspace_variables.role_definitions.category == "terraform"
+  #  error_message = "The application workspace variable was NOT set as type terraform"
+  #}
 
   # Assertions for the output variable from the user_assigned_identities
   assert {

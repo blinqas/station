@@ -7,11 +7,11 @@ output "workload_service_principal_object_id" {
 }
 
 output "tenant_id" {
-  value = data.azuread_client_config.current.tenant_id
+  value = var.tenant_id
 }
 
 output "subscription_id" {
-  value = data.azurerm_client_config.current.subscription_id
+  value = var.subscription_id
 }
 
 output "workload_resource_group_name" {

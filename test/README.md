@@ -35,11 +35,13 @@ This folder contains all tests for the Terraform Station module. The aim is to s
     export TFE_ORGANIZATION=""
     export TF_VAR_tfc_organization_name=""
     export TF_VAR_tfc_project_name=""
+    export TF_VAR_tenant_id=""
+    export TF_VAR_subscription_id=""
     ```
 
 4. **Plan and Apply**:
     ```bash
-    terraform plan -out=plan.tfplan
+    terraform plan -out=plan.tfplan -input=false
     terraform apply plan.tfplan
     ```
 
@@ -69,8 +71,10 @@ When adding new features to the Station module, it's crucial to validate their f
 
 ```hcl
 module "station-new-feature" {
-  depends_on = [tfe_project.test]
-  source     = "./.."
+  depends_on      = [tfe_project.test]
+  source          = "./.."
+  tenant_id       = ""
+  subscription_id = ""
 
   tfe = {
     project_name          = tfe_project.test.name

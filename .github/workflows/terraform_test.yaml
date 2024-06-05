@@ -20,6 +20,10 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  TF_VAR_subscription_id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+  TF_VAR_tenant_id: ${{ secrets.AZ_TENANT_ID }}
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -49,7 +53,7 @@ jobs:
         TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
     steps:
         - name: 'Azure: login'
-          uses: azure/login@v1
+          uses: azure/login@v2
           with:
             client-id:       ${{ secrets.AZ_CLIENT_ID }}
             subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
