@@ -27,5 +27,3 @@ provider "azuread" {
 }
 
 provider "tfe" {}
-
-data "azuread_client_config" "current" {}
