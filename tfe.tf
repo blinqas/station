@@ -22,13 +22,13 @@ module "station-tfe" {
       sensitive   = false
     },
     ARM_SUBSCRIPTION_ID = {
-      value       = data.azurerm_client_config.current.subscription_id
+      value       = var.subscription_id
       category    = "env"
       description = "The Subscription ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
       sensitive   = false
     },
     ARM_TENANT_ID = {
-      value       = data.azurerm_client_config.current.tenant_id
+      value       = var.tenant_id
       category    = "env"
       description = "The Azure Tenant ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
       sensitive   = false

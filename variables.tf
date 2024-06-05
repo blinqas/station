@@ -1,3 +1,13 @@
+variable "tenant_id" {
+  type        = string
+  description = "(Required) The Entra ID tenant ID used by the caller."
+}
+
+variable "subscription_id" {
+  type        = string
+  description = "(Required) The Azure subscription ID used by the caller."
+}
+
 variable "default_location" {
   description = "The name of the default location to deploy workload resources to."
   default     = "norwayeast"
