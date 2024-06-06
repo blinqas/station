@@ -95,6 +95,40 @@ jobs:
         - name: terraform plan
           run: terraform plan -out plan.tfplan -input=false
           working-directory: test
+  
+  terraform_test:
+    environment: E2E_testing
+    needs: plan
+    runs-on: ubuntu-latest
+    name: 🥼 Terraform tests
+    env:
+        TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
+        TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
+    steps:
+        - name: 'Azure: login'
+          uses: azure/login@v2
+          with:
+            client-id:       ${{ secrets.AZ_CLIENT_ID }}
+            subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+            tenant-id:       ${{ secrets.AZ_TENANT_ID }}
+    
+        - name: Checkout
+          uses: actions/checkout@v4
+        
+        - name: Append Run ID to Project Name
+          run: echo "TF_VAR_tfc_project_name=${{ secrets.TF_VAR_TFC_PROJECT_NAME }}-${{ github.run_id }}-tests" >> $GITHUB_ENV
+        
+        - name: Set up Terraform
+          uses: hashicorp/setup-terraform@v3
+          with:
+            terraform_version: "~1.8.0"
+            cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        
+        - name: Terraform init
+          run: terraform init
+          
+        - name: Terraform test
+          run: terraform test
 
   apply_and_destroy:
     if: >
