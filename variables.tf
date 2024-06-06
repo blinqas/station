@@ -222,9 +222,9 @@ variable "user_assigned_identities" {
     })))
     group_memberships = optional(map(string))
     directory_role_assignment = optional(map(object({
-      role_name                      = string
-      app_scope_id                 = optional(string)
-      directory_scope_id           = optional(string)
+      role_name          = string
+      app_scope_id       = optional(string)
+      directory_scope_id = optional(string)
     })))
   }))
 }
@@ -305,10 +305,10 @@ variable "directory_role_assignment" {
   EOF
   default     = {}
   type = map(object({
-    role_name                      = string
-    principal_object_id          = string
-    app_scope_id                 = optional(string)
-    directory_scope_id           = optional(string)
+    role_name           = string
+    principal_object_id = string
+    app_scope_id        = optional(string)
+    directory_scope_id  = optional(string)
   }))
 }
 
