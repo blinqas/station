@@ -182,7 +182,7 @@ variable "groups" {
 
 variable "user_assigned_identities" {
   description = <<EOF
-  User Assigned Identities to create."
+  User Assigned Identities to create.
 
   Example:
 
@@ -194,6 +194,9 @@ variable "user_assigned_identities" {
       app_role_assignments    = ["IdentityRiskEvent.ReadWrite.All"]
       group_memberships = {
         "Kubernetes Administrators" = azuread_group.k8s_admins.object_id
+      }
+      directory_role_assignment = {
+        role_name                      = "Application Administrator"
       }
     }
   }
@@ -209,17 +212,24 @@ variable "user_assigned_identities" {
       scope                                  = string
       role_definition_id                     = optional(string)
       role_definition_name                   = optional(string)
+      principal_id                           = optional(string)
       assign_to_workload_principal           = optional(bool)
       condition                              = optional(string)
       condition_version                      = optional(string)
       delegated_managed_identity_resource_id = optional(string)
       description                            = optional(string)
       skip_service_principal_aad_check       = optional(bool)
-      //principal_id                           = optional(string)
     })))
     group_memberships = optional(map(string))
+    directory_role_assignment = optional(map(object({
+      role_name                      = string
+      app_scope_id                 = optional(string)
+      directory_scope_id           = optional(string)
+    })))
   }))
 }
+
+
 
 
 variable "tfe" {
@@ -285,6 +295,21 @@ variable "group_membership" {
   EOF
   default     = {}
   type        = map(string)
+}
+
+variable "directory_role_assignment" {
+  description = <<EOF
+    (Optional) Map of directory_role_assignment to create. 
+
+    - assign_to_workload_principal assigns the role to the workload identity. Can not be used with principal_id.
+  EOF
+  default     = {}
+  type = map(object({
+    role_name                      = string
+    principal_object_id          = string
+    app_scope_id                 = optional(string)
+    directory_scope_id           = optional(string)
+  }))
 }
 
 variable "role_assignment" {

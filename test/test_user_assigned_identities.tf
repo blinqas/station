@@ -11,25 +11,50 @@ module "station-uai" {
     workspace_name        = "station-tests-uai_tests"
   }
   managed_identity_name = "testName"
-  user_assigned_identities = {
+
+  #Test that the default workload identity is assigned the Directory role assignment
+  directory_role_assignment = {
     minimum = {
-      name = "uai-01"
+      role_name           = "Application Administrator"
+      principal_object_id = data.azurerm_client_config.current.object_id
     }
 
-    maximum = {
-      name                 = "uai-02"
-      location             = "norwayeast"
-      app_role_assignments = ["User.Read.All"]
-      group_memberships = {
-        static = module.station-groups.groups.static.object_id
+    directory_scope = {
+      role_name           = "Application Developer"
+      principal_object_id = data.azurerm_client_config.current.object_id
+      directory_scope_id  = "/"
+    }
+
+    user_assigned_identities = {
+      minimum = {
+        name = "uai-01"
       }
-      role_assignments = {
-        subscription_reader = {
-          role_definition_name = "Reader"
-          scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
+
+      maximum = {
+        name                 = "uai-02"
+        location             = "norwayeast"
+        app_role_assignments = ["User.Read.All"]
+        group_memberships = {
+          static = module.station-groups.groups.static.object_id
+        }
+        role_assignments = {
+          subscription_reader = {
+            role_definition_name = "Reader"
+            scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
+          }
+        }
+        directory_role_assignment = {
+          directory_reader = {
+            role_name           = "Directory Readers"
+            principal_object_id = data.azurerm_client_config.current.object_id
+          }
         }
       }
     }
   }
 }
 
+
+resource "azuread_application" "uai-test-app" {
+  display_name = "Test Application"
+}
