@@ -1,0 +1,35 @@
+name: Comment test
+
+on:
+  push:
+    branches:
+      - trunk
+  pull_request:
+    branches:
+      - trunk
+    paths:
+      #This should only run when terraform files have been changed.
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '**/*.json'
+      - '**/*.yaml'
+  workflow_dispatch:
+  release:
+    types: [created]
+  issue_comment:
+      types: [created]  
+
+jobs:
+    debug:
+        if: github.event_name == 'issue_comment'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Debug Output
+              run: echo "This is a test"
+    debug2:
+        if: github.event_name == 'issue_comment' && contains(github.event.comment.body, '/start_e2e')
+        runs-on: ubuntu-latest
+        steps:
+            - name: Debug Output
+              run: echo "This is a test2"
+            
