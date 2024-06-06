@@ -16,6 +16,8 @@ on:
   workflow_dispatch:
   release:
     types: [created]
+  issue_comment:
+      types: [created]  
 
 permissions:
   id-token: write
@@ -41,7 +43,7 @@ jobs:
         - name: Set up Terraform
           uses: hashicorp/setup-terraform@v3
           with:
-            terraform_version: "~1.7.0" 
+            terraform_version: "~1.8.0" 
     
         - name: terraform init station module
           run: terraform init
@@ -83,7 +85,7 @@ jobs:
         - name: Set up Terraform
           uses: hashicorp/setup-terraform@v3
           with:
-            terraform_version: "~1.7.0"
+            terraform_version: "~1.8.0"
             cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
     
         - name: terraform init
@@ -95,7 +97,15 @@ jobs:
           working-directory: test
 
   apply_and_destroy:
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/trunk')
+    if: >
+      (
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'release'
+      ) || (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        contains(github.event.comment.body, '/start_e2e')
+      )
     environment: E2E_testing
     needs: plan
     runs-on: ubuntu-latest
@@ -120,7 +130,7 @@ jobs:
         - name: Set up Terraform
           uses: hashicorp/setup-terraform@v3
           with:
-            terraform_version: "~1.7.0"
+            terraform_version: "~1.8.0"
             cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
         
         - name: terraform init
