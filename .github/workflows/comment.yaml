@@ -3,6 +3,10 @@ name: "Deploy on Comment"
 on:
   issue_comment:
     types: [created]
+    
+  pull_request:
+    branches:
+        - '*'    
 
 jobs:
   deploy:
