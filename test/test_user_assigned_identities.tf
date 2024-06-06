@@ -25,29 +25,37 @@ module "station-uai" {
       directory_scope_id  = "/"
     }
 
-    user_assigned_identities = {
-      minimum = {
-        name = "uai-01"
-      }
+    /*  
+    app_scope = {
+      role_name      = "Cloud Device Administrator"
+      principal_object_id = data.azurerm_client_config.current.object_id
+      app_scope_id = ""
+    } */
+  }
 
-      maximum = {
-        name                 = "uai-02"
-        location             = "norwayeast"
-        app_role_assignments = ["User.Read.All"]
-        group_memberships = {
-          static = module.station-groups.groups.static.object_id
+
+  user_assigned_identities = {
+    minimum = {
+      name = "uai-01"
+    }
+
+    maximum = {
+      name                 = "uai-02"
+      location             = "norwayeast"
+      app_role_assignments = ["User.Read.All"]
+      group_memberships = {
+        static = module.station-groups.groups.static.object_id
+      }
+      role_assignments = {
+        subscription_reader = {
+          role_definition_name = "Reader"
+          scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
         }
-        role_assignments = {
-          subscription_reader = {
-            role_definition_name = "Reader"
-            scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
-          }
-        }
-        directory_role_assignment = {
-          directory_reader = {
-            role_name           = "Directory Readers"
-            principal_object_id = data.azurerm_client_config.current.object_id
-          }
+      }
+      directory_role_assignment = {
+        directory_reader = {
+          role_name           = "Directory Readers"
+          principal_object_id = data.azurerm_client_config.current.object_id
         }
       }
     }
