@@ -23,3 +23,10 @@ variable "role_assignments" {
     (Optional) A map of role assignments to create for the group.
   EOF
 }
+
+variable "subscription_id" {
+  type        = string
+  description = <<EOF
+    (Required)The subscription ID that should be used for the default scope of the role assignments.
+  EOF
+}
