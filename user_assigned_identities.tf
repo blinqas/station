@@ -1,13 +1,17 @@
 module "user_assigned_identity" {
   source                    = "./user_assigned_identity"
-  name                      = var.managed_identity_name == null ? "mi-${var.tfe.workspace_name}-${var.environment_name}" : "mi-${var.managed_identity_name}"
+  name                      = try(var.identity.name, "mi-${var.tfe.workspace_name}-${var.environment_name}")
   resource_group_name       = azurerm_resource_group.workload.name
   location                  = azurerm_resource_group.workload.location
   tags                      = local.tags
-  role_assignments          = {}
-  app_role_assignments      = []
-  group_memberships         = {}
-  directory_role_assignment = var.directory_role_assignment == null ? {} : var.directory_role_assignment
+  role_assignments          = try(var.identity.role_assignments, {})
+  app_role_assignments      = try(var.identity.app_role_assignments, [])
+  group_memberships         = try(var.identity.group_memberships, {})
+  directory_role_assignment = try(var.identity.directory_role_assignment, {})
+  resource_group_ids        = concat(
+    [azurerm_resource_group.workload.id],
+    values(azurerm_resource_group.user_specified)[*].id
+  )
 }
 
 module "user_assigned_identities" {

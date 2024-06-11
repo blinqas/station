@@ -10,29 +10,6 @@ module "station-uai" {
     workspace_description = "This workspace contains groups_tests from https://github.com/blinqas/station.git"
     workspace_name        = "station-tests-uai_tests"
   }
-  managed_identity_name = "testName"
-
-  #Test that the default workload identity is assigned the Directory role assignment
-  directory_role_assignment = {
-    minimum = {
-      role_name           = "Application Administrator"
-      principal_object_id = data.azurerm_client_config.current.object_id
-    }
-
-    directory_scope = {
-      role_name           = "Application Developer"
-      principal_object_id = data.azurerm_client_config.current.object_id
-      directory_scope_id  = "/"
-    }
-
-    /*  
-    app_scope = {
-      role_name      = "Cloud Device Administrator"
-      principal_object_id = data.azurerm_client_config.current.object_id
-      app_scope_id = ""
-    } */
-  }
-
 
   user_assigned_identities = {
     minimum = {

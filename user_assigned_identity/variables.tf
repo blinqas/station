@@ -42,3 +42,9 @@ variable "directory_role_assignment" {
   default     = {}
   type        = map(any)
 }
+
+variable "resource_group_ids" {
+  description = "A list of Resource Groups IDs the where the role assignments should be created."
+  type        = list(string)
+  default     = []
+}

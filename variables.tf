@@ -30,14 +30,52 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "managed_identity_name" {
-  description = <<EOF
-    The name of the managed identity (identity provided to the workload) that is created. The final name is prefixed with `mi-`.
 
-    If a value is not provided, Station will set the name to `mi-var.tfe.workspace_name-var.environment_name`
+variable "identity" {
+  description = <<EOF
+  Configuration for the workload identity. This is the identity that is used to perform the Terraform plan and apply operations.
+
+  Example:
+  identity = {
+    name = "workload-prod" #Name will be prefixed with `mi-`
+    role_assignments = {
+      key_vault_admin = {
+        scope = null # Defaults to the resource groups created by the workload
+        role_definition_name = "Key Vault Administrator"
+        description = "Needed to manage key vaults"
+      }
+    }
+    app_role_assignments = ["User.Read.All"]
+    group_memberships    = ["objectID1", "objectID2"]
+    directory_role_assignment = {
+      Reader = {
+        role_name = "Directory Reader"
+      }
+    }
+  }
   EOF
   default     = null
-  type        = string
+  type = object({
+    name = optional(string)
+    role_assignments = optional(map(object({
+      name                                   = optional(string)
+      scope                                  = optional(string)
+      role_definition_id                     = optional(string)
+      role_definition_name                   = optional(string)
+      condition                              = optional(string)
+      condition_version                      = optional(string)
+      delegated_managed_identity_resource_id = optional(string)
+      description                            = optional(string)
+      skip_service_principal_aad_check       = optional(bool)
+    })))
+    group_memberships    = optional(map(string))
+    app_role_assignments = optional(set(string))
+    directory_role_assignment = optional(map(object({
+      role_name          = optional(string)
+      app_scope_id       = optional(string)
+      directory_scope_id = optional(string)
+    })))
+  })
 }
 
 variable "role_definition_name_on_workload_rg" {
@@ -222,15 +260,12 @@ variable "user_assigned_identities" {
     })))
     group_memberships = optional(map(string))
     directory_role_assignment = optional(map(object({
-      role_name                      = string
-      app_scope_id                 = optional(string)
-      directory_scope_id           = optional(string)
+      role_name          = optional(string)
+      app_scope_id       = optional(string)
+      directory_scope_id = optional(string)
     })))
   }))
 }
-
-
-
 
 variable "tfe" {
   description = <<EOF
@@ -295,21 +330,6 @@ variable "group_membership" {
   EOF
   default     = {}
   type        = map(string)
-}
-
-variable "directory_role_assignment" {
-  description = <<EOF
-    (Optional) Map of directory_role_assignment to create. 
-
-    - assign_to_workload_principal assigns the role to the workload identity. Can not be used with principal_id.
-  EOF
-  default     = {}
-  type = map(object({
-    role_name                      = string
-    principal_object_id          = string
-    app_scope_id                 = optional(string)
-    directory_scope_id           = optional(string)
-  }))
 }
 
 variable "role_assignment" {
