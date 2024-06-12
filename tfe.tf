@@ -7,34 +7,6 @@ module "station-tfe" {
   workspace_description = var.tfe.workspace_description
   vcs_repo              = try(var.tfe.vcs_repo, null)
   file_triggers_enabled = try(var.tfe.vcs_repo.tags_regex, null) == null ? true : false # if tags_regex is supplied, set to false, this removes an uneccessary step
-  workspace_env_vars = merge(try(var.tfe.workspace_env_vars, {}), {
-    # DOCS: https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud
-    TFC_AZURE_PROVIDER_AUTH = {
-      value       = true
-      category    = "env"
-      description = "Is true when using dynamic credentials to authenticate to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
-      sensitive   = false
-    },
-    TFC_AZURE_RUN_CLIENT_ID = {
-      value       = module.user_assigned_identity.client_id
-      category    = "env"
-      description = "The client ID for the Service Principal / Application used when authenticating to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
-      sensitive   = false
-    },
-    ARM_SUBSCRIPTION_ID = {
-      value       = var.subscription_id
-      category    = "env"
-      description = "The Subscription ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
-      sensitive   = false
-    },
-    ARM_TENANT_ID = {
-      value       = var.tenant_id
-      category    = "env"
-      description = "The Azure Tenant ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
-      sensitive   = false
-    },
-  }, )
-
   workspace_vars = merge(try(var.tfe.workspace_vars, {}), {
     # Terraform variables are prefixed with TF_VAR_ to suppress TFC Runner warning of unused variables.
     station_id = {
@@ -63,6 +35,29 @@ module "station-tfe" {
       category    = "terraform"
       description = "Default tags from Station Deployment"
       hcl         = true
+      sensitive   = false
+      }, TFC_AZURE_PROVIDER_AUTH = {
+      value       = true
+      category    = "env"
+      description = "Is true when using dynamic credentials to authenticate to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
+      sensitive   = false
+    },
+    TFC_AZURE_RUN_CLIENT_ID = {
+      value       = module.user_assigned_identity.client_id
+      category    = "env"
+      description = "The client ID for the Service Principal / Application used when authenticating to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
+      sensitive   = false
+    },
+    ARM_SUBSCRIPTION_ID = {
+      value       = var.subscription_id
+      category    = "env"
+      description = "The Subscription ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
+      sensitive   = false
+    },
+    ARM_TENANT_ID = {
+      value       = var.tenant_id
+      category    = "env"
+      description = "The Azure Tenant ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
       sensitive   = false
     }
     },

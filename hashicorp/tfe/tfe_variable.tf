@@ -1,5 +1,5 @@
 resource "tfe_variable" "workload" {
-  for_each     = merge(var.workspace_env_vars, var.workspace_vars)
+  for_each     = var.workspace_vars
   key          = each.key
   value        = each.value.value
   description  = each.value.description
