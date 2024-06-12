@@ -8,7 +8,7 @@ module "user_assigned_identity" {
   app_role_assignments      = try(var.identity.app_role_assignments, [])
   group_memberships         = try(var.identity.group_memberships, {})
   directory_role_assignment = try(var.identity.directory_role_assignment, {})
-  resource_group_ids        = concat(
+  resource_group_ids = concat(
     [azurerm_resource_group.workload.id],
     values(azurerm_resource_group.user_specified)[*].id
   )
