@@ -22,7 +22,8 @@ variables {
       resource_groups          = true
     }
 
-    workspace_env_vars = {
+    workspace_vars = {
+      #Test environment variables
       tfe_test_env_var_1 = {
         value       = "test_env_var"
         category    = "env"
@@ -35,9 +36,7 @@ variables {
         description = "Test sensitive env var"
         sensitive   = true
       }
-    }
-
-    workspace_vars = {
+      #Test terraform variables
       tfe_test_var_1 = {
         value       = "test"
         category    = "terraform"

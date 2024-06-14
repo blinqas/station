@@ -18,17 +18,6 @@ variable "workspace_description" {
   type        = string
 }
 
-variable "workspace_env_vars" {
-  description = "Map of environment variables to provision on the workspace in Terraform Cloud"
-  type = map(object({
-    value       = string
-    category    = string
-    description = string
-    sensitive   = optional(bool, false)
-  }))
-  default = null
-}
-
 variable "workspace_vars" {
   description = "Map of variables to provision on the workspace in Terraform Cloud"
   type = map(object({
