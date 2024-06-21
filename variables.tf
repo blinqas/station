@@ -331,3 +331,53 @@ variable "role_definitions" {
   }))
 }
 
+variable "identity" {
+  description = <<EOF
+  Configuration for the workload identity. This is the identity that is used to perform the Terraform plan and apply operations.
+
+  Example:
+  identity = {
+    name = "workload-prod" #Name will be prefixed with `mi-`
+    role_assignments = {
+      key_vault_admin = {
+        scope = null # Defaults to the resource groups created by the workload
+        role_definition_name = "Key Vault Administrator"
+        description = "Needed to manage key vaults"
+      }
+    }
+    app_role_assignments = ["User.Read.All"]
+    group_memberships    = ["objectID1", "objectID2"]
+    directory_role_assignment = {
+      Reader = {
+        role_name = "Directory Reader"
+      }
+    }
+  }
+  EOF
+  default     = null
+  type = object({
+    app_role_assignments = optional(set(string))
+    name                 = optional(string)
+    group_memberships    = optional(map(string))
+    role_assignments = optional(map(object({
+      name                 = optional(string)
+      scope                = optional(string)
+      role_definition_id   = optional(string)
+      role_definition_name = optional(string)
+      description          = optional(string)
+    })), {})
+    role_assignments_resource_groups = optional(map(object({
+      scope                = string
+      role_definition_id   = optional(string)
+      role_definition_name = optional(string)
+      description          = optional(string)
+    })), {})
+    directory_role_assignment = optional(map(object({
+      role_name          = optional(string)
+      app_scope_id       = optional(string)
+      directory_scope_id = optional(string)
+    })), {})
+  })
+}
+
+
