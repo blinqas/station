@@ -26,3 +26,22 @@ resource "azurerm_role_assignment" "user_input" {
   description                            = each.value.description
   skip_service_principal_aad_check       = each.value.skip_service_principal_aad_check == null ? false : each.value.skip_service_principal_aad_check
 }
+
+resource "azurerm_role_assignment" "identity_on_workload_rg" {
+  for_each             = var.identity.role_assignments_resource_groups
+  principal_id         = module.user_assigned_identity.principal_id
+  scope                = azurerm_resource_group.workload.id
+  role_definition_id   = each.value.role_definition_id
+  role_definition_name = each.value.role_definition_name
+  description          = each.value.description
+}
+
+resource "azurerm_role_assignment" "identity_on_rg" {
+  for_each             = var.identity.role_assignments_resource_groups
+  principal_id         = module.user_assigned_identity.principal_id
+  scope                = azurerm_resource_group.user_specified[each.value.scope].id
+  role_definition_id   = each.value.role_definition_id
+  role_definition_name = each.value.role_definition_name
+  description          = each.value.description
+}
+

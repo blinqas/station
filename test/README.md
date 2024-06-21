@@ -52,7 +52,7 @@ This folder contains all tests for the Terraform Station module. The aim is to s
     ```
 
 6. **Tips**
-   You can also test each module separately by running `terraform plan -target module.module_you_want_to_test`
+   You can also test each module separately by running `terraform plan -target module.module_you_want_to_test -out=plan.tfplan` and then `terraform apply plan.tfplan`.
 
 ## Testing Approach for New Features in the Station Module
 
