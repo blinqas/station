@@ -17,7 +17,7 @@ resource "azuread_application" "app" {
   }
 
   dynamic "public_client" {
-    for_each = var.azuread_application.public_client == null ? [] : var.azuread_application.public_client
+    for_each = var.azuread_application.public_client == null ? [] : [1]
 
     content {
       redirect_uris = var.azuread_application.public_client.redirect_uris
