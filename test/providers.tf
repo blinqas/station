@@ -27,4 +27,3 @@ provider "azuread" {
 }
 
 provider "tfe" {}
-
