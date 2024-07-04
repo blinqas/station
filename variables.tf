@@ -119,6 +119,10 @@ variable "applications" {
       })))
     }))
 
+    public_client = optional(object({
+      redirect_uris = optional(set(string))
+    }))
+
     required_resource_access = optional(set(object({
       resource_app_id = string
       resource_access = map(object({

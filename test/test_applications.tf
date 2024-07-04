@@ -82,6 +82,10 @@ module "station-applications" {
         saml2_token  = [{ name = "Test saml2 token" }, { name = "Test saml2 token 2" }]
       }
 
+      public_client = {
+        redirect_uris = ["https://localhost/"]
+      }
+
       web = {
         homepage_url  = "http://localhost"
         logout_url    = "http://localhost/logout"
