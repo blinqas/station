@@ -40,6 +40,22 @@ variable "managed_identity_name" {
   type        = string
 }
 
+variable "app_role_assignments" {
+  description = <<EOF
+    (Optional) A set of azuread_app_role_assignment resources to assign to the workload identity. Only built-in application roles are supported.
+
+    Example:
+    ```hcl
+    app_role_assignments = [
+      "IdentityRiskEvent.ReadWrite.All",
+      "IdentityRiskEvent.Read.All"
+    ]
+    ```
+  EOF
+  default     = []
+  type        = set(string)
+}
+
 variable "role_definition_name_on_workload_rg" {
   description = "The name of an in-built role to assign the workload identity on the workload resource group"
   default     = "Owner"
@@ -165,7 +181,11 @@ variable "applications" {
 }
 
 variable "groups" {
-  description = "Map of Entra ID (Azure AD) groups to create"
+  description = <<-EOF
+    (Optional) Map of Entra ID (Azure AD) groups to create
+    Note: The workload identity is automatically assigned the App Role "User.ReadBasic.All"
+          because being "Owner" of the group is not sufficient to add principals.
+  EOF
   default     = {}
   type = map(object({
     display_name     = string
