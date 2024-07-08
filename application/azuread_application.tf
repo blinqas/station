@@ -122,3 +122,34 @@ resource "azuread_application" "app" {
     }
   }
 }
+
+resource "azuread_service_principal" "sp" {
+  client_id                      = azuread_application.app.application_id
+  account_enabled                = var.azuread_service_principal.account_enabled
+  alternative_names              = var.azuread_service_principal.alternative_names
+  app_role_assignment_required   = var.azuread_service_principal.app_role_assignment_required
+  description                    = var.azuread_service_principal.description
+  login_url                      = var.azuread_service_principal.login_url
+  notes                          = var.azuread_service_principal.notes
+  notification_email_addresses   = var.azuread_service_principal.notification_email_addresses
+  owners                         = var.owners
+  preferred_single_sign_on_mode  = var.azuread_service_principal.preferred_single_sign_on_mode
+  tags                           = var.azuread_service_principal.tags
+
+  dynamic "feature_tags" {
+    for_each = var.azuread_service_principal.feature_tags == null ? [] : [var.azuread_service_principal.feature_tags]
+    content {
+      custom_single_sign_on = feature_tags.value.custom_single_sign_on
+      enterprise            = feature_tags.value.enterprise
+      gallery               = feature_tags.value.gallery
+      hide                  = feature_tags.value.hide
+    }
+  }
+
+  dynamic "saml_single_sign_on" {
+    for_each = var.azuread_service_principal.saml_single_sign_on == null ? [] : [var.azuread_service_principal.saml_single_sign_on]
+    content {
+      relay_state = saml_single_sign_on.value.relay_state
+    }
+  }
+}
