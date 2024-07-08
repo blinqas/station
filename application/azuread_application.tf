@@ -124,7 +124,7 @@ resource "azuread_application" "app" {
 }
 
 resource "azuread_service_principal" "sp" {
-  count = var.azuread_service_principal == null ? 0 : 1
+  count                         = var.azuread_service_principal == null ? 0 : 1
   client_id                     = azuread_application.app.client_id
   account_enabled               = try(var.azuread_service_principal.account_enabled, true)
   alternative_names             = try(var.azuread_service_principal.alternative_names, [])
