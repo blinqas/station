@@ -8,7 +8,7 @@ variable "azuread_application" {
 }
 
 variable "azuread_service_principal" {
-  type = any
+  type        = any
   description = <<EOF
   The configuration for the azuread_service_principal to create. See Station's applications variable on how to configure the service principal block. 
   EOF

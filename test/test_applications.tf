@@ -106,7 +106,7 @@ module "station-applications" {
         owners                        = [data.azuread_client_config.current.object_id]
         preferred_single_sign_on_mode = "saml"
         #tags                          = ["tag1", "tag2"] #This confliencts with the "feature_tags" block below
-        use_existing                  = false
+        use_existing = false
 
         feature_tags = {
           custom_single_sign_on = true

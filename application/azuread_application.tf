@@ -124,17 +124,17 @@ resource "azuread_application" "app" {
 }
 
 resource "azuread_service_principal" "sp" {
-  client_id                      = azuread_application.app.client_id
-  account_enabled                = try(var.azuread_service_principal.account_enabled, true)
-  alternative_names              = try(var.azuread_service_principal.alternative_names, [])
-  app_role_assignment_required   = try(var.azuread_service_principal.app_role_assignment_required, false)
-  description                    = try(var.azuread_service_principal.description, null)
-  login_url                      = try(var.azuread_service_principal.login_url, null)
-  notes                          = try(var.azuread_service_principal.notes, null)
-  notification_email_addresses   = try(var.azuread_service_principal.notification_email_addresses, [])
-  owners                         = var.owners
-  preferred_single_sign_on_mode  = try(var.azuread_service_principal.preferred_single_sign_on_mode, null)
-  tags                           = try(var.azuread_service_principal.tags, [])   #This conflicts with the "feature_tags" block below
+  client_id                     = azuread_application.app.client_id
+  account_enabled               = try(var.azuread_service_principal.account_enabled, true)
+  alternative_names             = try(var.azuread_service_principal.alternative_names, [])
+  app_role_assignment_required  = try(var.azuread_service_principal.app_role_assignment_required, false)
+  description                   = try(var.azuread_service_principal.description, null)
+  login_url                     = try(var.azuread_service_principal.login_url, null)
+  notes                         = try(var.azuread_service_principal.notes, null)
+  notification_email_addresses  = try(var.azuread_service_principal.notification_email_addresses, [])
+  owners                        = var.owners
+  preferred_single_sign_on_mode = try(var.azuread_service_principal.preferred_single_sign_on_mode, null)
+  tags                          = try(var.azuread_service_principal.tags, []) #This conflicts with the "feature_tags" block below
 
   dynamic "feature_tags" {
     for_each = try(var.azuread_service_principal.feature_tags != null, false) ? [var.azuread_service_principal.feature_tags] : []
