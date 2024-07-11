@@ -8,7 +8,7 @@ This folder contains all tests for the Terraform Station module. The aim is to s
 
 1. **Terraform Cloud (TFC) Project Creation**: The process begins by creating a TFC project. This project's name should match the value set in the `TF_VAR_tfc_project_name` environment variable. It's recommended to use a name like `station-tests`.
 
-2. **Workspace and Resource Creation**: For each test (files ending with `_test.tf`), a new workspace is created, and the defined Azure and/or Entra ID resources are provisioned.
+2. **Workspace and Resource Creation**: For each test (files starting with `test_.tf`), a new workspace is created, and the defined Azure and/or Entra ID resources are provisioned.
 
 ## Prerequisites
 
