@@ -2,6 +2,7 @@ resource "azuread_application" "app" {
   display_name                   = var.azuread_application.display_name
   owners                         = var.owners
   sign_in_audience               = var.azuread_application.sign_in_audience
+  logo_image                     = var.azuread_application.logo_image
   group_membership_claims        = var.azuread_application.group_membership_claims
   identifier_uris                = var.azuread_application.identifier_uris
   prevent_duplicate_names        = var.azuread_application.prevent_duplicate_names
