@@ -122,3 +122,37 @@ resource "azuread_application" "app" {
     }
   }
 }
+
+resource "azuread_service_principal" "sp" {
+  count = var.azuread_service_principal == null ? 0 : 1
+
+  client_id                     = azuread_application.app.client_id
+  account_enabled               = var.azuread_service_principal.account_enabled
+  alternative_names             = var.azuread_service_principal.alternative_names
+  app_role_assignment_required  = var.azuread_service_principal.app_role_assignment_required
+  description                   = var.azuread_service_principal.description
+  login_url                     = var.azuread_service_principal.login_url
+  notes                         = var.azuread_service_principal.notes
+  notification_email_addresses  = var.azuread_service_principal.notification_email_addresses
+  owners                        = var.owners
+  preferred_single_sign_on_mode = var.azuread_service_principal.preferred_single_sign_on_mode
+  tags                          = var.azuread_service_principal.tags # This conflicts with the "feature_tags" block below
+
+  dynamic "feature_tags" {
+    for_each = try(var.azuread_service_principal.feature_tags != null, false) ? [var.azuread_service_principal.feature_tags] : []
+    content {
+      custom_single_sign_on = try(feature_tags.value.custom_single_sign_on, false)
+      enterprise            = try(feature_tags.value.enterprise, false)
+      gallery               = try(feature_tags.value.gallery, false)
+      hide                  = try(feature_tags.value.hide, false)
+    }
+  }
+
+  dynamic "saml_single_sign_on" {
+    for_each = try(var.azuread_service_principal.saml_single_sign_on != null, false) ? [var.azuread_service_principal.saml_single_sign_on] : []
+    content {
+      relay_state = try(saml_single_sign_on.value.relay_state, "")
+    }
+  }
+}
+
