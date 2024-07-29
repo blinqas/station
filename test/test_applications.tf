@@ -95,7 +95,33 @@ module "station-applications" {
           access_token_issuance_enabled = true
         }
       }
+
+      service_principal = {
+        account_enabled               = true
+        alternative_names             = ["alt_name1", "alt_name2"]
+        app_role_assignment_required  = false
+        description                   = "Service Principal for Station Test: Maximum"
+        login_url                     = "http://localhost/login"
+        notes                         = "Notes for Service Principal"
+        notification_email_addresses  = ["admin@example.com"]
+        owners                        = [data.azuread_client_config.current.object_id]
+        preferred_single_sign_on_mode = "saml"
+        #tags                          = ["tag1", "tag2"] #This confliencts with the "feature_tags" block below
+        use_existing = false
+
+        feature_tags = {
+          custom_single_sign_on = true
+          enterprise            = true
+          gallery               = false
+          hide                  = false
+        }
+
+        saml_single_sign_on = {
+          relay_state = "/relay"
+        }
+      }
     }
+
   }
 }
 
