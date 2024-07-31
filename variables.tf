@@ -107,6 +107,7 @@ variable "applications" {
   type = map(object({
     display_name                   = string
     owners                         = optional(list(string))
+    logo_image                     = optional(string) #Base64 encoded image
     sign_in_audience               = optional(string)
     group_membership_claims        = optional(list(string))
     identifier_uris                = optional(list(string))
