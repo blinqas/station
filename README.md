@@ -92,7 +92,7 @@ MIT
 ## terraform-docs
 
 <details>
-<summary>Click to view `terraform-docs`</summary>
+<summary>Click to view</summary>
 
 <!-- BEGIN_TF_DOCS -->
 ## Inputs
