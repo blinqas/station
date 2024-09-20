@@ -3,7 +3,6 @@
 Station is a Terraform module that lets you quickly spin up new workload environments in Azure and Terraform Cloud. Station gives you a high level of automation for workload environment provisioning.
 
 - Station is maintained by the DevOps team at blinQ (https://blinq.no).
-- See the [terraform-docs.md]() file for `terraform-docs` generated documentation.
 - Check out our Design Decision document [here.](https://github.com/blinqas/station/blob/trunk/DESIGN_DESICIONS.md)
 
 ## Why does Station exist?
