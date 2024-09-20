@@ -89,6 +89,8 @@ This file would provision the following:
 
 MIT
 
+<details>
+<summary>Click to view `terraform-docs`</summary>
 <!-- BEGIN_TF_DOCS -->
 ## Inputs
 
@@ -130,3 +132,4 @@ MIT
 | <a name="output_workload_resource_group_name"></a> [workload\_resource\_group\_name](#output\_workload\_resource\_group\_name) | n/a |
 | <a name="output_workload_service_principal_object_id"></a> [workload\_service\_principal\_object\_id](#output\_workload\_service\_principal\_object\_id) | n/a |
 <!-- END_TF_DOCS -->
+</details>
