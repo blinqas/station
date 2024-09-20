@@ -89,8 +89,11 @@ This file would provision the following:
 
 MIT
 
+## terraform-docs
+
 <details>
 <summary>Click to view `terraform-docs`</summary>
+
 <!-- BEGIN_TF_DOCS -->
 ## Inputs
 
