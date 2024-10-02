@@ -85,7 +85,7 @@ variables {
     }
   }
   # Adding the different modules to test the tfe.module_outputs_to_workspace_var
-   applications = {
+  applications = {
     minimum_tfe_test = {
       display_name = "Station test tfe: minimum"
     }
