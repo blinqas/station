@@ -1,0 +1,150 @@
+name: Label PRs Based on Conventional Commits
+
+on:
+  pull_request:
+    types: [opened, edited]
+
+permissions:
+  pull-requests: write
+  contents: write
+  repository-projects: read
+  issues: write
+
+jobs:
+  label-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Github CLI
+        run: |
+          if ! command -v gh --version &> /dev/null; then
+            echo "Github CLI not found. Installing..."
+            (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) \
+            && sudo mkdir -p -m 755 /etc/apt/keyrings \
+            && wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+            && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+            && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+            && sudo apt update \
+            && sudo apt install gh -y
+          else
+            echo "GH CLI is already installed."
+          fi
+
+      - name: Label PR based on title
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_TITLE=$(jq -r '.pull_request.title' < $GITHUB_EVENT_PATH)
+
+          # Define all possible labels
+          ALL_LABELS=("feature" "bug" "documentation" "style" "refactor" "performance" "testing" "build" "chore" "ci" "revert" "breaking_changes")
+
+          # Initialize the desired labels based on the title
+          DESIRED_LABELS=""
+
+          case "$PR_TITLE" in
+            feat*:*)
+              DESIRED_LABELS="feature"
+              ;;
+            fix*:*)
+              DESIRED_LABELS="bug"
+              ;;
+            docs*:*)
+              DESIRED_LABELS="documentation"
+              ;;
+            style*:*)
+              DESIRED_LABELS="style"
+              ;;
+            refactor*:*)
+              DESIRED_LABELS="refactor"
+              ;;
+            perf*:*)
+              DESIRED_LABELS="performance"
+              ;;
+            test*:*)
+              DESIRED_LABELS="testing"
+              ;;
+            build*:*)
+              DESIRED_LABELS="build"
+              ;;
+            chore*:*)
+              DESIRED_LABELS="chore"
+              ;;
+            ci*:*)
+              DESIRED_LABELS="ci"
+              ;;
+            revert*:*)
+              DESIRED_LABELS="revert"
+              ;;
+            *!*)
+              # Handle breaking changes
+              case "$PR_TITLE" in
+                feat!*)
+                  DESIRED_LABELS="feature,breaking_changes"
+                  ;;
+                fix!*)
+                  DESIRED_LABELS="bug,breaking_changes"
+                  ;;
+                docs!*)
+                  DESIRED_LABELS="documentation,breaking_changes"
+                  ;;
+                style!*)
+                  DESIRED_LABELS="style,breaking_changes"
+                  ;;
+                refactor!*)
+                  DESIRED_LABELS="refactor,breaking_changes"
+                  ;;
+                perf!*)
+                  DESIRED_LABELS="performance,breaking_changes"
+                  ;;
+                test!*)
+                  DESIRED_LABELS="testing,breaking_changes"
+                  ;;
+                build!*)
+                  DESIRED_LABELS="build,breaking_changes"
+                  ;;
+                chore!*)
+                  DESIRED_LABELS="chore,breaking_changes"
+                  ;;
+                ci!*)
+                  DESIRED_LABELS="ci,breaking_changes"
+                  ;;
+                revert!*)
+                  DESIRED_LABELS="revert,breaking_changes"
+                  ;;
+                *)
+                  echo "No matching label found for breaking change title: $PR_TITLE"
+                  exit 0
+                  ;;
+              esac
+              ;;
+            *)
+              echo "No matching label found for title: $PR_TITLE. Please update the PR title to use the conventional commit standard"
+              exit 1
+              ;;
+          esac
+
+          # Get the current labels on the PR
+          CURRENT_LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')
+
+          # Convert current and desired labels to arrays
+          CURRENT_LABELS_ARRAY=($CURRENT_LABELS)
+          DESIRED_LABELS_ARRAY=(${DESIRED_LABELS//,/ })
+
+          # Remove labels that are in CURRENT_LABELS but not in DESIRED_LABELS
+          for label in "${CURRENT_LABELS_ARRAY[@]}"; do
+            if [[ ! " ${DESIRED_LABELS_ARRAY[@]} " =~ " ${label} " ]] && [[ " ${ALL_LABELS[@]} " =~ " ${label} " ]]; then
+              echo "Removing label: $label"
+              gh pr edit ${{ github.event.pull_request.number }} --remove-label "$label"
+            fi
+          done
+
+          # Add labels that are in DESIRED_LABELS but not in CURRENT_LABELS
+          for label in "${DESIRED_LABELS_ARRAY[@]}"; do
+            if [[ ! " ${CURRENT_LABELS_ARRAY[@]} " =~ " ${label} " ]]; then
+              echo "Adding label: $label"
+              gh pr edit ${{ github.event.pull_request.number }} --add-label "$label"
+            fi
+          done
