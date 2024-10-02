@@ -6,7 +6,7 @@ terraform {
     }
     azuread = {
       source  = "hashicorp/azuread"
-      version = "~>2.45"
+      version = "~>3.0"
     }
     tfe = {
       source  = "hashicorp/tfe"
