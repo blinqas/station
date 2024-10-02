@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   release_draft:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Release Draft
         uses: crs-k/release-draft@v0.7.2
