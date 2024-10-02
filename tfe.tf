@@ -111,19 +111,6 @@ module "station-tfe" {
         hcl         = true
         sensitive   = false
       }
-    } : {},
-    try(length(azurerm_role_definition.user_created) > 0) ? {
-      role_definitions = {
-        value = replace(jsonencode({ for key, v in azurerm_role_definition.user_created : key => {
-          id                          = v.id
-          role_definition_id          = v.role_definition_id
-          role_definition_resource_id = v.role_definition_resource_id
-        } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
-        category    = "terraform"
-        description = "User defined roles provisioned by Station"
-        hcl         = true
-        sensitive   = false
-      }
     } : {}
   )
 }
