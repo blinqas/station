@@ -26,6 +26,7 @@ permissions:
 env:
   TF_VAR_subscription_id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
   TF_VAR_tenant_id: ${{ secrets.AZ_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
 concurrency: 
   group: terraform-plan-apply-destroy
@@ -68,6 +69,7 @@ jobs:
     env:
         TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
         TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
     steps:
         - name: 'Azure: login'
           uses: azure/login@v2
@@ -104,6 +106,7 @@ jobs:
     env:
         TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
         TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
     steps:
         - name: 'Azure: login'
           uses: azure/login@v2

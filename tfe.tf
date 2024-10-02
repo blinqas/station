@@ -63,7 +63,7 @@ module "station-tfe" {
     },
     # Optionals
     #var.tfe.module_outputs_to_workspace_var.groups ? {
-    try(var.tfe.module_outputs_to_workspace_var.groups == true, false) ? {
+    try(length(module.ad_groups) > 0) ? {
       groups = {
         value = replace(jsonencode({ for k, v in module.ad_groups : k => {
           display_name = v.group.display_name
@@ -75,7 +75,7 @@ module "station-tfe" {
         sensitive   = false
       }
     } : {},
-    try(var.tfe.module_outputs_to_workspace_var.applications == true, false) ? {
+    try(length(module.applications) > 0) ? {
       applications = {
         value = replace(jsonencode({ for k, v in module.applications : k => {
           client_id = v.application.client_id
@@ -87,7 +87,7 @@ module "station-tfe" {
         sensitive   = false
       }
     } : {},
-    try(var.tfe.module_outputs_to_workspace_var.user_assigned_identities == true, false) ? {
+    try(length(module.user_assigned_identities) > 0) ? {
       user_assigned_identities = {
         value = replace(jsonencode({ for k, v in module.user_assigned_identities : k => {
           id           = v.id
@@ -100,7 +100,7 @@ module "station-tfe" {
         sensitive   = false
       }
     } : {},
-    try(var.tfe.module_outputs_to_workspace_var.resource_groups == true, false) ? {
+    try(length(azurerm_resource_group.user_specified) > 0) ? {
       resource_groups = {
         value = replace(jsonencode({ for key, v in azurerm_resource_group.user_specified : key => {
           name     = v.name
@@ -108,19 +108,6 @@ module "station-tfe" {
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "User specified resource groups provisioned by Station"
-        hcl         = true
-        sensitive   = false
-      }
-    } : {},
-    try(var.tfe.module_outputs_to_workspace_var.role_definitions == true, false) ? {
-      role_definitions = {
-        value = replace(jsonencode({ for key, v in azurerm_role_definition.user_created : key => {
-          id                          = v.id
-          role_definition_id          = v.role_definition_id
-          role_definition_resource_id = v.role_definition_resource_id
-        } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
-        category    = "terraform"
-        description = "User defined roles provisioned by Station"
         hcl         = true
         sensitive   = false
       }
