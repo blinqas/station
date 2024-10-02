@@ -368,27 +368,3 @@ variable "role_assignment" {
     skip_service_principal_aad_check       = optional(bool)
   }))
 }
-
-variable "role_definitions" {
-  description = <<EOT
-    Map of Role Definitions to create.
-
-    See https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition 
-    for documentation.
-  EOT
-  default     = {}
-  type = map(object({
-    role_definition_id = optional(string)
-    name               = string
-    scope              = optional(string) #Sets scope to current subscription if empty
-    description        = optional(string)
-    permissions = optional(object({
-      actions          = optional(list(string))
-      data_actions     = optional(list(string))
-      not_actions      = optional(list(string))
-      not_data_actions = optional(list(string))
-    }))
-    assignable_scopes = optional(list(string))
-  }))
-}
-
