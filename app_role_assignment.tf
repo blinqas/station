@@ -5,13 +5,11 @@ resource "azuread_service_principal" "msgraph" {
   use_existing = true
 }
 
-/*  
-  Assign the workload identity the `Application.ReadWrite.OwnedBy` role, 
-  so it can interact with the applications they own however they desire
-*/
+# Assign the workload identity the `Application.ReadWrite.OwnedBy` role so it can interact with the applications they own however they desire
 resource "azuread_app_role_assignment" "app_workload_roles" {
-  count               = length(var.applications) > 0 ? 1 : 0
   app_role_id         = azuread_service_principal.msgraph.app_role_ids["Application.ReadWrite.OwnedBy"]
   principal_object_id = module.user_assigned_identity.principal_id
   resource_object_id  = azuread_service_principal.msgraph.object_id
 }
+
+
