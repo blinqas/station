@@ -3,11 +3,14 @@ locals {
      when the caller wants to create Entra ID Groups. Having only "Owner" on the group
     is not sufficient (even though the Terraform Provider docs says so).
 
-    "Group.Read.All" is required to list groups members as beein the owner of a group is not sufficient.
+    "Group.Read.All" is required to list groups members as being the owner of a group is not sufficient.
+
+    We also have to assign "Application.ReadWrite.OwnedBy" to the Managed Identity to allow it to interact with the applications it owns.
   */
   app_role_assignments_computed = setunion(
     var.app_role_assignments,
-    toset(length(var.groups) == 0 ? [] : ["User.ReadBasic.All", "Group.Read.All"])
+    toset(length(var.groups) == 0 ? [] : ["User.ReadBasic.All", "Group.Read.All"]),
+    toset(length(var.applications) == 0 ? [] : ["Application.ReadWrite.OwnedBy"])
   )
 }
 
