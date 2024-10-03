@@ -45,41 +45,7 @@ jobs:
           DESIRED_LABELS=""
 
           case "$PR_TITLE" in
-            feat*:*)
-              DESIRED_LABELS="feature"
-              ;;
-            fix*:*)
-              DESIRED_LABELS="bug"
-              ;;
-            docs*:*)
-              DESIRED_LABELS="documentation"
-              ;;
-            style*:*)
-              DESIRED_LABELS="style"
-              ;;
-            refactor*:*)
-              DESIRED_LABELS="refactor"
-              ;;
-            perf*:*)
-              DESIRED_LABELS="performance"
-              ;;
-            test*:*)
-              DESIRED_LABELS="testing"
-              ;;
-            build*:*)
-              DESIRED_LABELS="build"
-              ;;
-            chore*:*)
-              DESIRED_LABELS="chore"
-              ;;
-            ci*:*)
-              DESIRED_LABELS="ci"
-              ;;
-            revert*:*)
-              DESIRED_LABELS="revert"
-              ;;
             *!*)
-              # Handle breaking changes
               case "$PR_TITLE" in
                 feat!*)
                   DESIRED_LABELS="feature,breaking_changes"
@@ -120,19 +86,52 @@ jobs:
                   ;;
               esac
               ;;
+            # Handle non-breaking change titles
+            feat*:*)
+              DESIRED_LABELS="feature"
+              ;;
+            fix*:*)
+              DESIRED_LABELS="bug"
+              ;;
+            docs*:*)
+              DESIRED_LABELS="documentation"
+              ;;
+            style*:*)
+              DESIRED_LABELS="style"
+              ;;
+            refactor*:*)
+              DESIRED_LABELS="refactor"
+              ;;
+            perf*:*)
+              DESIRED_LABELS="performance"
+              ;;
+            test*:*)
+              DESIRED_LABELS="testing"
+              ;;
+            build*:*)
+              DESIRED_LABELS="build"
+              ;;
+            chore*:*)
+              DESIRED_LABELS="chore"
+              ;;
+            ci*:*)
+              DESIRED_LABELS="ci"
+              ;;
+            revert*:*)
+              DESIRED_LABELS="revert"
+              ;;
             *)
               echo "No matching label found for title: $PR_TITLE. Please update the PR title to use the conventional commit standard"
               exit 1
               ;;
           esac
-
+      
           # Get the current labels on the PR
           CURRENT_LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')
-
           # Convert current and desired labels to arrays
           CURRENT_LABELS_ARRAY=($CURRENT_LABELS)
           DESIRED_LABELS_ARRAY=(${DESIRED_LABELS//,/ })
-
+  
           # Remove labels that are in CURRENT_LABELS but not in DESIRED_LABELS
           for label in "${CURRENT_LABELS_ARRAY[@]}"; do
             if [[ ! " ${DESIRED_LABELS_ARRAY[@]} " =~ " ${label} " ]] && [[ " ${ALL_LABELS[@]} " =~ " ${label} " ]]; then
@@ -140,7 +139,6 @@ jobs:
               gh pr edit ${{ github.event.pull_request.number }} --remove-label "$label"
             fi
           done
-
           # Add labels that are in DESIRED_LABELS but not in CURRENT_LABELS
           for label in "${DESIRED_LABELS_ARRAY[@]}"; do
             if [[ ! " ${CURRENT_LABELS_ARRAY[@]} " =~ " ${label} " ]]; then
