@@ -88,3 +88,13 @@ This file would provision the following:
 ## License
 
 MIT
+
+## Terraform docs
+
+<details>
+  <summary>Open/Close</summary>
+  
+  <!-- BEGIN_TF_DOCS -->
+
+  <!-- END_TF_DOCS -->
+</details>
