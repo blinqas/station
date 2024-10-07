@@ -1,4 +1,4 @@
-name: Update README with Terraform Docs
+name: 📰 Update README with Terraform Docs 
 
 on:
   pull_request:
