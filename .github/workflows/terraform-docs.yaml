@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - "variables.tf"
+  push:
+    paths:
+      - "variables.tf"
 
 jobs:
   update-readme:
