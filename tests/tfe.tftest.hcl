@@ -8,10 +8,14 @@ provider "azuread" {
 
 variables {
   tfe = {
-    project_name                         = "tests_tfe"
-    organization_name                    = "blinq-west-lab"
-    workspace_name                       = "tfe_test"
-    workspace_description                = "Workspace description"
+    project_name          = "tests_tfe"
+    organization_name     = "blinq-west-lab"
+    workspace_name        = "tfe_test"
+    workspace_description = "Workspace description"
+    workspace_settings = {
+      execution_mode = "remote"
+      agent_pool_id  = null # Not adding this as it will require us to setup a private runner
+    }
     create_federated_identity_credential = true # Configures Federated Credentials on the workload identity for plan and apply phases.
 
     module_outputs_to_workspace_var = {
@@ -116,6 +120,11 @@ run "tfe_create_workspace" {
   assert {
     condition     = module.station-tfe.workspace.description == "Workspace description"
     error_message = "The workspace description does NOT match the input"
+  }
+
+  assert {
+    condition     = module.station-tfe.workspace_settings[0].execution_mode == "remote"
+    error_message = "The workspace execution mode does NOT match the input"
   }
 }
 

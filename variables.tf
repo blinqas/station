@@ -295,10 +295,14 @@ variable "tfe" {
   EOF
   default     = null
   type = object({
-    organization_name                    = string
-    project_name                         = string
-    workspace_name                       = string
-    workspace_description                = string
+    organization_name     = string
+    project_name          = string
+    workspace_name        = string
+    workspace_description = string
+    workspace_settings = optional(object({
+      agent_pool_id  = optional(string) # Requires execution_mode to be set to agent
+      execution_mode = optional(string) # Valid values are "remote", "local" or "agent"
+    }))
     create_federated_identity_credential = optional(bool)
     file_triggers_enabled                = optional(bool)
     vcs_repo = optional(object({
