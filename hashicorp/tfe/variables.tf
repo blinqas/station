@@ -20,11 +20,11 @@ variable "workspace_description" {
 
 variable "workspace_settings" {
   description = "Settings for the workspace, such as execution mode and agent pool"
-  type        = object({
+  type = object({
     agent_pool_id  = string
     execution_mode = string
   })
-  default     = null
+  default = null
 }
 
 variable "workspace_vars" {
