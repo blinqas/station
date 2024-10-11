@@ -209,8 +209,8 @@ variable "applications" {
 variable "groups" {
   description = <<-EOF
     (Optional) Map of Entra ID (Azure AD) groups to create
-    Note: The workload identity is automatically assigned the App Role "User.ReadBasic.All"
-          because being "Owner" of the group is not sufficient to add principals.
+    Note: The workload identity is automatically assigned the App Role "User.ReadBasic.All" and "Group.Read.All"
+          because being "Owner" of the group is not sufficient to add principals and then list them after an add or delete operation.
   EOF
   default     = {}
   type = map(object({
