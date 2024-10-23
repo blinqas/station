@@ -292,6 +292,7 @@ variable "tfe" {
   - tfe.module_outputs_to_workspace_var.(groups|applications|user_assigned_identities) sets output from the respective 
     resource into respective Terraform variables on the Terraform Cloud workspace. Useful when you need group object ids
     for the groups Station Deployments provisioned in your workload environment.
+  - tfe.workspace_settings lets you configure the workspace settings like agent_pool_id and execution_mode. agent_pool_id must be set to "agent" when execution_mode="agent"
   EOF
   default     = null
   type = object({
@@ -300,8 +301,8 @@ variable "tfe" {
     workspace_name        = string
     workspace_description = string
     workspace_settings = optional(object({
-      agent_pool_id  = optional(string) # Requires execution_mode to be set to agent
-      execution_mode = optional(string) # Valid values are "remote", "local" or "agent"
+      agent_pool_id  = optional(string)
+      execution_mode = optional(string)
     }))
     create_federated_identity_credential = optional(bool)
     file_triggers_enabled                = optional(bool)
