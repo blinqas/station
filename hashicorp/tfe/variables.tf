@@ -18,6 +18,15 @@ variable "workspace_description" {
   type        = string
 }
 
+variable "workspace_settings" {
+  description = "Settings for the workspace, such as execution mode and agent pool"
+  type = object({
+    agent_pool_id  = string
+    execution_mode = string
+  })
+  default = null
+}
+
 variable "workspace_vars" {
   description = "Map of variables to provision on the workspace in Terraform Cloud"
   type = map(object({
