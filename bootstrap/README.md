@@ -27,8 +27,14 @@ Demoing Station is also very fast now!
 **IMPORTANT!** Do not run scripts from the internet without understanding what they do.
 
 ### Before you begin:
-1. **Update the Bootstrap Script**:  
+1. **Ensure you have the correct permissions**
+   - Your entra ID account should be global admin 
+   - You will need to have the owner on all the subscriptions you want to use with station
+   - You will to have access to an [Organization token](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/organization-tokens) or a [Team token](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/team-tokens) in Terrafrom Cloud
+   - You will need to create a Github PAT that has access to create new reposiotories in the target Github Organization
+2. **Update the Bootstrap Script**:  
    Update the bootstrap script with your own values. Carefully read the variable names and comments to enter the correct values.
+  
 
 #### Environment Variables you need to set in the script
 
