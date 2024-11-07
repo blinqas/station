@@ -19,8 +19,8 @@ export TF_VAR_tfc_token="YourTFCToken"                                  # Token 
 export GITHUB_OWNER="Github-username-or-org"                # Target GitHub username or organization for the provider.
 export GITHUB_TOKEN=$TF_VAR_vcs_repo_PAT                    # Authentication token for GitHub provider.
 export TF_VAR_vcs_repo_owner=$GITHUB_OWNER                  # Set repository owner from above variable.
-export TF_VAR_vcs_repo_name="station-deployments_test"      # Default repository name (can be overridden in variables.tf).
-
+export TF_VAR_vcs_repo_name="station-deployments"           # Default repository name (can be overridden in variables.tf).
+export ARM_SUBSCRIPTION_ID="Subscription_1"                 # Azure Subscription ID for the provider. Here you can use the subscription_1 from TF_VAR_subscription_ids. 
 
 # Color definitions
 RED='\033[31m'
@@ -89,7 +89,7 @@ rm -rf ./.terraform
 
 cp "./providers/providers_local_state.tf" "./providers.tf"
 
-terraform init -upgrade
+terraform init
 
 terraform plan -out "./plan.tfplan"
 
