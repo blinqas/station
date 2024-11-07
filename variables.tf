@@ -284,7 +284,7 @@ variable "user_assigned_identities" {
 variable "tfe" {
   description = <<EOF
   Terraform Cloud configuration for the workload environment
-
+  - tfe.project_id is the Terraform Cloud project ID where the workspace will be provisioned. Example: tfe_project.example.id
   - tfe.create_federated_identity_credential configures Federated Credentials on the workload identity for plan and apply phases.
   - Either of tfe.vcs_repo.(oauth_token_id|github_app_installation_id) must be provided, both can not be used at the same time.
   - tfe.workspace_env_vars lets you configure Environment Variables for the Terraform Cloud runtime environment
@@ -296,7 +296,7 @@ variable "tfe" {
   default     = null
   type = object({
     organization_name                    = string
-    project_name                         = string
+    project_id                           = string
     workspace_name                       = string
     workspace_description                = string
     create_federated_identity_credential = optional(bool)

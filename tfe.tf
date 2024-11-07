@@ -2,7 +2,7 @@ module "station-tfe" {
   source = "./hashicorp/tfe/"
 
   organization_name     = var.tfe.organization_name
-  project_name          = var.tfe.project_name
+  project_id            = var.tfe.project_id
   workspace_name        = var.tfe.workspace_name
   workspace_description = var.tfe.workspace_description
   vcs_repo              = try(var.tfe.vcs_repo, null)

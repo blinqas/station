@@ -1,7 +1,7 @@
 resource "tfe_workspace" "workload" {
   name                  = var.workspace_name
   description           = var.workspace_description
-  project_id            = data.tfe_project.workload.id
+  project_id            = var.project_id
   file_triggers_enabled = var.file_triggers_enabled
 
   dynamic "vcs_repo" {

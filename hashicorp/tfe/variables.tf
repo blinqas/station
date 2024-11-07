@@ -3,10 +3,14 @@ variable "organization_name" {
   type        = string
 }
 
-variable "project_name" {
-  description = "Name of the project to link `var.workspace_name` to. The project must exist already. Can not be set if `var.projects` is set."
+variable "project_id" {
+  description = <<EOT
+    The ID of the Terraform Cloud project where the workspace will be provisioned. 
+    Example: tfe_project.example.id
+  EOT
   type        = string
 }
+
 
 variable "workspace_name" {
   description = "Name of the workspace to provision in Terraform Cloud"
