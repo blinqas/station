@@ -9,7 +9,7 @@ export TF_VAR_tfc_organization_name=$TF_CLOUD_ORGANIZATION                  # Se
 export TF_VAR_bootstrap_tfc_workspace_name=$TF_WORKSPACE                    # Set workspace name from above variable.
 export TF_VAR_vcs_repo_github_app_installation_id="ghain-yourKey"           # ID for GitHub app installation in TFC. Ensure GitHub Terraform app is pre-installed in your org: https://app.terraform.io/api/v2/github-app/installations.
 # export TF_VAR_vcs_repo_oauth_token_id=""                                  # Alternative to GitHub app installation ID. Use either this or the above.
-export TF_VAR_subscription_ids="[\"Subscription_1\"], [\"Subscription_2\"]" # Azure Subscriptions where Station should have owner permissions. Fetch using: az account list --query "[?tenantId=='yourTenantID'].{Name:name, ID:id}" --output table
+export TF_VAR_subscription_ids='[\"Subscription_1\", \"Subscription_2\"]'   # Azure Subscriptions where Station should have owner permissions. Fetch using: az account list --query "[?tenantId=='yourTenantID'].{Name:name, ID:id}" --output table
 export TF_VAR_vcs_repo_PAT="ghp_GithubPersonalAccessToken"                  # Personal Access Token (PAT) for TFC to create repositories. Documentation: https://docs.github.com/en/enterprise-server@3.6/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 export TF_VAR_tfc_token="YourTFCToken"                                      # Token for Terraform Cloud, can be a team or organization token. https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens
 
@@ -48,16 +48,16 @@ echo -e "${YELLOW}Azure Account Information:${RESET}"
 az account show | jq '. | {tenantId, name, user}'
 
 # Removing the escaping and converting to a single array
-SUBSCRIPTION_IDS_CLEANED=$(echo $TF_VAR_subscription_ids | sed 's/\\//g')
+SUBSCRIPTION_IDS_CLEANED="${TF_VAR_subscription_ids//\\/}"
 
 echo -e "${YELLOW}Selected Azure subscription(s):${RESET} ${GREEN}$SUBSCRIPTION_IDS_CLEANED${RESET}"
 
 # Splitting the values and querying Azure for each
 IFS=',' read -ra SUBSCRIPTIONS <<<"$SUBSCRIPTION_IDS_CLEANED"
 for sub in "${SUBSCRIPTIONS[@]}"; do
-    SUB_CLEAN=$(echo $sub | tr -d '[]" ')
+    SUB_CLEAN=$(echo "$sub" | tr -d '[]" ')
     echo -en " \n ${YELLOW} Details for subscription ID $SUB_CLEAN: ${RESET}"
-    az account show --subscription $SUB_CLEAN | jq '. | {tenantId, name, user}'
+    az account show --subscription "$SUB_CLEAN" | jq '. | {tenantId, name, user}'
 done
 
 # Display environment variables to the user
@@ -78,7 +78,7 @@ echo -e "${BLUE}TF_VAR_vcs_repo_name:${RESET} ${GREEN}$TF_VAR_vcs_repo_name${RES
 
 ### Prompt the user if they want to continue###
 echo -e " \n Do you want to proceed with the above settings? [y/n]"
-read -p "" answer
+read -rp "" answer
 
 [[ $answer =~ ^[Yy] ]] || exit
 
