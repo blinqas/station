@@ -86,7 +86,7 @@ variable "subscription_ids" {
   default     = []
 }
 
-variable "station_entraID_application_name" {
+variable "entraID_application_name" {
   type        = string
   description = "The name of the Azure AD application that will be created for Station. This application will be used to create new workloads using the station module."
   default     = "station-deployments"

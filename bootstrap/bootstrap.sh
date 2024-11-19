@@ -22,7 +22,7 @@ export TF_VAR_vcs_repo_owner=$GITHUB_OWNER   # Set repository owner from above v
 export ARM_SUBSCRIPTION_ID="Subscription_1"  # Azure Subscription ID for the provider. Here you can use the subscription_1 from TF_VAR_subscription_ids.
 
 # Optional variables that can be used to customize resource names
-#export TF_VAR_station_entraID_application_name = "station-deployments"     # Application name for the Entrada ID application that will create the new workloads in Azure.
+#export TF_VAR_entraID_application_name = "station-deployments"     # Application name for the Entrada ID application that will create the new workloads in Azure.
 #export TF_VAR_vcs_repo_name="station-deployments"                          # Overrides the default Github Repository Name.
 #export TF_VAR_tfc_project_name="station"                                   # Project name in Terraform Cloud for 'station'.
 #export TF_VAR_deployments_tfc_workspace_name="station-deployments"         # TFC Workspace for station deployments.
