@@ -3,7 +3,6 @@ data "azurerm_subscription" "deployment" {
   subscription_id = each.key
 }
 
-
 resource "azurerm_role_assignment" "station_subscription_owner" {
   for_each             = data.azurerm_subscription.deployment
   scope                = each.value.id
