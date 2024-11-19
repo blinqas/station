@@ -5,6 +5,7 @@ module "station-tfe" {
   project_name          = var.tfe.project_name
   workspace_name        = var.tfe.workspace_name
   workspace_description = var.tfe.workspace_description
+  workspace_settings    = try(var.tfe.workspace_settings, null)
   vcs_repo              = try(var.tfe.vcs_repo, null)
   file_triggers_enabled = try(var.tfe.vcs_repo.tags_regex, null) == null ? true : false # if tags_regex is supplied, set to false, this removes an uneccessary step
   workspace_vars = merge(try(var.tfe.workspace_vars, {}), {
