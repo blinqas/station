@@ -373,3 +373,68 @@ variable "role_assignment" {
     skip_service_principal_aad_check       = optional(bool)
   }))
 }
+
+variable "connectivity" {
+  description = <<EOF
+    Use this block to configure connectivity of this Landing Zone. Connectivity can be virtual networks, subnets, and even peerings to other virtual networks.
+
+    Limitations:
+    - Connecting Virtual Networks in different resource groups managed by this landing zone is currently unavailable. Configure this manually in the landing zone configuration.
+    - The key used for a peering object must be unique across all connectivity objects
+  EOF
+  default     = {}
+  type = map(object({
+    virtual_network_name = string
+    address_space        = set(string)
+    resource_group_name  = optional(string)
+    location             = optional(string)
+    bgp_community        = optional(string)
+    ddos_protection_plan = optional(object({
+      id     = string
+      enable = string
+    }))
+    encryption = optional(object({
+      enforcement = string
+    }))
+    dns_servers                    = optional(set(string))
+    edge_zone                      = optional(string)
+    flow_timeout_in_minutes        = optional(string)
+    private_endpoint_vnet_policies = optional(string, "Disabled")
+    subnets = map(object({
+      name             = string
+      address_prefixes = list(string)
+      security_group   = optional(string)
+      delegation = optional(map(object({
+        name = string
+        service_delegation = object({
+          name    = string
+          actions = optional(set(string))
+        })
+      })))
+      default_outbound_access_enabled               = optional(bool, true)
+      private_endpoint_network_policies             = optional(string, "Disabled")
+      private_link_service_network_policies_enabled = optional(bool, true)
+      service_endpoints                             = optional(set(string))
+      service_endpoint_policy_ids                   = optional(set(string))
+      route_table_id                                = optional(string)
+    }))
+    peerings = optional(map(object({
+      name                                   = string
+      remote_virtual_network_id              = string
+      resource_group_name                    = optional(string)
+      allow_virtual_network_access           = optional(bool, true)
+      allow_forwarded_traffic                = optional(bool, false)
+      allow_gateway_transit                  = optional(bool, false)
+      local_subnet_names                     = optional(list(string))
+      only_ipv6_peering_enabled              = optional(bool)
+      peer_complete_virtual_networks_enabled = optional(bool, true)
+      remote_subnet_names                    = optional(list(string))
+      use_remote_gateways                    = optional(bool, false)
+      triggers = optional(object({
+        remote_address_space = string
+      }))
+    })))
+    })
+  )
+}
+

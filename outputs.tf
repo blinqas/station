@@ -42,3 +42,14 @@ output "tfe" {
   value = module.station-tfe
 }
 
+output "virtual_networks" {
+  value = azurerm_virtual_network.this
+}
+
+output "peerings" {
+  value = {
+    to   = azurerm_virtual_network_peering.to
+    from = azurerm_virtual_network_peering.from
+  }
+}
+
