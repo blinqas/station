@@ -31,6 +31,22 @@ variable "resource_group_name" {
 }
 
 
+variable "app_role_assignments" {
+  description = <<EOF
+    (Optional) A set of azuread_app_role_assignment resources to assign to the workload identity. Only built-in application roles are supported.
+
+    Example:
+    ```hcl
+    app_role_assignments = [
+      "IdentityRiskEvent.ReadWrite.All",
+      "IdentityRiskEvent.Read.All"
+    ]
+    ```
+  EOF
+  default     = []
+  type        = set(string)
+}
+
 variable "role_definition_name_on_workload_rg" {
   description = "The name of an in-built role to assign the workload identity on the workload resource group"
   default     = "Owner"
@@ -82,6 +98,7 @@ variable "applications" {
   type = map(object({
     display_name                   = string
     owners                         = optional(list(string))
+    logo_image                     = optional(string) #Base64 encoded image
     sign_in_audience               = optional(string)
     group_membership_claims        = optional(list(string))
     identifier_uris                = optional(list(string))
@@ -108,6 +125,10 @@ variable "applications" {
         user_consent_display_name  = optional(string)
         value                      = string
       })))
+    }))
+
+    public_client = optional(object({
+      redirect_uris = optional(set(string))
     }))
 
     required_resource_access = optional(set(object({
@@ -148,11 +169,40 @@ variable "applications" {
         id_token_issuance_enabled     = optional(bool)
       }))
     }))
+
+    service_principal = optional(object({
+      account_enabled               = optional(bool, true)
+      alternative_names             = optional(list(string))
+      app_role_assignment_required  = optional(bool, false)
+      description                   = optional(string)
+      login_url                     = optional(string)
+      notes                         = optional(string)
+      notification_email_addresses  = optional(list(string))
+      owners                        = optional(list(string))
+      preferred_single_sign_on_mode = optional(string)
+      tags                          = optional(list(string))
+      use_existing                  = optional(bool, false)
+
+      feature_tags = optional(object({
+        custom_single_sign_on = optional(bool, false)
+        enterprise            = optional(bool, false)
+        gallery               = optional(bool, false)
+        hide                  = optional(bool, false)
+      }))
+
+      saml_single_sign_on = optional(object({
+        relay_state = optional(string)
+      }))
+    }))
   }))
 }
 
 variable "groups" {
-  description = "Map of Entra ID (Azure AD) groups to create"
+  description = <<-EOF
+    (Optional) Map of Entra ID (Azure AD) groups to create
+    Note: The workload identity is automatically assigned the App Role "User.ReadBasic.All" and "Group.Read.All"
+          because being "Owner" of the group is not sufficient to add principals and then list them after an add or delete operation.
+  EOF
   default     = {}
   type = map(object({
     display_name     = string
@@ -166,6 +216,16 @@ variable "groups" {
       enabled = bool
       rule    = string
     }))
+    role_assignments = optional(map(object({
+      name                             = optional(string)
+      scope                            = optional(string)
+      role_definition_id               = optional(string)
+      role_definition_name             = optional(string)
+      condition                        = optional(string)
+      condition_version                = optional(string)
+      description                      = optional(string)
+      skip_service_principal_aad_check = optional(bool)
+    })))
   }))
 }
 
@@ -231,13 +291,18 @@ variable "tfe" {
   - tfe.module_outputs_to_workspace_var.(groups|applications|user_assigned_identities) sets output from the respective 
     resource into respective Terraform variables on the Terraform Cloud workspace. Useful when you need group object ids
     for the groups Station Deployments provisioned in your workload environment.
+  - tfe.workspace_settings lets you configure the workspace settings like agent_pool_id and execution_mode. If agent_pool_id is provided, execution_mode must be set to "agent".
   EOF
   default     = null
   type = object({
-    organization_name                    = string
-    project_name                         = string
-    workspace_name                       = string
-    workspace_description                = string
+    organization_name     = string
+    project_name          = string
+    workspace_name        = string
+    workspace_description = string
+    workspace_settings = optional(object({
+      agent_pool_id  = optional(string)
+      execution_mode = optional(string)
+    }))
     create_federated_identity_credential = optional(bool)
     file_triggers_enabled                = optional(bool)
     vcs_repo = optional(object({
@@ -307,27 +372,3 @@ variable "role_assignment" {
     skip_service_principal_aad_check       = optional(bool)
   }))
 }
-
-variable "role_definitions" {
-  description = <<EOT
-    Map of Role Definitions to create.
-
-    See https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition 
-    for documentation.
-  EOT
-  default     = {}
-  type = map(object({
-    role_definition_id = optional(string)
-    name               = string
-    scope              = optional(string) #Sets scope to current subscription if empty
-    description        = optional(string)
-    permissions = optional(object({
-      actions          = optional(list(string))
-      data_actions     = optional(list(string))
-      not_actions      = optional(list(string))
-      not_data_actions = optional(list(string))
-    }))
-    assignable_scopes = optional(list(string))
-  }))
-}
-

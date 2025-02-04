@@ -5,7 +5,8 @@ variable "tfc_organization_name" {
 
 variable "tfc_project_name" {
   type        = string
-  description = "The name of a Terraform Cloud project. Provisioned on initial bootstrap run."
+  description = "(Optional) The name of a Terraform Cloud project. Provisioned on initial bootstrap run."
+  default     = "station"
 }
 
 variable "tfc_token" {
@@ -20,7 +21,8 @@ variable "bootstrap_tfc_workspace_name" {
 
 variable "deployments_tfc_workspace_name" {
   type        = string
-  description = "The name of a single Terraform Cloud workspace for Station Deployments."
+  description = "(Optional) The name of a single Terraform Cloud workspace for Station Deployments."
+  default     = "station-deployments"
 }
 
 variable "tfc_hostname" {
@@ -37,7 +39,8 @@ variable "bootstrap_repo_url" {
 
 variable "vcs_repo_name" {
   type        = string
-  description = "The name you want to give the repository that should hold you Station deployments"
+  description = "(Optional) The name you want to give the repository that should hold you Station deployments"
+  default     = "station-deployments"
 }
 
 variable "vcs_repo_branch" {
@@ -60,7 +63,7 @@ variable "vcs_repo_github_app_installation_id" {
 
 variable "vcs_repo_tags_regex" {
   type        = string
-  description = "Optional) A regular expression used to trigger a Workspace run for matching Git tags. This option conflicts with trigger_patterns and trigger_prefixes. Should only set this value if the former is not being used."
+  description = "(Optional) A regular expression used to trigger a Workspace run for matching Git tags. This option conflicts with trigger_patterns and trigger_prefixes. Should only set this value if the former is not being used."
   default     = null
 }
 
@@ -81,4 +84,11 @@ variable "subscription_ids" {
   type        = set(string)
   description = "Set of Subscription ID's the Station identity can manage."
   default     = []
+}
+
+variable "entraID_application_name" {
+  type        = string
+  description = "The name of the Azure AD application that will be created for Station. This application will be used to create new workloads using the station module."
+  default     = "station-deployments"
+
 }

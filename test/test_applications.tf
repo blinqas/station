@@ -27,6 +27,7 @@ module "station-applications" {
       prevent_duplicate_names        = true
       fallback_public_client_enabled = true
       notes                          = "This is a test application created by Station"
+      logo_image                     = filebase64("./assets/logo.png")
 
       single_page_application = {
         redirect_uris = ["https://station-test.example/spa"]
@@ -82,6 +83,10 @@ module "station-applications" {
         saml2_token  = [{ name = "Test saml2 token" }, { name = "Test saml2 token 2" }]
       }
 
+      public_client = {
+        redirect_uris = ["https://localhost/"]
+      }
+
       web = {
         homepage_url  = "http://localhost"
         logout_url    = "http://localhost/logout"
@@ -90,7 +95,33 @@ module "station-applications" {
           access_token_issuance_enabled = true
         }
       }
+
+      service_principal = {
+        account_enabled               = true
+        alternative_names             = ["alt_name1", "alt_name2"]
+        app_role_assignment_required  = false
+        description                   = "Service Principal for Station Test: Maximum"
+        login_url                     = "http://localhost/login"
+        notes                         = "Notes for Service Principal"
+        notification_email_addresses  = ["admin@example.com"]
+        owners                        = [data.azuread_client_config.current.object_id]
+        preferred_single_sign_on_mode = "saml"
+        #tags                          = ["tag1", "tag2"] #This confliencts with the "feature_tags" block below
+        use_existing = false
+
+        feature_tags = {
+          custom_single_sign_on = true
+          enterprise            = true
+          gallery               = false
+          hide                  = false
+        }
+
+        saml_single_sign_on = {
+          relay_state = "/relay"
+        }
+      }
     }
+
   }
 }
 

@@ -1,3 +1,16 @@
+locals {
+  /* Ensure Managed Identity has required permissions to read basic user information
+     when the caller wants to create Entra ID Groups. Having only "Owner" on the group
+    is not sufficient (even though the Terraform Provider docs says so).
+
+    "Group.Read.All" is required to list groups members as beein the owner of a group is not sufficient.
+  */
+  app_role_assignments_computed = setunion(
+    var.app_role_assignments,
+    toset(length(var.groups) == 0 ? [] : ["User.ReadBasic.All", "Group.Read.All"])
+  )
+}
+
 module "user_assigned_identity" {
   source                    = "./user_assigned_identity"
   name                      = try(var.identity.name, "mi-${var.tfe.workspace_name}-${var.environment_name}")

@@ -18,3 +18,9 @@ resource "tfe_workspace" "workload" {
   }
 }
 
+resource "tfe_workspace_settings" "workload" {
+  count          = var.workspace_settings == null ? 0 : 1
+  workspace_id   = tfe_workspace.workload.id
+  agent_pool_id  = var.workspace_settings.agent_pool_id
+  execution_mode = var.workspace_settings.execution_mode
+}
