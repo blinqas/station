@@ -11,7 +11,7 @@ run "setup_create_hub_vnet" {
   variables {
     remote_vnet_name          = "remote_hub_network" # Update the remote_virtual_network_id if this is changed
     remote_vnet_address_space = "10.0.58.0/23"
-    resource_group_name       = "rg-test-peering-hub" # Update the remote_virtual_network_id if this is changed
+    resource_group_name       = "rg-stationtest-peering-hub" # Update the remote_virtual_network_id if this is changed
   }
   module {
     source = "./tests/setup-peering-networks"
@@ -31,7 +31,7 @@ variables {
     }
   }
 
-  resource_group_name = "test-peering-01"
+  resource_group_name = "stationtest-peering-01"
 
   connectivity = {
     dev = {
@@ -48,13 +48,12 @@ variables {
         dev_hub = {
           name                      = "peer-lz-dev"
           remote_virtual_network_id = "This has to be overrided by the output from the setup_create_hub_vnet module"
-          allow_forwarded_traffic   = false
         }
       }
     }
     prod = {
       virtual_network_name = "vnet-my-lz2-prod"
-      resource_group_name  = "rg-test-peering-hub"
+      resource_group_name  = "rg-stationtest-peering-hub"
       address_space        = ["10.0.56.0/23"]
       subnets = {
         main = {
@@ -69,9 +68,11 @@ variables {
       peerings = {
         prod_hub = {
           name                      = "peer-lz-prod"
-          resource_group_name       = "rg-test-peering-hub"
+          resource_group_name       = "rg-stationtest-peering-hub"
           remote_virtual_network_id = "This has to be overrided by the output from the setup_create_hub_vnet module"
           allow_forwarded_traffic   = true
+          allow_virtual_network_access = true
+          allow_gateway_transit = true
         }
       }
     }
@@ -115,6 +116,7 @@ run "station-connectivity" {
     source = "./"
   }
 
+  # Verify that VNets have the correct names
   assert {
     condition = alltrue([
       for key, vnet in azurerm_virtual_network.this :
@@ -123,6 +125,7 @@ run "station-connectivity" {
     error_message = "The virtual network names do not match the expected names from input variables."
   }
 
+  # Verify that VNets are in the correct resource groups
   assert {
     condition = alltrue([
       azurerm_virtual_network.this["dev"].resource_group_name == "rg-${var.resource_group_name}",
@@ -131,25 +134,74 @@ run "station-connectivity" {
     error_message = "The virtual networks are not deployed in the expected resource groups."
   }
 
+  # Validate Address Prefixes for VNets
   assert {
     condition = alltrue([
+      for key, vnet in azurerm_virtual_network.this :
+        vnet.address_space == var.connectivity[key].address_space
+    ])
+    error_message = "The address space for one or more virtual networks does not match the expected value."
+  }
+
+  # Validate Peering Configurations
+  assert {
+    condition = alltrue([
+      // Validate allow_forwarded_traffic
       azurerm_virtual_network_peering.to["dev_hub"].allow_forwarded_traffic == var.connectivity["dev"].peerings["dev_hub"].allow_forwarded_traffic,
-      azurerm_virtual_network_peering.to["prod_hub"].allow_forwarded_traffic == var.connectivity["prod"].peerings["prod_hub"].allow_forwarded_traffic
+      azurerm_virtual_network_peering.to["prod_hub"].allow_forwarded_traffic == var.connectivity["prod"].peerings["prod_hub"].allow_forwarded_traffic,
+
+      // Validate allow_virtual_network_access
+      azurerm_virtual_network_peering.to["dev_hub"].allow_virtual_network_access == try(var.connectivity["dev"].peerings["dev_hub"].allow_virtual_network_access, true), //Should default to true when not provided
+      azurerm_virtual_network_peering.to["prod_hub"].allow_virtual_network_access == var.connectivity["prod"].peerings["prod_hub"].allow_virtual_network_access,
+
+      // Validate allow_gateway_transit
+      azurerm_virtual_network_peering.to["dev_hub"].allow_gateway_transit == try(var.connectivity["dev"].peerings["dev_hub"].allow_gateway_transit, false), //Should default to false when not provided
+      azurerm_virtual_network_peering.to["prod_hub"].allow_gateway_transit == var.connectivity["prod"].peerings["prod_hub"].allow_gateway_transit,
+
     ])
     error_message = "The peering settings are not as expected."
   }
 
-
-
+  # Validate Subnet Names and Address Prefixes
   assert {
     condition = alltrue(flatten([
       for key, vnet in azurerm_virtual_network.this : [
         for subnet_key, subnet in var.connectivity[key].subnets :
-          contains([
-            for created_subnet in vnet.subnet : created_subnet.name
-          ], subnet.name)
+          anytrue([
+            for created_subnet in vnet.subnet :
+              created_subnet.name == subnet.name && created_subnet.address_prefixes == subnet.address_prefixes
+          ])
       ]
     ]))
-    error_message = "The virtual networks do not have the expected subnets."
+    error_message = "The virtual networks do not have the expected subnets with correct address prefixes."
+  }
+
+  # Ensure the correct number of VNets was created
+  assert {
+    condition = length(azurerm_virtual_network.this) == length(var.connectivity)
+    error_message = "The number of created VNets does not match the expected count."
+  }
+
+  # Ensure the correct number of subnets per VNet
+  assert {
+    condition = alltrue([
+      for key, vnet in azurerm_virtual_network.this :
+        length(vnet.subnet) == length(var.connectivity[key].subnets)
+    ])
+    error_message = "One or more virtual networks do not contain the expected number of subnets."
+  }
+
+  # Check if all expected subnet delegations exist
+  assert {
+    condition = alltrue(flatten([
+      for key, vnet in azurerm_virtual_network.this : [
+        for subnet_key, subnet in var.connectivity[key].subnets :
+          subnet.delegation == null || anytrue([
+            for created_subnet in vnet.subnet :
+              created_subnet.name == subnet.name && created_subnet.delegation == subnet.delegation
+          ])
+      ]
+    ]))
+    error_message = "Subnet delegation settings do not match the expected values."
   }
 }
