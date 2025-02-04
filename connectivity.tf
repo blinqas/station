@@ -71,9 +71,10 @@ locals {
 }
 
 resource "azurerm_virtual_network_peering" "to" {
-  for_each                               = local.peerings
-  name                                   = each.value.name
-  resource_group_name                    = each.value.resource_group_name == null ? azurerm_resource_group.workload.name : each.value.resource_group_name
+  for_each = local.peerings
+  name     = each.value.name
+  #resource_group_name                    = each.value.resource_group_name == null ? azurerm_virtual_network.this[each.value.connKey].resource_group_name : each.value.resource_group_name
+  resource_group_name                    = azurerm_virtual_network.this[each.value.connKey].resource_group_name
   allow_forwarded_traffic                = each.value.allow_forwarded_traffic
   allow_gateway_transit                  = each.value.allow_gateway_transit
   allow_virtual_network_access           = each.value.allow_virtual_network_access
