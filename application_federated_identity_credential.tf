@@ -1,5 +1,5 @@
 resource "azurerm_federated_identity_credential" "oidc" {
-  for_each            = var.federated_identity_credential_config
+  for_each            = var.identity.federated_identity_credential_config
   resource_group_name = azurerm_resource_group.workload.name
   parent_id           = module.user_assigned_identity.id
   name                = each.value.display_name

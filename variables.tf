@@ -30,29 +30,6 @@ variable "resource_group_name" {
   type        = string
 }
 
-
-variable "app_role_assignments" {
-  description = <<EOF
-    (Optional) A set of azuread_app_role_assignment resources to assign to the workload identity. Only built-in application roles are supported.
-
-    Example:
-    ```hcl
-    app_role_assignments = [
-      "IdentityRiskEvent.ReadWrite.All",
-      "IdentityRiskEvent.Read.All"
-    ]
-    ```
-  EOF
-  default     = []
-  type        = set(string)
-}
-
-variable "role_definition_name_on_workload_rg" {
-  description = "The name of an in-built role to assign the workload identity on the workload resource group"
-  default     = "Owner"
-  type        = string
-}
-
 variable "resource_groups" {
   description = "Map of resource groups to create"
   default     = {}
@@ -60,18 +37,6 @@ variable "resource_groups" {
     name     = string
     location = optional(string)
     tags     = optional(map(string))
-  }))
-}
-
-variable "federated_identity_credential_config" {
-  description = "Map of Federated Credentials to create on the workload identity"
-  default     = {}
-  type = map(object({
-    display_name = string
-    description  = optional(string)
-    audiences    = list(string)
-    issuer       = string
-    subject      = string
   }))
 }
 
@@ -270,13 +235,13 @@ variable "user_assigned_identities" {
       delegated_managed_identity_resource_id = optional(string)
       description                            = optional(string)
       skip_service_principal_aad_check       = optional(bool)
-    })))
-    group_memberships = optional(map(string))
+    })), {})
+    group_memberships = optional(map(string), {})
     directory_role_assignment = optional(map(object({
       role_name          = optional(string)
       app_scope_id       = optional(string)
       directory_scope_id = optional(string)
-    })))
+    })), {})
   }))
 }
 
@@ -336,21 +301,7 @@ variable "tfe" {
   })
 }
 
-variable "group_membership" {
-  description = <<EOF
-  Map of group object ids the workload identity should be member of.
-
-  Example:
-
-  group_membership = {
-    "Kubernetes Administrators" = azuread_group.k8s_admins.object_id
-  }
-  EOF
-  default     = {}
-  type        = map(string)
-}
-
-variable "role_assignment" {
+variable "role_assignments" {
   description = <<EOF
     Map of role_assignments to create. Be careful of who is allowed to provision role_assignments, you might want to 
     consider Sentinel policies in TFC.
@@ -364,11 +315,10 @@ variable "role_assignment" {
     role_definition_id                     = optional(string)
     role_definition_name                   = optional(string)
     principal_id                           = optional(string)
-    assign_to_workload_principal           = optional(bool)
     condition                              = optional(string)
     condition_version                      = optional(string)
     delegated_managed_identity_resource_id = optional(string)
     description                            = optional(string)
-    skip_service_principal_aad_check       = optional(bool)
+    skip_service_principal_aad_check       = optional(bool, false)
   }))
 }

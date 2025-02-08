@@ -19,6 +19,7 @@ variable "identity" {
         role_name = "Directory Reader"
       }
     }
+    federated_identity_credential_config = "Map of Federated Credentials to create on the workload identity"
   }
   EOF
   default     = null
@@ -34,15 +35,21 @@ variable "identity" {
       delegated_managed_identity_resource_id = optional(string)
       description                            = optional(string)
       skip_service_principal_aad_check       = optional(bool)
-    })))
-    group_memberships    = optional(map(string))
-    app_role_assignments = optional(set(string))
+    })), {})
+    group_memberships    = optional(map(string), {})
+    app_role_assignments = optional(set(string), [])
     directory_role_assignment = optional(map(object({
       role_name          = optional(string)
       app_scope_id       = optional(string)
       directory_scope_id = optional(string)
-    })))
+    })), {})
+    federated_identity_credential_config = optional(map(object({
+      display_name = string
+      description  = optional(string)
+      audiences    = list(string)
+      issuer       = string
+      subject      = string
+    })), {})
   })
 }
-
 
