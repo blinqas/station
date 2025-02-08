@@ -385,6 +385,7 @@ variable "connectivity" {
   default     = {}
   type = map(object({
     virtual_network_name = string
+    tags                 = optional(map(string), {})
     address_space        = set(string)
     resource_group_name  = optional(string)
     location             = optional(string)

@@ -9,7 +9,7 @@ resource "azurerm_virtual_network" "this" {
   edge_zone                      = each.value.edge_zone
   flow_timeout_in_minutes        = each.value.flow_timeout_in_minutes
   private_endpoint_vnet_policies = each.value.private_endpoint_vnet_policies
-  tags                           = local.tags
+  tags                           = merge(local.tags, each.value.tags)
 
   dynamic "encryption" {
     for_each = each.value.encryption == null ? [] : [each.value.encryption]
