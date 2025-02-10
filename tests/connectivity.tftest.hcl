@@ -4,7 +4,7 @@ provider "azurerm" {
   features {}
 }
 
-provider "azuread" { }
+provider "azuread" {}
 
 
 run "setup_create_hub_vnet" {
