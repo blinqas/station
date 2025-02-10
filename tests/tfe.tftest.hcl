@@ -250,7 +250,7 @@ run "tfe_module_outputs_to_workspace_var" {
     error_message = "The application workspace variable is not of type hcl"
   }
   assert {
-    condition     = module.station-tfe.worksapace_variables.applications.category == "terraform"
+    condition     = module.station-tfe.workspace_variables.applications.category == "terraform"
     error_message = "The application workspace variable was NOT set as type terraform"
   }
 
@@ -274,7 +274,7 @@ run "tfe_module_outputs_to_workspace_var" {
     error_message = "The application output variable is empty."
   }
   assert {
-    condition     = module.station-tfe.workspace_vaariables.user_assigned_identities.hcl == true
+    condition     = module.station-tfe.workspace_variables.user_assigned_identities.hcl == true
     error_message = "The application workspace variable is not of type hcl"
   }
   assert {
