@@ -1,14 +1,16 @@
 provider "tfe" {}
+
 provider "azurerm" {
   features {}
 }
-provider "azuread" {
-
-}
+provider "azuread" {}
 
 variables {
   tfe = {
-    project_name          = "tests_tfe"
+    project = {
+      id   = "# Overridden"
+      name = "tests_tfe"
+    }
     organization_name     = "blinq-west-lab"
     workspace_name        = "tfe_test"
     workspace_description = "Workspace description"
@@ -105,6 +107,21 @@ run "setup_create_tfc_test_project" {
   }
 }
 
+run "inject_tfe_project_id" {
+  variables {
+    // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
+    tfe = merge(var.tfe, {
+      project = merge(var.project, {
+        id = run.setup_create_tfe_test_project.id
+      })
+    })
+  }
+
+  module {
+    source = "./"
+  }
+}
+
 
 run "tfe_create_workspace" {
 
@@ -128,7 +145,7 @@ run "tfe_create_workspace" {
   }
 }
 
-run "tfe_workspace_varaibles" {
+run "tfe_workspace_variables" {
   module {
     source = "./"
   }
@@ -217,7 +234,7 @@ run "tfe_module_outputs_to_workspace_var" {
     error_message = "The application workspace variable is not of type hcl"
   }
   assert {
-    condition     = module.station-tfe.workspace_variables.applications.category == "terraform"
+    condition     = module.station-tfe.worksapace_variables.applications.category == "terraform"
     error_message = "The application workspace variable was NOT set as type terraform"
   }
 
@@ -241,7 +258,7 @@ run "tfe_module_outputs_to_workspace_var" {
     error_message = "The application output variable is empty."
   }
   assert {
-    condition     = module.station-tfe.workspace_variables.user_assigned_identities.hcl == true
+    condition     = module.station-tfe.workspace_vaariables.user_assigned_identities.hcl == true
     error_message = "The application workspace variable is not of type hcl"
   }
   assert {

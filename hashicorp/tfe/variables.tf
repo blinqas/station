@@ -3,9 +3,9 @@ variable "organization_name" {
   type        = string
 }
 
-variable "project_name" {
-  description = "Name of the project to link `var.workspace_name` to. The project must exist already. Can not be set if `var.projects` is set."
-  type        = string
+variable "project" {
+  description = "The Resource/Data block of a tfe_project"
+  type        = any
 }
 
 variable "workspace_name" {
