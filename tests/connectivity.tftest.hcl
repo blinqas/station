@@ -34,25 +34,25 @@ variables {
   resource_group_name = "stationtest-peering-01"
 
   connectivity = {
-    dev = {
-      virtual_network_name = "vnet-my-lz-dev"
+    min = {
+      virtual_network_name = "vnet-my-lz-min"
       address_space        = ["10.0.54.0/23"]
       subnets = {
         main = {
-          name             = "snet-main-dev"
+          name             = "snet-main-min"
           address_prefixes = ["10.0.54.0/24"]
         }
       }
 
       peerings = {
-        dev_hub = {
-          name                      = "peer-lz-dev"
+        min_hub = {
+          name                      = "peer-lz-min"
           remote_virtual_network_id = "This has to be overrided by the output from the setup_create_hub_vnet module"
         }
       }
     }
-    prod = {
-      virtual_network_name = "vnet-my-lz2-prod"
+    max = {
+      virtual_network_name = "vnet-my-lz2-max"
       resource_group_name  = "rg-stationtest-peering-hub"
       address_space        = ["10.0.56.0/23"]
       subnets = {
@@ -64,10 +64,10 @@ variables {
           name             = "snet-app2"
           address_prefixes = ["10.0.57.0/24"]
         }
-      }
+      } 
       peerings = {
-        prod_hub = {
-          name                      = "peer-lz-prod"
+        max_hub = {
+          name                      = "peer-lz-max"
           resource_group_name       = "rg-stationtest-peering-hub"
           remote_virtual_network_id = "This has to be overrided by the output from the setup_create_hub_vnet module"
           allow_forwarded_traffic   = true
@@ -92,19 +92,19 @@ run "setup_create_tfc_test_project" {
 
 run "station-connectivity" {
   variables {
-    //Overide the dev network to use the outputed vnet ID from the setup_create_hub_vnet module
+    //Overide the min network to use the outputed vnet ID from the setup_create_hub_vnet module
     connectivity = merge(var.connectivity, {
-      dev = merge(var.connectivity.dev, {
-        peerings = merge(var.connectivity.dev.peerings, {
-          dev_hub = merge(var.connectivity.dev.peerings.dev_hub, {
+      min = merge(var.connectivity.min, {
+        peerings = merge(var.connectivity.min.peerings, {
+          min_hub = merge(var.connectivity.min.peerings.min_hub, {
             remote_virtual_network_id = run.setup_create_hub_vnet.virtual_network_id
           })
         })
       }),
-      //Overide the prod network to use the outputed vnet ID from the setup_create_hub_vnet module
-      prod = merge(var.connectivity.prod, {
-        peerings = merge(var.connectivity.prod.peerings, {
-          prod_hub = merge(var.connectivity.prod.peerings.prod_hub, {
+      //Overide the max network to use the outputed vnet ID from the setup_create_hub_vnet module
+      max = merge(var.connectivity.max, {
+        peerings = merge(var.connectivity.max.peerings, {
+          max_hub = merge(var.connectivity.max.peerings.max_hub, {
             remote_virtual_network_id = run.setup_create_hub_vnet.virtual_network_id
           })
         })
@@ -128,8 +128,8 @@ run "station-connectivity" {
   # Verify that VNets are in the correct resource groups
   assert {
     condition = alltrue([
-      azurerm_virtual_network.this["dev"].resource_group_name == "rg-${var.resource_group_name}",
-      azurerm_virtual_network.this["prod"].resource_group_name == var.connectivity["prod"].resource_group_name
+      azurerm_virtual_network.this["min"].resource_group_name == "rg-${var.resource_group_name}",
+      azurerm_virtual_network.this["max"].resource_group_name == var.connectivity["max"].resource_group_name
     ])
     error_message = "The virtual networks are not deployed in the expected resource groups."
   }
@@ -147,16 +147,16 @@ run "station-connectivity" {
   assert {
     condition = alltrue([
       // Validate allow_forwarded_traffic
-      azurerm_virtual_network_peering.to["dev_hub"].allow_forwarded_traffic == var.connectivity["dev"].peerings["dev_hub"].allow_forwarded_traffic,
-      azurerm_virtual_network_peering.to["prod_hub"].allow_forwarded_traffic == var.connectivity["prod"].peerings["prod_hub"].allow_forwarded_traffic,
+      azurerm_virtual_network_peering.to["min_hub"].allow_forwarded_traffic == var.connectivity["min"].peerings["min_hub"].allow_forwarded_traffic,
+      azurerm_virtual_network_peering.to["max_hub"].allow_forwarded_traffic == var.connectivity["max"].peerings["max_hub"].allow_forwarded_traffic,
 
       // Validate allow_virtual_network_access
-      azurerm_virtual_network_peering.to["dev_hub"].allow_virtual_network_access == try(var.connectivity["dev"].peerings["dev_hub"].allow_virtual_network_access, true), //Should default to true when not provided
-      azurerm_virtual_network_peering.to["prod_hub"].allow_virtual_network_access == var.connectivity["prod"].peerings["prod_hub"].allow_virtual_network_access,
+      azurerm_virtual_network_peering.to["min_hub"].allow_virtual_network_access == try(var.connectivity["min"].peerings["min_hub"].allow_virtual_network_access, true), //Should default to true when not provided
+      azurerm_virtual_network_peering.to["max_hub"].allow_virtual_network_access == var.connectivity["max"].peerings["max_hub"].allow_virtual_network_access,
 
       // Validate allow_gateway_transit
-      azurerm_virtual_network_peering.to["dev_hub"].allow_gateway_transit == try(var.connectivity["dev"].peerings["dev_hub"].allow_gateway_transit, false), //Should default to false when not provided
-      azurerm_virtual_network_peering.to["prod_hub"].allow_gateway_transit == var.connectivity["prod"].peerings["prod_hub"].allow_gateway_transit,
+      azurerm_virtual_network_peering.to["min_hub"].allow_gateway_transit == try(var.connectivity["min"].peerings["min_hub"].allow_gateway_transit, false), //Should default to false when not provided
+      azurerm_virtual_network_peering.to["max_hub"].allow_gateway_transit == var.connectivity["max"].peerings["max_hub"].allow_gateway_transit,
 
     ])
     error_message = "The peering settings are not as expected."
