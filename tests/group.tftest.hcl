@@ -8,7 +8,10 @@ provider "azuread" {
 
 variables {
   tfe = {
-    project_name                         = "tests_group"
+    project = {
+      id   = "# Overridden"
+      name = "tests_group"
+    }
     organization_name                    = "blinq-west-lab"
     workspace_name                       = "tests_group"
     workspace_description                = "This is a test for the group module."
@@ -47,6 +50,21 @@ run "setup_create_tfc_test_project" {
   }
   module {
     source = "./tests/setup-tfe-project"
+  }
+}
+
+run "inject_tfe_project_id" {
+  variables {
+    // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
+    tfe = merge(var.tfe, {
+      project = merge(var.project, {
+        id = run.setup_create_tfe_test_project.id
+      })
+    })
+  }
+
+  module {
+    source = "./"
   }
 }
 
