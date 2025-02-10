@@ -14,9 +14,9 @@ variable "resource_group_name" {
 
 variable "location" {
   type        = string
-  default = "norwayeast"
+  default     = "norwayeast"
   description = "(Required) The location/region where the remote virtual network should be located."
-  
+
 }
 variable "tenant_id" {
   type        = string

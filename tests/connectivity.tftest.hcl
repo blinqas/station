@@ -64,15 +64,15 @@ variables {
           name             = "snet-app2"
           address_prefixes = ["10.0.57.0/24"]
         }
-      } 
+      }
       peerings = {
         max_hub = {
-          name                      = "peer-lz-max"
-          resource_group_name       = "rg-stationtest-peering-hub"
-          remote_virtual_network_id = "This has to be overrided by the output from the setup_create_hub_vnet module"
-          allow_forwarded_traffic   = true
+          name                         = "peer-lz-max"
+          resource_group_name          = "rg-stationtest-peering-hub"
+          remote_virtual_network_id    = "This has to be overrided by the output from the setup_create_hub_vnet module"
+          allow_forwarded_traffic      = true
           allow_virtual_network_access = true
-          allow_gateway_transit = true
+          allow_gateway_transit        = true
         }
       }
     }
@@ -120,7 +120,7 @@ run "station-connectivity" {
   assert {
     condition = alltrue([
       for key, vnet in azurerm_virtual_network.this :
-        vnet.name == var.connectivity[key].virtual_network_name
+      vnet.name == var.connectivity[key].virtual_network_name
     ])
     error_message = "The virtual network names do not match the expected names from input variables."
   }
@@ -138,7 +138,7 @@ run "station-connectivity" {
   assert {
     condition = alltrue([
       for key, vnet in azurerm_virtual_network.this :
-        vnet.address_space == var.connectivity[key].address_space
+      vnet.address_space == var.connectivity[key].address_space
     ])
     error_message = "The address space for one or more virtual networks does not match the expected value."
   }
@@ -167,10 +167,10 @@ run "station-connectivity" {
     condition = alltrue(flatten([
       for key, vnet in azurerm_virtual_network.this : [
         for subnet_key, subnet in var.connectivity[key].subnets :
-          anytrue([
-            for created_subnet in vnet.subnet :
-              created_subnet.name == subnet.name && created_subnet.address_prefixes == subnet.address_prefixes
-          ])
+        anytrue([
+          for created_subnet in vnet.subnet :
+          created_subnet.name == subnet.name && created_subnet.address_prefixes == subnet.address_prefixes
+        ])
       ]
     ]))
     error_message = "The virtual networks do not have the expected subnets with correct address prefixes."
@@ -178,7 +178,7 @@ run "station-connectivity" {
 
   # Ensure the correct number of VNets was created
   assert {
-    condition = length(azurerm_virtual_network.this) == length(var.connectivity)
+    condition     = length(azurerm_virtual_network.this) == length(var.connectivity)
     error_message = "The number of created VNets does not match the expected count."
   }
 
@@ -186,7 +186,7 @@ run "station-connectivity" {
   assert {
     condition = alltrue([
       for key, vnet in azurerm_virtual_network.this :
-        length(vnet.subnet) == length(var.connectivity[key].subnets)
+      length(vnet.subnet) == length(var.connectivity[key].subnets)
     ])
     error_message = "One or more virtual networks do not contain the expected number of subnets."
   }
@@ -196,10 +196,10 @@ run "station-connectivity" {
     condition = alltrue(flatten([
       for key, vnet in azurerm_virtual_network.this : [
         for subnet_key, subnet in var.connectivity[key].subnets :
-          subnet.delegation == null || anytrue([
-            for created_subnet in vnet.subnet :
-              created_subnet.name == subnet.name && created_subnet.delegation == subnet.delegation
-          ])
+        subnet.delegation == null || anytrue([
+          for created_subnet in vnet.subnet :
+          created_subnet.name == subnet.name && created_subnet.delegation == subnet.delegation
+        ])
       ]
     ]))
     error_message = "Subnet delegation settings do not match the expected values."

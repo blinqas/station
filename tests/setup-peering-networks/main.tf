@@ -13,5 +13,5 @@ resource "azurerm_resource_group" "this" {
 
 output "virtual_network_id" {
   value = azurerm_virtual_network.this.id
-  
+
 }
