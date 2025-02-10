@@ -5,6 +5,17 @@ provider "azurerm" {
 }
 provider "azuread" {}
 
+
+run "bootstrap_create_tfc_test_project" {
+  variables {
+    tfc_project_name = "tests_group"
+  }
+  module {
+    source = "./tests/setup-tfe-project"
+  }
+}
+
+
 variables {
   tfe = {
     project = {
@@ -98,32 +109,18 @@ variables {
   }
 }
 
-run "setup_create_tfc_test_project" {
-  variables {
-    tfc_project_name = "tests_tfe"
-  }
-  module {
-    source = "./tests/setup-tfe-project"
-  }
-}
 
-run "inject_tfe_project_id" {
-  variables {
+run "tfe_create_workspace" {
+
+    variables {
     // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
-        id = run.setup_create_tfc_test_project.id
+        id = run.bootstrap_create_tfc_test_project.id
       })
     })
   }
 
-  module {
-    source = "./"
-  }
-}
-
-
-run "tfe_create_workspace" {
 
   module {
     source = "./"
@@ -146,6 +143,15 @@ run "tfe_create_workspace" {
 }
 
 run "tfe_workspace_variables" {
+    variables {
+    // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+  }
+
   module {
     source = "./"
   }
@@ -219,6 +225,16 @@ run "tfe_workspace_variables" {
 }
 
 run "tfe_module_outputs_to_workspace_var" {
+
+    variables {
+    // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+  }
+
   #This should output the the creat
   module {
     source = "./"
