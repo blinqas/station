@@ -111,7 +111,7 @@ run "inject_tfe_project_id" {
   variables {
     // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
     tfe = merge(var.tfe, {
-      project = merge(var.project, {
+      project = merge(var.tfe.project, {
         id = run.setup_create_tfe_test_project.id
       })
     })
