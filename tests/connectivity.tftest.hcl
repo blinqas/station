@@ -1,10 +1,10 @@
 provider "tfe" {}
+
 provider "azurerm" {
   features {}
 }
-provider "azuread" {
 
-}
+provider "azuread" { }
 
 
 run "setup_create_hub_vnet" {
@@ -13,6 +13,7 @@ run "setup_create_hub_vnet" {
     remote_vnet_address_space = "10.0.58.0/23"
     resource_group_name       = "rg-stationtest-peering-hub" # Update the remote_virtual_network_id if this is changed
   }
+
   module {
     source = "./tests/setup-peering-networks"
   }
@@ -27,7 +28,6 @@ variables {
     workspace_description = "Workspace description"
     workspace_settings = {
       execution_mode = "remote"
-      agent_pool_id  = null # Not adding this as it will require us to setup a private runner
     }
   }
 
@@ -51,6 +51,7 @@ variables {
         }
       }
     }
+
     max = {
       virtual_network_name = "vnet-my-lz2-max"
       resource_group_name  = "rg-stationtest-peering-hub"
@@ -92,7 +93,7 @@ run "setup_create_tfc_test_project" {
 
 run "station-connectivity" {
   variables {
-    //Overide the min network to use the outputed vnet ID from the setup_create_hub_vnet module
+    // Overide the min network to use the outputed vnet ID from the setup_create_hub_vnet module
     connectivity = merge(var.connectivity, {
       min = merge(var.connectivity.min, {
         peerings = merge(var.connectivity.min.peerings, {
@@ -101,7 +102,7 @@ run "station-connectivity" {
           })
         })
       }),
-      //Overide the max network to use the outputed vnet ID from the setup_create_hub_vnet module
+      // Overide the max network to use the outputed vnet ID from the setup_create_hub_vnet module
       max = merge(var.connectivity.max, {
         peerings = merge(var.connectivity.max.peerings, {
           max_hub = merge(var.connectivity.max.peerings.max_hub, {
