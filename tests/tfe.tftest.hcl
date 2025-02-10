@@ -112,7 +112,7 @@ variables {
 
 run "tfe_create_workspace" {
 
-    variables {
+  variables {
     // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
@@ -143,7 +143,7 @@ run "tfe_create_workspace" {
 }
 
 run "tfe_workspace_variables" {
-    variables {
+  variables {
     // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
@@ -226,7 +226,7 @@ run "tfe_workspace_variables" {
 
 run "tfe_module_outputs_to_workspace_var" {
 
-    variables {
+  variables {
     // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
