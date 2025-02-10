@@ -5,7 +5,7 @@ module "station-applications" {
   subscription_id = var.subscription_id
 
   tfe = {
-    project_name          = tfe_project.test.name
+    project               = tfe_project.test
     organization_name     = data.tfe_organization.test.name
     workspace_description = "This workspace contains application_tests from https://github.com/blinqas/station.git"
     workspace_name        = "station-tests-application_tests"
