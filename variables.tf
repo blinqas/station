@@ -30,6 +30,47 @@ variable "resource_group_name" {
   type        = string
 }
 
+variable "managed_identity_name" {
+  description = <<EOF
+    The name of the managed identity (identity provided to the workload) that is created. The final name is prefixed with `mi-`.
+
+    If a value is not provided, Station will set the name to `mi-var.tfe.workspace_name-var.environment_name`
+  EOF
+  default     = null
+  type        = string
+}
+
+variable "app_role_assignments" {
+  description = <<EOF
+    (Optional) A set of azuread_app_role_assignment resources to assign to the workload identity. Only built-in application roles are supported.
+
+    Example:
+    ```hcl
+    app_role_assignments = {
+      "User.ReadBasic.All" = {
+        app_role_id        = "97235f07-e226-4f63-ace3-39588e11d3a1"
+        resource_object_id = "microsoft-graph-enterprise-app-object-id"
+      }
+      "Group.Read.All" = {
+        app_role_id        = "5b567255-7703-4780-807c-7be8301ae99b"
+        resource_object_id = "microsoft-graph-enterprise-app-object-id"
+      }
+    }
+    ```
+  EOF
+  default     = {}
+  type = map(object({
+    app_role_id        = string
+    resource_object_id = string
+  }))
+}
+
+variable "role_definition_name_on_workload_rg" {
+  description = "The name of an in-built role to assign the workload identity on the workload resource group"
+  default     = "Owner"
+  type        = string
+}
+
 variable "resource_groups" {
   description = "Map of resource groups to create"
   default     = {}
@@ -52,6 +93,45 @@ variable "tags" {
   EOF
   default     = {}
   type        = map(string)
+}
+
+// TODO: Better name
+variable "management" {
+  description = <<EOT
+  Information required by Station when var.groups and var.applications is used. 
+
+  When var.applications or var.groups is set, var.management must be provided. The reason for this is that we do not wish to create two managed resources to dynamically fetch Object ID values for the Graph API Enterprise Application. For cost reasons in Terraform Cloud; as it would require 2 managed resources. With many landing zones it quickly adds up.
+  EOT
+  default     = null
+  type = object({
+    msgraph_azuread_service_principal_object_id = string
+  })
+
+  validation {
+    condition     = length(var.applications) > 0 || length(var.groups) > 0 ? var.management != null : true
+    error_message = <<EOT
+    When var.applications or var.groups is set, var.management must be provided. The reason for this is that we do not wish to create two managed resources to dynamically fetch Object ID values for the Graph API Enterprise Application. For cost reasons in Terraform Cloud; as it would require 2 managed resources. With many landing zones it quickly adds up.
+
+    Example as a caller:
+    ```hcl
+    # main.tf
+    data "azuread_application_published_app_ids" "well_known" {}
+
+    resource "azuread_service_principal" "msgraph" {
+      client_id    = data.azuread_application_published_app_ids.well_known.result.MicrosoftGraph
+      use_existing = true
+    }
+
+    module "landing_zone_1" {
+      applications = {...}
+      groups = {...}
+      management = {
+        msgraph_azuread_service_principal_object_id = azuread_service_principal.msgraph.object_id
+      }
+    }
+    ```
+    EOT
+  }
 }
 
 variable "applications" {
@@ -104,7 +184,7 @@ variable "applications" {
         type = string
       }))
     })))
-
+    # Microsoft Graph
     optional_claims = optional(object({
       access_token = optional(set(object({
         name                  = string
@@ -208,7 +288,12 @@ variable "user_assigned_identities" {
       name                = "uai-my-identity"
       resource_group_name = "rg-name"
       location            = "norwayeast"
-      app_role_assignments    = ["IdentityRiskEvent.ReadWrite.All"]
+      app_role_assignments = {
+        Application.ReadWrite.OwnedBy = {
+          app_role_id        = "18a4783c-866b-4cc7-a460-3d5e5662c884"
+          resource_object_id = "microsoft-graph-enterprise-app-object-id"
+        }
+      }
       group_memberships = {
         "Kubernetes Administrators" = azuread_group.k8s_admins.object_id
       }
@@ -220,10 +305,13 @@ variable "user_assigned_identities" {
   EOF
   default     = {}
   type = map(object({
-    name                 = string
-    resource_group_name  = optional(string)
-    location             = optional(string)
-    app_role_assignments = optional(set(string), [])
+    name                = string
+    resource_group_name = optional(string)
+    location            = optional(string)
+    app_role_assignments = optional(map(object({
+      app_role_id        = string
+      resource_object_id = string
+    })))
     role_assignments = optional(map(object({
       name                                   = optional(string)
       scope                                  = string
