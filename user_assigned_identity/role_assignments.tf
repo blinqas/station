@@ -1,5 +1,5 @@
 resource "azurerm_role_assignment" "roles" {
-  for_each                               = { for key, value in var.role_assignments : key => value if value.scope != null }
+  for_each                               = var.role_assignments
   name                                   = each.value.name
   scope                                  = each.value.scope
   role_definition_id                     = each.value.role_definition_id
