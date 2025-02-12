@@ -12,13 +12,11 @@ locals {
 }
 
 module "user_assigned_identity" {
-  source              = "./user_assigned_identity"
-  name                = try(var.identity.name, "mi-${var.tfe.workspace_name}-${var.environment_name}")
-  resource_group_name = azurerm_resource_group.workload.name
-  location            = azurerm_resource_group.workload.location
-  tags                = local.tags
-  #role_assignments          = var.identity.role_assignments
-  #role_assignments          = local.role_assignments_merged
+  source                    = "./user_assigned_identity"
+  name                      = try(var.identity.name, "mi-${var.tfe.workspace_name}-${var.environment_name}")
+  resource_group_name       = azurerm_resource_group.workload.name
+  location                  = azurerm_resource_group.workload.location
+  tags                      = local.tags
   app_role_assignments      = var.identity.app_role_assignments
   group_memberships         = var.identity.group_memberships
   directory_role_assignment = var.identity.directory_role_assignment
