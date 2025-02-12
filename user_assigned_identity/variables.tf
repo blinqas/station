@@ -48,3 +48,4 @@ variable "resource_group_ids" {
   type        = list(string)
   default     = []
 }
+

@@ -1,3 +1,7 @@
+output "name" {
+  value = azurerm_user_assigned_identity.identity.name
+}
+
 output "id" {
   value = azurerm_user_assigned_identity.identity.id
 }
@@ -14,3 +18,6 @@ output "tenant_id" {
   value = azurerm_user_assigned_identity.identity.tenant_id
 }
 
+output "group_memberships" {
+  value = azuread_group_member.uai
+}

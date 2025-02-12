@@ -22,7 +22,6 @@ variable "identity" {
     federated_identity_credential_config = "Map of Federated Credentials to create on the workload identity"
   }
   EOF
-  default     = null
   type = object({
     name = optional(string)
     role_assignments = optional(map(object({

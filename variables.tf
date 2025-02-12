@@ -308,8 +308,6 @@ variable "role_assignments" {
   description = <<EOF
     Map of role_assignments to create. Be careful of who is allowed to provision role_assignments, you might want to 
     consider Sentinel policies in TFC.
-
-    - assign_to_workload_principal assigns the role to the workload identity. Can not be used with principal_id.
   EOF
   default     = {}
   type = map(object({

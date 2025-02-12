@@ -13,7 +13,7 @@ locals {
 
 module "user_assigned_identity" {
   source                    = "./user_assigned_identity"
-  name                      = try(var.identity.name, "mi-${var.tfe.workspace_name}-${var.environment_name}")
+  name                      = var.identity.name == null ? "mi-${var.tfe.workspace_name}-${var.environment_name}" : var.identity.name
   resource_group_name       = azurerm_resource_group.workload.name
   location                  = azurerm_resource_group.workload.location
   tags                      = local.tags

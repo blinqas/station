@@ -9,6 +9,7 @@ resource "azurerm_role_assignment" "lz_owner" {
   scope                = each.value.id
   principal_id         = module.user_assigned_identity.principal_id
   role_definition_name = "Owner"
+  principal_type       = "ServicePrincipal"
 }
 
 // Role Assignments for the Landing Zone identity (via var.identity.role_assignments)
@@ -24,6 +25,7 @@ resource "azurerm_role_assignment" "lz_identity" {
   delegated_managed_identity_resource_id = each.value.delegated_managed_identity_resource_id
   description                            = each.value.description
   skip_service_principal_aad_check       = each.value.skip_service_principal_aad_check
+  principal_type                         = "ServicePrincipal"
 }
 
 // Role Assignments for user specified principal IDs (not the Landing Zone identity (var.identity) OR the var.user_assigned_identities)
@@ -39,6 +41,7 @@ resource "azurerm_role_assignment" "others" {
   delegated_managed_identity_resource_id = each.value.delegated_managed_identity_resource_id
   description                            = each.value.description
   skip_service_principal_aad_check       = each.value.skip_service_principal_aad_check
+  principal_type                         = "ServicePrincipal"
 }
 
 locals {
