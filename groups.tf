@@ -9,4 +9,3 @@ module "ad_groups" {
     [module.user_assigned_identity.principal_id]
   )
 }
-
