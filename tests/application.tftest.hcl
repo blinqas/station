@@ -11,7 +11,8 @@ run "bootstrap_create_tfc_test_project" {
   }
 }
 
-run "setup_application" {
+run "bootstrap_application" {
+  //This fetches the objectid of the current user
   module {
     source = "./tests/setup-application"
   }
@@ -52,6 +53,9 @@ variables {
       }
 
       api = {
+        mapped_claims_enabled          = true
+        requested_access_token_version = 2
+
         oauth2_permission_scope = [
           {
             admin_consent_description  = "Station Test Maximum"
@@ -122,7 +126,7 @@ variables {
         login_url                     = "http://localhost/login"
         notes                         = "Notes for Service Principal"
         notification_email_addresses  = ["admin@example.com"]
-        //owners                        = ["This has to be overriden with the current objectid"]
+        owners                        = ["This has to be overriden with the current objectid"]
         preferred_single_sign_on_mode = "saml"
         use_existing                  = false
 
@@ -146,10 +150,13 @@ run "application-main" {
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.setup_application.current.object_id]
-      }),
+        owners = [run.bootstrap_application.current.object_id],
+        service_principal = merge(var.applications.maximum.service_principal, {
+          owners = [run.bootstrap_application.current.object_id]
+        })
+      })
     })
-    //Override the 
+
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
@@ -194,7 +201,7 @@ run "application-main" {
   }
   assert {
     condition = alltrue([
-      module.applications["minimum"].application.group_membership_claims == null,  //Default value when nothing is provided
+      module.applications["minimum"].application.group_membership_claims == null, //Default value when nothing is provided
       module.applications["maximum"].application.group_membership_claims == toset(var.applications.maximum.group_membership_claims)
     ])
     error_message = "The var.applications.appName.group_membership_claims does not match the group membership claims of the application."
@@ -206,32 +213,35 @@ run "application-main" {
     ])
     error_message = "The var.applications.appName.prevent_duplicate_names does not match the prevent_duplicate_names of the application"
   }
-   assert {
+  assert {
     condition = alltrue([
-      module.applications["minimum"].application.fallback_public_client_enabled == false, 
+      module.applications["minimum"].application.fallback_public_client_enabled == false,
       module.applications["maximum"].application.fallback_public_client_enabled == var.applications.maximum.fallback_public_client_enabled
     ])
     error_message = "The var.applications.appName.fallback_public_client_enabled did not match the input"
-  }    
-   assert {
+  }
+  assert {
     condition = alltrue([
       module.applications["minimum"].application.notes == "", //Defaults to "" instead of null for some reason
       module.applications["maximum"].application.notes == var.applications.maximum.notes
     ])
     error_message = "The var.applications.appName.notes does not match the notes of the application"
-  }         
+  }
 
 }
-/*  TODO: Add the following tests
+
 run "application-single_page_application" {
 
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.setup_application.current.object_id]
-      }),
+        owners = [run.bootstrap_application.current.object_id],
+        service_principal = merge(var.applications.maximum.service_principal, {
+          owners = [run.bootstrap_application.current.object_id]
+        })
+      })
     })
-    //Override the 
+
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
@@ -243,6 +253,14 @@ run "application-single_page_application" {
     source = "./"
   }
 
+  assert {
+    condition = alltrue([
+      length(module.applications["minimum"].application.single_page_application[0].redirect_uris) == 0,
+      module.applications["maximum"].application.single_page_application[0].redirect_uris == toset(var.applications.maximum.single_page_application.redirect_uris)
+
+    ])
+    error_message = "The var.applications.appName.single_page_application does not match the single_page_application of the application"
+  }
 }
 
 run "application-api" {
@@ -250,10 +268,14 @@ run "application-api" {
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.setup_application.current.object_id]
-      }),
+        owners = [run.bootstrap_application.current.object_id],
+        service_principal = merge(var.applications.maximum.service_principal, {
+          owners = [run.bootstrap_application.current.object_id]
+        })
+      })
     })
-    //Override the 
+
+
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
@@ -265,14 +287,41 @@ run "application-api" {
     source = "./"
   }
 
-  # Validate API permissions
   assert {
     condition = alltrue([
-      length(module.applications["maximum"].application.api[0].oauth2_permission_scope) == length(var.applications.maximum.api.oauth2_permission_scope)
+      module.applications["maximum"].application.api[0].mapped_claims_enabled == var.applications.maximum.api.mapped_claims_enabled,
+      module.applications["maximum"].application.api[0].requested_access_token_version == var.applications.maximum.api.requested_access_token_version
     ])
-    error_message = "API permissions do not match expected configuration."
+    error_message = "The var.applications.maximum.api configuration does not match the api configuration of the application"
   }
 
+  assert {
+    condition = alltrue([
+      module.applications["minimum"].application.api[0].mapped_claims_enabled == false,     //Defaults to false when no value is provided,
+      module.applications["minimum"].application.api[0].requested_access_token_version == 1 //Defaults to false when no value is provided
+    ])
+    error_message = "The var.applications.minimum.api configuration does not match the api configuration of the application"
+  }
+
+  assert {
+    condition = alltrue([
+      length(module.applications["maximum"].application.api[0].oauth2_permission_scope) == length(var.applications.maximum.api.oauth2_permission_scope),
+      alltrue([
+        for expected in var.applications.maximum.api.oauth2_permission_scope :
+        anytrue([
+          for actual in module.applications["maximum"].application.api[0].oauth2_permission_scope :
+          alltrue([
+            actual.admin_consent_description == expected.admin_consent_description,
+            actual.admin_consent_display_name == expected.admin_consent_display_name,
+            actual.id == expected.id,
+            actual.enabled == expected.enabled,
+            actual.value == expected.value
+          ])
+        ])
+      ])
+    ])
+    error_message = "The var.applications.maximum.api.oauth2_permission_scope configuration does not match the API configuration of the application."
+  }
 }
 
 run "application-required_resource_access" {
@@ -280,10 +329,14 @@ run "application-required_resource_access" {
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.setup_application.current.object_id]
-      }),
+        owners = [run.bootstrap_application.current.object_id],
+        service_principal = merge(var.applications.maximum.service_principal, {
+          owners = [run.bootstrap_application.current.object_id]
+        })
+      })
     })
-    //Override the 
+
+
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
@@ -295,25 +348,78 @@ run "application-required_resource_access" {
     source = "./"
   }
 
-  # Validate API permissions
+  assert {
+    condition     = try(length(module.applications["minimum"].required_resource_access), 0) == 0
+    error_message = "required_resource_access should not be configured when no config is provided."
+  }
+
+  # Assert that the number of required_resource_access entries match
+  assert {
+    condition     = length(module.applications["maximum"].application.required_resource_access) == length(var.applications.maximum.required_resource_access)
+    error_message = "The number of required_resource_access entries does not match whats provided in var.applications.maximum.required_resource_access."
+  }
+
+  # 2Assert that each resource_app_id in expected exists in actual
   assert {
     condition = alltrue([
-      length(module.applications["maximum"].application.api[0].oauth2_permission_scope) == length(var.applications.maximum.api.oauth2_permission_scope)
+      for expected in var.applications.maximum.required_resource_access :
+      contains([
+        for actual in module.applications["maximum"].application.required_resource_access :
+        actual.resource_app_id
+      ], expected.resource_app_id)
     ])
-    error_message = "API permissions do not match expected configuration."
+    error_message = "One or more var.applications.maximum.required_resource_access.resource_app_id values in required_resource_access are missing."
+  }
+
+  # Assert that each required_resource_access entry has the correct number of resource_access entries
+  assert {
+    condition = alltrue([
+      for expected in var.applications.maximum.required_resource_access :
+      anytrue([
+        for actual in module.applications["maximum"].application.required_resource_access :
+        actual.resource_app_id == expected.resource_app_id &&
+        length(actual.resource_access) == length(expected.resource_access)
+      ])
+    ])
+    error_message = "The number of resource_access entries does not match for one or more required_resource_access entries."
+  }
+
+  # Assert that each resource_access entry has the correct id and type
+  assert {
+    condition = alltrue([
+      for expected in var.applications.maximum.required_resource_access :
+      anytrue([
+        for actual in module.applications["maximum"].application.required_resource_access :
+        actual.resource_app_id == expected.resource_app_id &&
+        alltrue([
+          for expected_access in expected.resource_access :
+          anytrue([
+            for actual_access in actual.resource_access :
+            alltrue([
+              actual_access.id == expected_access.id,
+              actual_access.type == expected_access.type
+            ])
+          ])
+        ])
+      ])
+    ])
+    error_message = "One or more resource_access entries do not match in id or type."
   }
 
 }
-
-run "application-option_claims" {
+run "application-optional_claims" {
 
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.setup_application.current.object_id]
-      }),
+        owners = [run.bootstrap_application.current.object_id],
+        service_principal = merge(var.applications.maximum.service_principal, {
+          owners = [run.bootstrap_application.current.object_id]
+        })
+      })
     })
-    //Override the 
+
+
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
@@ -324,6 +430,66 @@ run "application-option_claims" {
   module {
     source = "./"
   }
+
+  assert {
+    condition     = try(length(module.applications["minimum"].optional_claims), 0) == 0
+    error_message = "Public_client should not be configured when no config is provided"
+  }
+
+  # Assert that the `optional_claims` block exists
+  assert {
+    condition     = length(module.applications["maximum"].application.optional_claims) > 0
+    error_message = "The optional_claims block is missing."
+  }
+
+  # Assert that all expected keys exist in optional_claims
+  assert {
+    condition = alltrue([
+      contains(keys(module.applications["maximum"].application.optional_claims[0]), "access_token"),
+      contains(keys(module.applications["maximum"].application.optional_claims[0]), "id_token"),
+      contains(keys(module.applications["maximum"].application.optional_claims[0]), "saml2_token")
+    ])
+    error_message = "One or more expected keys (access_token, id_token, saml2_token) are missing in optional_claims."
+  }
+
+  # Assert that the number of claims for each key matches
+  assert {
+    condition = alltrue([
+      length(module.applications["maximum"].application.optional_claims[0].access_token) == length(var.applications.maximum.optional_claims.access_token),
+      length(module.applications["maximum"].application.optional_claims[0].id_token) == length(var.applications.maximum.optional_claims.id_token),
+      length(module.applications["maximum"].application.optional_claims[0].saml2_token) == length(var.applications.maximum.optional_claims.saml2_token)
+    ])
+    error_message = "The number of optional claims does not match for one or more token types."
+  }
+
+  # Assert that each optional claim has the correct name
+  assert {
+    condition = alltrue([
+      alltrue([
+        for expected in var.applications.maximum.optional_claims.access_token :
+        anytrue([
+          for actual in module.applications["maximum"].application.optional_claims[0].access_token :
+          actual.name == expected.name
+        ])
+      ]),
+      alltrue([
+        for expected in var.applications.maximum.optional_claims.id_token :
+        anytrue([
+          for actual in module.applications["maximum"].application.optional_claims[0].id_token :
+          actual.name == expected.name
+        ])
+      ]),
+      alltrue([
+        for expected in var.applications.maximum.optional_claims.saml2_token :
+        anytrue([
+          for actual in module.applications["maximum"].application.optional_claims[0].saml2_token :
+          actual.name == expected.name
+        ])
+      ])
+    ])
+    error_message = "One or more optional claims do not match the expected values."
+  }
+
 }
 
 run "application-public_client" {
@@ -331,10 +497,12 @@ run "application-public_client" {
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.setup_application.current.object_id]
-      }),
+        owners = [run.bootstrap_application.current.object_id],
+        service_principal = merge(var.applications.maximum.service_principal, {
+          owners = [run.bootstrap_application.current.object_id]
+        })
+      })
     })
-    //Override the 
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
@@ -345,6 +513,24 @@ run "application-public_client" {
   module {
     source = "./"
   }
+
+  assert {
+    condition     = try(length(module.applications["minimum"].public_client), 0) == 0
+    error_message = "Public_client should not be configured when no config is provided"
+  }
+
+  assert {
+    condition = module.applications["maximum"].application.public_client[0].redirect_uris == toset(var.applications.maximum.public_client.redirect_uris)
+
+
+    error_message = "The var.applications.maximum.public_client.redirect_uris does not match the redirect_uris of the application"
+  }
+
+  assert {
+    condition     = length(module.applications["minimum"].application.public_client[0].redirect_uris) == 0
+    error_message = "The var.applications.minimum.public_client.redirect_uris are not empty. This should be empty by default."
+  }
+
 }
 
 run "application-web" {
@@ -352,10 +538,12 @@ run "application-web" {
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.setup_application.current.object_id]
-      }),
+        owners = [run.bootstrap_application.current.object_id],
+        service_principal = merge(var.applications.maximum.service_principal, {
+          owners = [run.bootstrap_application.current.object_id]
+        })
+      })
     })
-    //Override the 
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
@@ -365,6 +553,31 @@ run "application-web" {
 
   module {
     source = "./"
+  }
+
+  assert {
+    condition     = try(length(module.applications["minimum"].web), 0) == 0
+    error_message = "Web should not be configured when no config is provided"
+  }
+
+  assert {
+    condition     = module.applications["maximum"].application.web[0].homepage_url == var.applications.maximum.web.homepage_url
+    error_message = "homepage_url does not match the expected value."
+  }
+
+  assert {
+    condition     = module.applications["maximum"].application.web[0].logout_url == var.applications.maximum.web.logout_url
+    error_message = "logout_url does not match the expected value."
+  }
+
+  assert {
+    condition     = module.applications["maximum"].application.web[0].redirect_uris == toset(var.applications.maximum.web.redirect_uris)
+    error_message = "redirect_uris do not match the expected values."
+  }
+
+  assert {
+    condition     = module.applications["maximum"].application.web[0].implicit_grant[0].access_token_issuance_enabled == var.applications.maximum.web.implicit_grant.access_token_issuance_enabled
+    error_message = "implicit_grant.access_token_issuance_enabled should be true."
   }
 }
 
@@ -373,10 +586,12 @@ run "application-service_principal" {
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.setup_application.current.object_id]
-      }),
+        owners = [run.bootstrap_application.current.object_id],
+        service_principal = merge(var.applications.maximum.service_principal, {
+          owners = [run.bootstrap_application.current.object_id]
+        })
+      })
     })
-    //Override the 
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
@@ -387,5 +602,39 @@ run "application-service_principal" {
   module {
     source = "./"
   }
+
+  assert {
+    condition     = try(length(module.applications["minimum"].service_principal), 0) == 0
+    error_message = "Service principal should not be created when no config is provided"
+  }
+
+  assert {
+    condition = alltrue([
+      module.applications["maximum"].service_principal[0].account_enabled == var.applications.maximum.service_principal.account_enabled,
+      module.applications["maximum"].service_principal[0].alternative_names == toset(var.applications.maximum.service_principal.alternative_names),
+      module.applications["maximum"].service_principal[0].app_role_assignment_required == var.applications.maximum.service_principal.app_role_assignment_required,
+      module.applications["maximum"].service_principal[0].description == var.applications.maximum.service_principal.description,
+      module.applications["maximum"].service_principal[0].login_url == var.applications.maximum.service_principal.login_url,
+      module.applications["maximum"].service_principal[0].notes == var.applications.maximum.service_principal.notes,
+      module.applications["maximum"].service_principal[0].notification_email_addresses == toset(var.applications.maximum.service_principal.notification_email_addresses),
+      module.applications["maximum"].service_principal[0].preferred_single_sign_on_mode == var.applications.maximum.service_principal.preferred_single_sign_on_mode,
+      module.applications["maximum"].service_principal[0].use_existing == var.applications.maximum.service_principal.use_existing,
+    ])
+    error_message = "Service principal settings do not match expected configuration."
+  }
+
+  assert {
+    condition = alltrue([
+      module.applications["maximum"].service_principal[0].feature_tags[0].custom_single_sign_on == var.applications.maximum.service_principal.feature_tags.custom_single_sign_on,
+      module.applications["maximum"].service_principal[0].feature_tags[0].enterprise == var.applications.maximum.service_principal.feature_tags.enterprise,
+      module.applications["maximum"].service_principal[0].feature_tags[0].gallery == var.applications.maximum.service_principal.feature_tags.gallery,
+      module.applications["maximum"].service_principal[0].feature_tags[0].hide == var.applications.maximum.service_principal.feature_tags.hide,
+    ])
+    error_message = "Service principal feature_tags settings do not match expected configuration."
+  }
+
+  assert {
+    condition     = module.applications["maximum"].service_principal[0].saml_single_sign_on[0].relay_state == var.applications.maximum.service_principal.saml_single_sign_on.relay_state
+    error_message = "Service principal saml_single_sign_on settings do not match expected configuration."
+  }
 }
- */
