@@ -13,10 +13,12 @@ variable "identity" {
       }
     }
     app_role_assignments = ["User.Read.All"]
-    group_memberships    = ["objectID1", "objectID2"]
+    group_memberships    = {
+      "A group" = "ad-group-object-id"
+    }
     directory_role_assignment = {
       Reader = {
-        role_name = "Directory Reader"
+        role_name = "Directory Readers"
       }
     }
     federated_identity_credential_config = "Map of Federated Credentials to create on the workload identity"
@@ -37,7 +39,7 @@ variable "identity" {
     })), {})
     group_memberships    = optional(map(string), {})
     app_role_assignments = optional(set(string), [])
-    directory_role_assignment = optional(map(object({
+    directory_role_assignments = optional(map(object({
       role_name          = optional(string)
       app_scope_id       = optional(string)
       directory_scope_id = optional(string)

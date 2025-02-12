@@ -69,6 +69,12 @@ run "identity" {
         "Station Test Group" = run.bootstrap_create_tfc_test_project.azuread_group["test"].object_id
       }
       app_role_assignments = ["User.ReadBasic.All"]
+
+      directory_role_assignments = {
+        Reader = {
+          role_name = "Directory Readers"
+        }
+      }
     }
   }
 
@@ -95,23 +101,23 @@ run "identity" {
     error_message = "The Landing Zone identity is not a member of the groups passed in via var.identity.group_memberships"
   }
 
-  // App Role Assignments
-  assert {
-    condition     = true
-    error_message = "The Landing Zone identity was not assigned all Application Role Assignments from var.identity.app_role_assignments"
-  }
+  #// App Role Assignments
+  #assert {
+  #  condition     = length(var.identity.app_role_assignments) == 0
+  #  error_message = "The Landing Zone identity was not assigned all Application Role Assignments from var.identity.app_role_assignments"
+  #}
 
   // Directory Role Assignments
   assert {
-    condition     = true
+    condition     = alltrue([for k, v in var.identity.directory_role_assignments : module.user_assigned_identity.directory_role_assignments[k].principal_object_id == module.user_assigned_identity.principal_id])
     error_message = "The Landing Zone identity was not assigned all Directory Role Assignments from var.identity.directory_role_assignment"
   }
 
   // Federated Identity Credentials
-  assert {
-    condition     = true
-    error_message = "All Federated Identity Credentials on the Landing Zone identity was not created"
-  }
+  #assert {
+  #  condition     = length(var.identity.federated_identity_credential_config) == 0
+  #  error_message = "All Federated Identity Credentials on the Landing Zone identity was not created"
+  #}
 
   // Name is set correctly
   assert {

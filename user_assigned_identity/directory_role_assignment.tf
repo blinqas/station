@@ -1,5 +1,5 @@
 resource "azuread_directory_role_assignment" "roles" {
-  for_each            = var.directory_role_assignment
+  for_each            = var.directory_role_assignments
   app_scope_id        = each.value.app_scope_id
   directory_scope_id  = each.value.directory_scope_id
   role_id             = azuread_directory_role.roles[each.key].template_id
@@ -7,6 +7,6 @@ resource "azuread_directory_role_assignment" "roles" {
 }
 
 resource "azuread_directory_role" "roles" {
-  for_each     = var.directory_role_assignment
+  for_each     = var.directory_role_assignments
   display_name = each.value.role_name
 }

@@ -21,3 +21,8 @@ output "tenant_id" {
 output "group_memberships" {
   value = azuread_group_member.uai
 }
+
+output "directory_role_assignments" {
+  value = azuread_directory_role_assignment.roles
+}
+
