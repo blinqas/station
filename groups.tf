@@ -10,15 +10,3 @@ module "ad_groups" {
   )
 }
 
-module "groups" {
-  for_each        = var.groups
-  source          = "./group"
-  azuread_group   = each.value.name
-  subscription_id = var.subscription_id
-  role_assignments = {
-    scopes = concat(
-      azurerm_resource_group.user_specified[*].id,
-    )
-    assignments = each.value.role_assignments
-  }
-}
