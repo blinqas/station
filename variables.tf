@@ -260,8 +260,11 @@ variable "tfe" {
   EOF
   default     = null
   type = object({
-    organization_name     = string
-    project_name          = string
+    organization_name = string
+    project = object({
+      id   = string
+      name = string
+    })
     workspace_name        = string
     workspace_description = string
     workspace_settings = optional(object({
@@ -322,3 +325,4 @@ variable "role_assignments" {
     skip_service_principal_aad_check       = optional(bool, false)
   }))
 }
+

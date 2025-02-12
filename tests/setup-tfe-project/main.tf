@@ -5,3 +5,7 @@ data "tfe_organization" "test" {
 resource "tfe_project" "test" {
   name = var.tfc_project_name
 }
+
+output "id" {
+  value = tfe_project.test.id
+}

@@ -26,6 +26,6 @@ resource "azurerm_federated_identity_credential" "oidc-tfe" {
   name                = "terraform-cloud-run-phase-${each.value.phase}"
   audience            = ["api://AzureADTokenExchange"]
   issuer              = "https://app.terraform.io"
-  subject             = "organization:${var.tfe.organization_name}:project:${var.tfe.project_name}:workspace:${var.tfe.workspace_name}:run_phase:${each.value.phase}"
+  subject             = "organization:${var.tfe.organization_name}:project:${var.tfe.project.name}:workspace:${var.tfe.workspace_name}:run_phase:${each.value.phase}"
 }
 
