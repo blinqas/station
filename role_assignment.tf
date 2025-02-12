@@ -11,28 +11,6 @@ resource "azurerm_role_assignment" "lz_owner" {
   role_definition_name = "Owner"
 }
 
-#resource "azurerm_role_assignment" "rg_user_specified" {
-#  for_each             = azurerm_resource_group.user_specified
-#  scope                = each.value.id
-#  principal_id         = module.user_assigned_identity.principal_id
-#  role_definition_name = "Owner"
-#}
-
-#// Role Assignments 
-#resource "azurerm_role_assignment" "this" {
-#  for_each                               = var.role_assignments
-#  name                                   = each.value.name
-#  scope                                  = each.value.scope
-#  role_definition_id                     = each.value.role_definition_id
-#  role_definition_name                   = each.value.role_definition_name
-#  principal_id                           = module.user_assigned_identity.principal_id
-#  condition                              = each.value.condition
-#  condition_version                      = each.value.condition_version
-#  delegated_managed_identity_resource_id = each.value.delegated_managed_identity_resource_id
-#  description                            = each.value.description
-#  skip_service_principal_aad_check       = each.value.skip_service_principal_aad_check
-#}
-
 // Role Assignments for the Landing Zone identity (via var.identity.role_assignments)
 resource "azurerm_role_assignment" "lz_identity" {
   for_each                               = local.role_assignments_merged
@@ -68,7 +46,7 @@ locals {
   // to the resource group of the Landing Zone
   role_assignments = {
     for k, v in var.identity.role_assignments : k => merge(v, {
-      // Her må du merge scope med alle de derre landing zone RGene
+      // Inject default value for scope
       scope = azurerm_resource_group.workload.id
     }) if v.scope == null
   }
