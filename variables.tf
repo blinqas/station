@@ -249,7 +249,6 @@ variable "tfe" {
   description = <<EOF
   Terraform Cloud configuration for the workload environment
 
-  - tfe.create_federated_identity_credential configures Federated Credentials on the workload identity for plan and apply phases.
   - Either of tfe.vcs_repo.(oauth_token_id|github_app_installation_id) must be provided, both can not be used at the same time.
   - tfe.workspace_env_vars lets you configure Environment Variables for the Terraform Cloud runtime environment
   - tfe.workspace_vars lets you configure Terraform variables
@@ -271,8 +270,7 @@ variable "tfe" {
       agent_pool_id  = optional(string)
       execution_mode = optional(string)
     }))
-    create_federated_identity_credential = optional(bool, true)
-    file_triggers_enabled                = optional(bool)
+    file_triggers_enabled = optional(bool)
     vcs_repo = optional(object({
       identifier                 = string
       branch                     = optional(string)

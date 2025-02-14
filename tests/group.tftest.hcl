@@ -24,7 +24,6 @@ variables {
     organization_name                    = "blinq-west-lab"
     workspace_name                       = "tests_group"
     workspace_description                = "This is a test for the group module."
-    create_federated_identity_credential = true # Configures Federated Credentials on the workload identity for plan and apply phases.
   }
 
   groups = {
