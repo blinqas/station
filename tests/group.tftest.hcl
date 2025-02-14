@@ -35,7 +35,6 @@ variables {
     organization_name                    = "blinq-west-lab"
     workspace_name                       = "tests_group"
     workspace_description                = "This is a test for the group module."
-    create_federated_identity_credential = true
   }
 
   groups = {
