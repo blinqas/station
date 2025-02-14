@@ -211,7 +211,7 @@ variable "user_assigned_identities" {
       group_memberships = {
         "Kubernetes Administrators" = azuread_group.k8s_admins.object_id
       }
-      directory_role_assignment = {
+      directory_role_assignments = {
         role_name                      = "Application Administrator"
       }
     }

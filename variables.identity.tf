@@ -40,9 +40,20 @@ variable "identity" {
     app_role_assignments = optional(set(string), [])
     directory_role_assignments = optional(map(object({
       role_name          = optional(string)
+      role_id            = optional(string)
       app_scope_id       = optional(string)
       directory_scope_id = optional(string)
     })), {})
   })
+
+  validation {
+    condition     = alltrue([for k, v in var.identity.directory_role_assignments : !(v.app_scope_id != null && v.directory_scope_id != null)])
+    error_message = "directory_role_assignments: `app_scope_id` cannot be used with `directory_scope_id`."
+  }
+
+  validation {
+    condition     = alltrue([for k, v in var.identity.directory_role_assignments : !(v.role_name != null && v.role_id != null)])
+    error_message = "directory_role_assignments: `role_name` cannot be used with `role_id`."
+  }
 }
 
