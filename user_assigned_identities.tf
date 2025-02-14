@@ -20,10 +20,6 @@ module "user_assigned_identity" {
   app_role_assignments       = var.identity.app_role_assignments
   group_memberships          = var.identity.group_memberships
   directory_role_assignments = var.identity.directory_role_assignments
-  resource_group_ids = concat(
-    [azurerm_resource_group.workload.id],
-    values(azurerm_resource_group.user_specified)[*].id
-  )
 }
 
 module "user_assigned_identities" {
