@@ -46,7 +46,15 @@ jobs:
       - name: Get Changed Files
         id: changed-files
         run: |
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          BASE_REF=${{ github.event.before }}
+          HEAD_REF=${{ github.sha }}
+
+          if [ -z "$BASE_REF" ] || [ "$BASE_REF" == "0000000000000000000000000000000000000000" ]; then
+            echo "Base ref not found, using HEAD^"
+            BASE_REF=$(git rev-parse HEAD^)
+          fi
+
+          CHANGED_FILES=$(git diff --name-only $BASE_REF $HEAD_REF)
           echo "Changed files: $CHANGED_FILES"
           echo "changed_files=$CHANGED_FILES" >> $GITHUB_ENV
 
