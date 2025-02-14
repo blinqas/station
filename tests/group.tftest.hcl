@@ -109,18 +109,18 @@ run "groups-main" {
   }
 
   assert {
-    condition     = module.ad_groups.minimal.group.security_enabled ==  var.groups.minimal.security_enabled
+    condition     = module.ad_groups.minimal.group.security_enabled == var.groups.minimal.security_enabled
     error_message = "The security_enabled setting for the minimal group is incorrect"
   }
 
   # Assertions for static group
   assert {
-    condition     = module.ad_groups.static.group.display_name  == var.groups.static.display_name
+    condition     = module.ad_groups.static.group.display_name == var.groups.static.display_name
     error_message = "The display name for the static group is incorrect"
   }
 
   assert {
-    condition     = module.ad_groups.static.group.security_enabled  == var.groups.static.security_enabled
+    condition     = module.ad_groups.static.group.security_enabled == var.groups.static.security_enabled
     error_message = "The security_enabled setting for the static group is incorrect"
   }
 
@@ -143,26 +143,26 @@ run "groups-main" {
     condition     = contains(module.ad_groups.static.group.members, run.bootstrap_groups.current.object_id)
     error_message = "The test user was not added as a member to the group"
   }
- # Assertions for dynamic group
+  # Assertions for dynamic group
   assert {
     condition     = module.ad_groups.dynamic.group.display_name == var.groups.dynamic.display_name
     error_message = "The group does not have the correct display_name (var.groups.dynamic.display_name)"
   }
 
-    assert {
+  assert {
     condition     = module.ad_groups.dynamic.group.security_enabled == var.groups.dynamic.security_enabled
     error_message = "The group does not have the correct security_enabled (var.groups.dynamic.security_enabled)"
   }
-    assert {
+  assert {
     condition     = module.ad_groups.dynamic.group.description == var.groups.dynamic.description
     error_message = "The group does not have the correct description (var.groups.dynamic.description)"
-  }  
+  }
 
   assert {
     condition     = module.ad_groups.dynamic.group.types == toset(var.groups.dynamic.types)
     error_message = "The group does not have the correct types (var.groups.dynamic.types)"
-  }  
-/*   assert { //This test was dissabled because we cant get the group members that are added without having to add a datablock to the module
+  }
+  /*   assert { //This test was dissabled because we cant get the group members that are added without having to add a datablock to the module
     condition     = contains(module.ad_groups.dynamic.members, run.bootstrap_groups.test_user_object_id)
     error_message = "The test user was not dynamicaly added as a member to the group. The user should be added if the job title matches the config for the dynamic group"
   } */
