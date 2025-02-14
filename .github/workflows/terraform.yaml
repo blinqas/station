@@ -8,11 +8,11 @@ on:
     branches:
       - trunk
     paths:
+      #This should only run when terraform files have been changed.
       - '**/*.tf'
       - '**/*.tfvars'
       - '**/*.json'
       - '**/*.yaml'
-      - '**/*.tftest.hcl'
   workflow_dispatch:
   release:
     types: [created]
@@ -32,83 +32,58 @@ concurrency:
   group: terraform-plan-apply-destroy
   cancel-in-progress: false
 
-
 jobs:
-  check-changed-files:
+  validate:
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/trunk')
     runs-on: ubuntu-latest
-    name: 🔍 Check Changed Files
-    outputs:
-      changed_files: ${{ steps.changed-files.outputs.changed_files }}
+    name: 🔍 Terraform Validate
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+        - name: Checkout
+          uses: actions/checkout@v4
+    
+        - name: Set up Terraform
+          uses: hashicorp/setup-terraform@v3
+          with:
+            terraform_version: "~1.10.0" 
+    
+        - name: terraform init station module
+          run: terraform init
+    
+        - name: terraform validate station
+          run: terraform validate
+     
 
-      - name: Get Changed Files
-        id: changed-files
-        run: |
-          BASE_REF=${{ github.event.before }}
-          HEAD_REF=${{ github.sha }}
-
-          if [ -z "$BASE_REF" ] || [ "$BASE_REF" == "0000000000000000000000000000000000000000" ]; then
-            echo "Base ref not found, using HEAD^"
-            BASE_REF=$(git rev-parse HEAD^)
-          fi
-
-          CHANGED_FILES=$(git diff --name-only $BASE_REF $HEAD_REF)
-          echo "Changed files: $CHANGED_FILES"
-          echo "changed_files=$CHANGED_FILES" >> $GITHUB_ENV
-
-      - name: Validate File Definitions
-        run: |
-          KNOWN_FILES="variables.tf applications.tf app_role_assignment.tf application/ groups.tf group/ tfe.tf hashicorp/ group_membership.tf user_assigned_identities.tf role_assignment.tf user_assigned_identity/"
-          IGNORED_FILES="README.md LICENSE terraform.tfstate plan.tfplan"
-          for FILE in ${{ env.changed_files }}; do
-            if echo "$IGNORED_FILES" | grep -q "$FILE"; then
-              echo "Ignoring file: $FILE"
-              continue
-            fi
-            if ! echo "$KNOWN_FILES" | grep -q "$FILE"; then
-              echo "Error: Unknown file detected: $FILE"
-              exit 1
-            fi
-          done
-
-  application-test:
-    needs: check-changed-files
-    if: contains(needs.check-changed-files.outputs.changed_files, 'variables.tf') || contains(needs.check-changed-files.outputs.changed_files, 'applications.tf') || contains(needs.check-changed-files.outputs.changed_files, 'app_role_assignment.tf') || contains(needs.check-changed-files.outputs.changed_files, 'application/')
+  terraform_test:
+    environment: E2E_testing
+    needs: validate
     runs-on: ubuntu-latest
+    name: 🥼 Terraform tests
+    env:
+        TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
+        TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Run application test
-        run: terraform test -filter tests/application.tftest.hcl
-
-  group-test:
-    needs: check-changed-files
-    if: contains(needs.check-changed-files.outputs.changed_files, 'variables.tf') || contains(needs.check-changed-files.outputs.changed_files, 'groups.tf') || contains(needs.check-changed-files.outputs.changed_files, 'group/')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Run group test
-        run: terraform test -filter tests/group.tftest.hcl
-
-  tfe-test:
-    needs: check-changed-files
-    if: contains(needs.check-changed-files.outputs.changed_files, 'variables.tf') || contains(needs.check-changed-files.outputs.changed_files, 'tfe.tf') || contains(needs.check-changed-files.outputs.changed_files, 'hashicorp/')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Run tfe test
-        run: terraform test -filter tests/tfe.tftest.hcl
-
-  user-assigned-identities-test:
-    needs: check-changed-files
-    if: contains(needs.check-changed-files.outputs.changed_files, 'variables.tf') || contains(needs.check-changed-files.outputs.changed_files, 'group_membership.tf') || contains(needs.check-changed-files.outputs.changed_files, 'user_assigned_identities.tf') || contains(needs.check-changed-files.outputs.changed_files, 'role_assignment.tf') || contains(needs.check-changed-files.outputs.changed_files, 'user_assigned_identity/')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Run user assigned identities test
-        run: terraform test -filter tests/user_assigned_identities.tftest.hcl
+        - name: 'Azure: login'
+          uses: azure/login@v2
+          with:
+            client-id:       ${{ secrets.AZ_CLIENT_ID }}
+            subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+            tenant-id:       ${{ secrets.AZ_TENANT_ID }}
+    
+        - name: Checkout
+          uses: actions/checkout@v4
+        
+        - name: Append Run ID to Project Name
+          run: echo "TF_VAR_tfc_project_name=${{ secrets.TF_VAR_TFC_PROJECT_NAME }}-${{ github.run_id }}-tests" >> $GITHUB_ENV
+        
+        - name: Set up Terraform
+          uses: hashicorp/setup-terraform@v3
+          with:
+            terraform_version: "~1.10.0"
+            cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        
+        - name: Terraform init
+          run: terraform init
+          
+        - name: Terraform test
+          run: terraform test
