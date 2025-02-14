@@ -13,6 +13,7 @@ on:
       - '**/*.tfvars'
       - '**/*.json'
       - '**/*.yaml'
+      - '**/*.tftest.hcl'
   workflow_dispatch:
   release:
     types: [created]
