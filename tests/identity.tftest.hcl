@@ -101,6 +101,7 @@ run "identity" {
     error_message = "The Landing Zone identity is not a member of the groups passed in via var.identity.group_memberships"
   }
 
+  // TODO: Implement after PR #180 is implemented
   #// App Role Assignments
   #assert {
   #  condition     = length(var.identity.app_role_assignments) == 0
@@ -112,12 +113,6 @@ run "identity" {
     condition     = alltrue([for k, v in var.identity.directory_role_assignments : module.user_assigned_identity.directory_role_assignments[k].principal_object_id == module.user_assigned_identity.principal_id])
     error_message = "The Landing Zone identity was not assigned all Directory Role Assignments from var.identity.directory_role_assignment"
   }
-
-  // Federated Identity Credentials
-  #assert {
-  #  condition     = length(var.identity.federated_identity_credential_config) == 0
-  #  error_message = "All Federated Identity Credentials on the Landing Zone identity was not created"
-  #}
 
   // Name is set correctly
   assert {

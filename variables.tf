@@ -271,7 +271,7 @@ variable "tfe" {
       agent_pool_id  = optional(string)
       execution_mode = optional(string)
     }))
-    create_federated_identity_credential = optional(bool)
+    create_federated_identity_credential = optional(bool, true)
     file_triggers_enabled                = optional(bool)
     vcs_repo = optional(object({
       identifier                 = string

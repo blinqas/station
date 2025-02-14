@@ -21,7 +21,6 @@ variable "identity" {
         role_name = "Directory Readers"
       }
     }
-    federated_identity_credential_config = "Map of Federated Credentials to create on the workload identity"
   }
   EOF
   type = object({
@@ -43,13 +42,6 @@ variable "identity" {
       role_name          = optional(string)
       app_scope_id       = optional(string)
       directory_scope_id = optional(string)
-    })), {})
-    federated_identity_credential_config = optional(map(object({
-      display_name = string
-      description  = optional(string)
-      audiences    = list(string)
-      issuer       = string
-      subject      = string
     })), {})
   })
 }
