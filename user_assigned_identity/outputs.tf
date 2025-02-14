@@ -22,22 +22,22 @@ output "location" {
   value = azurerm_user_assigned_identity.identity.location
 }
 
-output "role_assignments" { 
+output "role_assignments" {
   value = azurerm_role_assignment.roles
 }
 
-output "app_role_assignments" { 
-  value =  {
-        for k, v in azuread_app_role_assignment.app_workload_roles : k => {
-          app_role_id         = v.app_role_id
-          principal_object_id = v.principal_object_id
-          resource_object_id  = v.resource_object_id
-        }
-      }
+output "app_role_assignments" {
+  value = {
+    for k, v in azuread_app_role_assignment.app_workload_roles : k => {
+      app_role_id         = v.app_role_id
+      principal_object_id = v.principal_object_id
+      resource_object_id  = v.resource_object_id
+    }
+  }
 }
 
 output "group_memberships" {
   value = {
-        for k, v in azuread_group_member.uai : k => v.group_object_id
-      }
+    for k, v in azuread_group_member.uai : k => v.group_object_id
+  }
 }
