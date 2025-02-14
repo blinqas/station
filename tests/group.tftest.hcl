@@ -21,9 +21,9 @@ variables {
       id   = "# Overridden"
       name = "tests_group"
     }
-    organization_name                    = "blinq-west-lab"
-    workspace_name                       = "tests_group"
-    workspace_description                = "This is a test for the group module."
+    organization_name     = "blinq-west-lab"
+    workspace_name        = "tests_group"
+    workspace_description = "This is a test for the group module."
   }
 
   groups = {
