@@ -3,3 +3,8 @@
 *.tfstate*
 **.tfplan**
 bootstrap/.env
+setup/go.mod
+setup/go.sum
+setup/main.go
+setup/tfc.go
+tests/test.sh

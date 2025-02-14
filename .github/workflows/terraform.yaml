@@ -57,6 +57,7 @@ jobs:
   terraform_test:
     environment: E2E_testing
     needs: validate
+    concurrency: terraform-test-group
     runs-on: ubuntu-latest
     name: 🥼 Terraform tests
     env:
