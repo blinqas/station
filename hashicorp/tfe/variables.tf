@@ -3,9 +3,9 @@ variable "organization_name" {
   type        = string
 }
 
-variable "project_name" {
-  description = "Name of the project to link `var.workspace_name` to. The project must exist already. Can not be set if `var.projects` is set."
-  type        = string
+variable "project" {
+  description = "The Resource/Data block of a tfe_project"
+  type        = any
 }
 
 variable "workspace_name" {
@@ -16,6 +16,15 @@ variable "workspace_name" {
 variable "workspace_description" {
   description = "Description of the Terraform Cloud workspace"
   type        = string
+}
+
+variable "workspace_settings" {
+  description = "Settings for the workspace, such as execution mode and agent pool"
+  type = object({
+    agent_pool_id  = string
+    execution_mode = string
+  })
+  default = null
 }
 
 variable "workspace_vars" {

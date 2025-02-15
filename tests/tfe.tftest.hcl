@@ -1,18 +1,34 @@
 provider "tfe" {}
+
 provider "azurerm" {
   features {}
 }
-provider "azuread" {
+provider "azuread" {}
 
+
+run "bootstrap_create_tfc_test_project" {
+  variables {
+    tfc_project_name = "tests_group"
+  }
+  module {
+    source = "./tests/setup-tfe-project"
+  }
 }
+
 
 variables {
   tfe = {
-    project_name                         = "tests_tfe"
-    organization_name                    = "blinq-west-lab"
-    workspace_name                       = "tfe_test"
-    workspace_description                = "Workspace description"
-    create_federated_identity_credential = true # Configures Federated Credentials on the workload identity for plan and apply phases.
+    project = {
+      id   = "# Overridden"
+      name = "tests_tfe"
+    }
+    organization_name     = "blinq-west-lab"
+    workspace_name        = "tfe_test"
+    workspace_description = "Workspace description"
+    workspace_settings = {
+      execution_mode = "remote"
+      agent_pool_id  = null # Not adding this as it will require us to setup a private runner
+    }
 
     module_outputs_to_workspace_var = {
       applications             = true
@@ -92,17 +108,18 @@ variables {
   }
 }
 
-run "setup_create_tfc_test_project" {
-  variables {
-    tfc_project_name = "tests_tfe"
-  }
-  module {
-    source = "./tests/setup-tfe-project"
-  }
-}
-
 
 run "tfe_create_workspace" {
+
+  variables {
+    // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+  }
+
 
   module {
     source = "./"
@@ -117,9 +134,23 @@ run "tfe_create_workspace" {
     condition     = module.station-tfe.workspace.description == "Workspace description"
     error_message = "The workspace description does NOT match the input"
   }
+
+  assert {
+    condition     = module.station-tfe.workspace_settings[0].execution_mode == "remote"
+    error_message = "The workspace execution mode does NOT match the input"
+  }
 }
 
-run "tfe_workspace_varaibles" {
+run "tfe_workspace_variables" {
+  variables {
+    // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+  }
+
   module {
     source = "./"
   }
@@ -193,6 +224,16 @@ run "tfe_workspace_varaibles" {
 }
 
 run "tfe_module_outputs_to_workspace_var" {
+
+  variables {
+    // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+  }
+
   #This should output the the creat
   module {
     source = "./"

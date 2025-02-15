@@ -114,6 +114,7 @@ variable "applications" {
     prevent_duplicate_names        = optional(bool)
     fallback_public_client_enabled = optional(bool)
     notes                          = optional(string) #This can be used as description for the application. 1024 character limit.
+    use_existing                   = optional(bool)
 
     single_page_application = optional(object({
       redirect_uris = optional(list(string))
@@ -209,8 +210,8 @@ variable "applications" {
 variable "groups" {
   description = <<-EOF
     (Optional) Map of Entra ID (Azure AD) groups to create
-    Note: The workload identity is automatically assigned the App Role "User.ReadBasic.All"
-          because being "Owner" of the group is not sufficient to add principals.
+    Note: The workload identity is automatically assigned the App Role "User.ReadBasic.All" and "Group.Read.All"
+          because being "Owner" of the group is not sufficient to add principals and then list them after an add or delete operation.
   EOF
   default     = {}
   type = map(object({
@@ -292,13 +293,21 @@ variable "tfe" {
   - tfe.module_outputs_to_workspace_var.(groups|applications|user_assigned_identities) sets output from the respective 
     resource into respective Terraform variables on the Terraform Cloud workspace. Useful when you need group object ids
     for the groups Station Deployments provisioned in your workload environment.
+  - tfe.workspace_settings lets you configure the workspace settings like agent_pool_id and execution_mode. If agent_pool_id is provided, execution_mode must be set to "agent".
   EOF
   default     = null
   type = object({
-    organization_name                    = string
-    project_name                         = string
-    workspace_name                       = string
-    workspace_description                = string
+    organization_name = string
+    project = object({
+      id   = string
+      name = string
+    })
+    workspace_name        = string
+    workspace_description = string
+    workspace_settings = optional(object({
+      agent_pool_id  = optional(string)
+      execution_mode = optional(string)
+    }))
     create_federated_identity_credential = optional(bool)
     file_triggers_enabled                = optional(bool)
     vcs_repo = optional(object({
@@ -368,3 +377,4 @@ variable "role_assignment" {
     skip_service_principal_aad_check       = optional(bool)
   }))
 }
+

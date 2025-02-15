@@ -1,0 +1,31 @@
+name: 📰 Update README with Terraform Docs 
+
+on:
+  pull_request:
+    paths:
+      - "variables.tf"
+  push:
+    paths:
+      - "variables.tf"
+permissions:
+  pull-requests: write
+  contents: write
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4   
+        with:
+            ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Render terraform docs inside the README.md and push changes back to PR branch
+        uses: terraform-docs/gh-actions@v1.3.0
+        with:
+            working-dir: .
+            output-file: README.md
+            output-method: inject
+            git-push: "true"
+            git-commit-message: "docs: update README.md with terraform-docs"
+
