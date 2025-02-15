@@ -29,7 +29,6 @@ variables {
       execution_mode = "remote"
       agent_pool_id  = null # Not adding this as it will require us to setup a private runner
     }
-    create_federated_identity_credential = true # Configures Federated Credentials on the workload identity for plan and apply phases.
 
     module_outputs_to_workspace_var = {
       applications             = true

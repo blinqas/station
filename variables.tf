@@ -114,6 +114,7 @@ variable "applications" {
     prevent_duplicate_names        = optional(bool)
     fallback_public_client_enabled = optional(bool)
     notes                          = optional(string) #This can be used as description for the application. 1024 character limit.
+    use_existing                   = optional(bool)
 
     single_page_application = optional(object({
       redirect_uris = optional(list(string))

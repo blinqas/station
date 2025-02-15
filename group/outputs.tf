@@ -1,5 +1,5 @@
 output "group" {
-  value = azuread_group.group
+  value = merge(azuread_group.group, { members = values(azuread_group_member.members)[*].member_object_id })
 }
 
 output "display_name" {

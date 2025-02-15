@@ -138,6 +138,7 @@ resource "azuread_service_principal" "sp" {
   owners                        = var.owners
   preferred_single_sign_on_mode = var.azuread_service_principal.preferred_single_sign_on_mode
   tags                          = var.azuread_service_principal.tags # This conflicts with the "feature_tags" block below
+  use_existing                  = var.azuread_service_principal.use_existing
 
   dynamic "feature_tags" {
     for_each = try(var.azuread_service_principal.feature_tags != null, false) ? [var.azuread_service_principal.feature_tags] : []
