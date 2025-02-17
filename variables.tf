@@ -238,7 +238,7 @@ variable "user_assigned_identities" {
       skip_service_principal_aad_check       = optional(bool)
     })), {})
     group_memberships = optional(map(string), {})
-    directory_role_assignment = optional(map(object({
+    directory_role_assignments = optional(map(object({
       role_name          = optional(string)
       app_scope_id       = optional(string)
       directory_scope_id = optional(string)

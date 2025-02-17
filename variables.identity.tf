@@ -16,7 +16,7 @@ variable "identity" {
     group_memberships    = {
       "A group" = "ad-group-object-id"
     }
-    directory_role_assignment = {
+    directory_role_assignments = {
       Reader = {
         role_name = "Directory Readers"
       }
