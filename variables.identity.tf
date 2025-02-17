@@ -23,6 +23,7 @@ variable "identity" {
     }
   }
   EOF
+  default     = {}
   type = object({
     name = optional(string)
     role_assignments = optional(map(object({
