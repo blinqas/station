@@ -74,8 +74,8 @@ variables {
         ]
       }
 
-      required_resource_access = [
-        {
+      required_resource_access = {
+        graph = {
           resource_app_id = "00000003-0000-0000-c000-000000000000" //MicrosoftGraph
           resource_access = {
             application_group_read_all = {
@@ -88,7 +88,7 @@ variables {
             },
           }
         },
-        {
+        exchange_online = {
           resource_app_id = "00000002-0000-0ff1-ce00-000000000000" //office_365_exchange_online
           resource_access = {
             delegated_ews_accessasuser_all = {
@@ -97,7 +97,9 @@ variables {
             },
           }
         }
-      ]
+      }
+
+      
 
       optional_claims = {
         access_token = [{ name = "Test token" }, { name = "Test token 2" }]
@@ -359,7 +361,7 @@ run "application-required_resource_access" {
     error_message = "The number of required_resource_access entries does not match whats provided in var.applications.maximum.required_resource_access."
   }
 
-  # 2Assert that each resource_app_id in expected exists in actual
+  # Assert that each resource_app_id in expected exists in actual
   assert {
     condition = alltrue([
       for expected in var.applications.maximum.required_resource_access :
@@ -405,7 +407,6 @@ run "application-required_resource_access" {
     ])
     error_message = "One or more resource_access entries do not match in id or type."
   }
-
 }
 run "application-optional_claims" {
 

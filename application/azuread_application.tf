@@ -49,24 +49,23 @@ resource "azuread_application" "app" {
     }
   }
 
-  dynamic "required_resource_access" {
-    for_each = var.azuread_application.required_resource_access == null ? [] : var.azuread_application.required_resource_access
+dynamic "required_resource_access" {
+  for_each = var.azuread_application.required_resource_access == null ? {} : var.azuread_application.required_resource_access
 
-    content {
-      resource_app_id = required_resource_access.value.resource_app_id
+  content {
+    resource_app_id = required_resource_access.value.resource_app_id
 
-      dynamic "resource_access" {
-        for_each = {
-          for key, resource in required_resource_access.value.resource_access : key => resource
-        }
+    dynamic "resource_access" {
+      for_each = required_resource_access.value.resource_access == null ? {} : required_resource_access.value.resource_access
 
-        content {
-          id   = resource_access.value.id
-          type = resource_access.value.type
-        }
+      content {
+        id   = resource_access.value.id
+        type = resource_access.value.type
       }
     }
   }
+}
+
 
   dynamic "optional_claims" {
     for_each = var.azuread_application.optional_claims == null ? [] : [var.azuread_application.optional_claims]
@@ -158,3 +157,63 @@ resource "azuread_service_principal" "sp" {
   }
 }
 
+/* 
+
+        graph = {
+          resource_app_id = "00000003-0000-0000-c000-000000000000" //MicrosoftGraph
+          resource_access = {
+            application_group_read_all = {
+              id   = "5b567255-7703-4780-807c-7be8301ae99b"
+              type = "Role"
+            },
+            delegated_user_read = {
+              id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d"
+              type = "Scope"
+            },
+          }
+        },
+*/
+
+locals {
+  required_resource_access = var.azuread_application.required_resource_access != null ? flatten([
+    for required_resource_access_key, access in var.azuread_application.required_resource_access : [
+      for resource_access_key, resource_access in access.resource_access : {
+        id = resource_access.id
+        type  = resource_access.type
+        resource_app_id  = access.resource_app_id
+      }
+    ]
+  ]) : []
+  required_resource_access_roles = [
+    //Filter away the delegated permissions
+    for entry in local.required_resource_access : entry
+    if entry.type == "Roles"
+  ]
+}
+
+output "local_required_resource_access" {
+  value = local.required_resource_access
+}
+
+
+
+
+resource "azuread_app_role_assignment" "sp" {
+  for_each = {
+    for required_resource_access in local.required_resource_access_roles :
+    required_resource_access.resource_app_id => required_resource_access.id
+    if length(azuread_service_principal.sp) > 0
+  }
+
+  app_role_id         = each.value.resource_app_id
+  principal_object_id = azuread_service_principal.sp[0].object_id
+  resource_object_id  = each.value.id
+}
+
+
+output "sp_length" {
+  value = length(azuread_service_principal.sp) > 0
+}
+output "app_role_assignment" {
+  value = azuread_app_role_assignment.sp
+}
