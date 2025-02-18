@@ -223,7 +223,7 @@ variable "user_assigned_identities" {
     name                 = string
     resource_group_name  = optional(string)
     location             = optional(string)
-    app_role_assignments = optional(set(string))
+    app_role_assignments = optional(set(string), [])
     role_assignments = optional(map(object({
       name                                   = optional(string)
       scope                                  = string
