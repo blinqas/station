@@ -19,10 +19,22 @@ run "setup_create_hub_vnet" {
   }
 }
 
+run "bootstrap_create_tfc_test_project" {
+  variables {
+    tfc_project_name = "test_peering"
+  }
+  module {
+    source = "./tests/setup-tfe-project"
+  }
+}
+
 
 variables {
   tfe = {
-    project_name          = "test_peering"
+    project = {
+      id   = "# Overridden"
+      name = "test_peering"
+    }
     organization_name     = "blinq-west-lab"
     workspace_name        = "peering_test"
     workspace_description = "Workspace description"
@@ -111,7 +123,14 @@ run "station-connectivity" {
         })
       })
     })
+    // Override project ID from `bootstrap_create_tfc_test_project`
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
   }
+  
 
   module {
     source = "./"
