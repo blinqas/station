@@ -46,6 +46,17 @@ output "tfe" {
   value = module.station-tfe
 }
 
+output "virtual_networks" {
+  value = azurerm_virtual_network.this
+}
+
+output "peerings" {
+  value = {
+    to   = azurerm_virtual_network_peering.to
+    from = azurerm_virtual_network_peering.from
+  }
+}
+
 output "role_assignments" {
   value = {
     lz_owner    = azurerm_role_assignment.lz_owner
