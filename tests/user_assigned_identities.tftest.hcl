@@ -102,7 +102,7 @@ run "station-uai-main" {
   }
 
   assert {
-    condition     = module.user_assigned_identities["maximum"].group_memberships["static"] == run.bootstrap_uai.azuread_group.object_id
+    condition     = module.user_assigned_identities["maximum"].group_memberships["static"].group_object_id == run.bootstrap_uai.azuread_group.object_id
     error_message = "The user-assigned identity was not added to the correct static group."
   }
 
@@ -231,7 +231,7 @@ run "station-uai-group_memberships" {
   }
 
   assert {
-    condition     = module.user_assigned_identities["maximum"].group_memberships["static"] == run.bootstrap_uai.azuread_group.object_id
+    condition     = module.user_assigned_identities["maximum"].group_memberships["static"].group_object_id == run.bootstrap_uai.azuread_group.object_id
     error_message = "The user-assigned identity was not added to the correct static group."
   }
 

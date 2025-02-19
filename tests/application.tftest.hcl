@@ -1,5 +1,9 @@
 provider "tfe" {}
 
+provider "azurerm" {
+  features {}
+}
+
 provider "azuread" {}
 
 run "bootstrap_create_tfc_test_project" {
