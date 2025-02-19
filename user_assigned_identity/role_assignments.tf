@@ -10,5 +10,6 @@ resource "azurerm_role_assignment" "roles" {
   delegated_managed_identity_resource_id = each.value.delegated_managed_identity_resource_id
   description                            = each.value.description
   skip_service_principal_aad_check       = each.value.skip_service_principal_aad_check == null ? false : each.value.skip_service_principal_aad_check
+  principal_type                         = "ServicePrincipal"
 }
 

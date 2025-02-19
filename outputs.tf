@@ -34,6 +34,10 @@ output "groups" {
   value = module.ad_groups
 }
 
+output "landing_zone_identity" {
+  value = module.user_assigned_identity
+}
+
 output "user_assigned_identities" {
   value = module.user_assigned_identities
 }
@@ -51,5 +55,21 @@ output "peerings" {
     to   = azurerm_virtual_network_peering.to
     from = azurerm_virtual_network_peering.from
   }
+}
+
+output "role_assignments" {
+  value = {
+    lz_owner    = azurerm_role_assignment.lz_owner
+    lz_identity = azurerm_role_assignment.lz_identity
+    others      = azurerm_role_assignment.others
+  }
+
+  description = <<EOT
+    Map of role assignments.
+
+    - lz_owner: Owner role assignment on the default landing zone resource group
+    - lz_identity: Role assignments created through `var.identity.role_assignment`
+    - others: Role assignments created through `var.role_assignments`
+  EOT
 }
 
