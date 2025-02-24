@@ -36,3 +36,10 @@ variable "role_assignments" {
   type        = map(any)
   default     = {}
 }
+
+variable "directory_role_assignments" {
+  description = "Azure Directory Roles to assign the Managed Identity."
+  default     = {}
+  type        = map(any)
+}
+

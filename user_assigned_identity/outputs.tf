@@ -1,3 +1,7 @@
+output "name" {
+  value = azurerm_user_assigned_identity.identity.name
+}
+
 output "id" {
   value = azurerm_user_assigned_identity.identity.id
 }
@@ -14,8 +18,12 @@ output "tenant_id" {
   value = azurerm_user_assigned_identity.identity.tenant_id
 }
 
-output "name" {
-  value = azurerm_user_assigned_identity.identity.name
+output "group_memberships" {
+  value = azuread_group_member.uai
+}
+
+output "directory_role_assignments" {
+  value = azuread_directory_role_assignment.roles
 }
 
 output "location" {
@@ -36,8 +44,3 @@ output "app_role_assignments" {
   }
 }
 
-output "group_memberships" {
-  value = {
-    for k, v in azuread_group_member.uai : k => v.group_object_id
-  }
-}
