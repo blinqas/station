@@ -49,22 +49,22 @@ resource "azuread_application" "this" {
     }
   }
 
-dynamic "required_resource_access" {
-  for_each = var.azuread_application.required_resource_access == null ? {} : var.azuread_application.required_resource_access
+  dynamic "required_resource_access" {
+    for_each = var.azuread_application.required_resource_access == null ? {} : var.azuread_application.required_resource_access
 
-  content {
-    resource_app_id = required_resource_access.value.resource_app_id
+    content {
+      resource_app_id = required_resource_access.value.resource_app_id
 
-    dynamic "resource_access" {
-      for_each = required_resource_access.value.resource_access == null ? {} : required_resource_access.value.resource_access
+      dynamic "resource_access" {
+        for_each = required_resource_access.value.resource_access == null ? {} : required_resource_access.value.resource_access
 
-      content {
-        id   = resource_access.value.id
-        type = resource_access.value.type
+        content {
+          id   = resource_access.value.id
+          type = resource_access.value.type
+        }
       }
     }
   }
-}
 
 
   dynamic "optional_claims" {
@@ -164,8 +164,8 @@ locals {
   required_resource_access = var.azuread_application.required_resource_access != null ? flatten([
     for access_key, access in var.azuread_application.required_resource_access : [
       for resource_access_key, resource_access in access.resource_access : {
-        id = resource_access.id #Example "df021288-bdef-4463-88db-98f22de89214" # User.Read.All
-        type = resource_access.type 
+        id              = resource_access.id #Example "df021288-bdef-4463-88db-98f22de89214" # User.Read.All
+        type            = resource_access.type
         resource_app_id = access.resource_app_id #Example "00000003-0000-0000-c000-000000000000" //MicrosoftGraph
       }
     ] if length(access.resource_access) > 0
@@ -178,9 +178,9 @@ locals {
 }
 
 resource "azuread_service_principal" "resource_principals" {
-  for_each       = toset([for entry in local.required_resource_access_roles : entry.resource_app_id])
-  client_id      = each.value
-  use_existing   = true
+  for_each     = toset([for entry in local.required_resource_access_roles : entry.resource_app_id])
+  client_id    = each.value
+  use_existing = true
 }
 
 resource "azuread_app_role_assignment" "this" {

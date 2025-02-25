@@ -103,7 +103,7 @@ variables {
         }
       }
 
-      
+
 
       optional_claims = {
         access_token = [{ name = "Test token" }, { name = "Test token 2" }]
