@@ -18,3 +18,9 @@ variable "subscription_id" {
   description = "(Required) The Azure subscription ID used by the caller."
 }
 
+variable "create_ad_group" {
+  default     = false
+  type        = bool
+  description = "(Optional) Create an AD group to test operations like var.identity.group_memberships against."
+}
+

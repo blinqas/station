@@ -30,38 +30,6 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "managed_identity_name" {
-  description = <<EOF
-    The name of the managed identity (identity provided to the workload) that is created. The final name is prefixed with `mi-`.
-
-    If a value is not provided, Station will set the name to `mi-var.tfe.workspace_name-var.environment_name`
-  EOF
-  default     = null
-  type        = string
-}
-
-variable "app_role_assignments" {
-  description = <<EOF
-    (Optional) A set of azuread_app_role_assignment resources to assign to the workload identity. Only built-in application roles are supported.
-
-    Example:
-    ```hcl
-    app_role_assignments = [
-      "IdentityRiskEvent.ReadWrite.All",
-      "IdentityRiskEvent.Read.All"
-    ]
-    ```
-  EOF
-  default     = []
-  type        = set(string)
-}
-
-variable "role_definition_name_on_workload_rg" {
-  description = "The name of an in-built role to assign the workload identity on the workload resource group"
-  default     = "Owner"
-  type        = string
-}
-
 variable "resource_groups" {
   description = "Map of resource groups to create"
   default     = {}
@@ -69,18 +37,6 @@ variable "resource_groups" {
     name     = string
     location = optional(string)
     tags     = optional(map(string))
-  }))
-}
-
-variable "federated_identity_credential_config" {
-  description = "Map of Federated Credentials to create on the workload identity"
-  default     = {}
-  type = map(object({
-    display_name = string
-    description  = optional(string)
-    audiences    = list(string)
-    issuer       = string
-    subject      = string
   }))
 }
 
@@ -244,7 +200,7 @@ variable "groups" {
 
 variable "user_assigned_identities" {
   description = <<EOF
-  User Assigned Identities to create."
+  User Assigned Identities to create.
 
   Example:
 
@@ -257,6 +213,9 @@ variable "user_assigned_identities" {
       group_memberships = {
         "Kubernetes Administrators" = azuread_group.k8s_admins.object_id
       }
+      directory_role_assignments = {
+        role_name                      = "Application Administrator"
+      }
     }
   }
   EOF
@@ -265,29 +224,33 @@ variable "user_assigned_identities" {
     name                 = string
     resource_group_name  = optional(string)
     location             = optional(string)
-    app_role_assignments = optional(set(string))
+    app_role_assignments = optional(set(string), [])
     role_assignments = optional(map(object({
       name                                   = optional(string)
       scope                                  = string
       role_definition_id                     = optional(string)
       role_definition_name                   = optional(string)
+      principal_id                           = optional(string)
       assign_to_workload_principal           = optional(bool)
       condition                              = optional(string)
       condition_version                      = optional(string)
       delegated_managed_identity_resource_id = optional(string)
       description                            = optional(string)
       skip_service_principal_aad_check       = optional(bool)
-    })))
-    group_memberships = optional(map(string))
+    })), {})
+    group_memberships = optional(map(string), {})
+    directory_role_assignments = optional(map(object({
+      role_name          = optional(string)
+      app_scope_id       = optional(string)
+      directory_scope_id = optional(string)
+    })), {})
   }))
 }
-
 
 variable "tfe" {
   description = <<EOF
   Terraform Cloud configuration for the workload environment
 
-  - tfe.create_federated_identity_credential configures Federated Credentials on the workload identity for plan and apply phases.
   - Either of tfe.vcs_repo.(oauth_token_id|github_app_installation_id) must be provided, both can not be used at the same time.
   - tfe.workspace_env_vars lets you configure Environment Variables for the Terraform Cloud runtime environment
   - tfe.workspace_vars lets you configure Terraform variables
@@ -309,8 +272,7 @@ variable "tfe" {
       agent_pool_id  = optional(string)
       execution_mode = optional(string)
     }))
-    create_federated_identity_credential = optional(bool)
-    file_triggers_enabled                = optional(bool)
+    file_triggers_enabled = optional(bool)
     vcs_repo = optional(object({
       identifier                 = string
       branch                     = optional(string)
@@ -342,26 +304,10 @@ variable "tfe" {
   })
 }
 
-variable "group_membership" {
-  description = <<EOF
-  Map of group object ids the workload identity should be member of.
-
-  Example:
-
-  group_membership = {
-    "Kubernetes Administrators" = azuread_group.k8s_admins.object_id
-  }
-  EOF
-  default     = {}
-  type        = map(string)
-}
-
-variable "role_assignment" {
+variable "role_assignments" {
   description = <<EOF
     Map of role_assignments to create. Be careful of who is allowed to provision role_assignments, you might want to 
     consider Sentinel policies in TFC.
-
-    - assign_to_workload_principal assigns the role to the workload identity. Can not be used with principal_id.
   EOF
   default     = {}
   type = map(object({
@@ -370,12 +316,75 @@ variable "role_assignment" {
     role_definition_id                     = optional(string)
     role_definition_name                   = optional(string)
     principal_id                           = optional(string)
-    assign_to_workload_principal           = optional(bool)
     condition                              = optional(string)
     condition_version                      = optional(string)
     delegated_managed_identity_resource_id = optional(string)
     description                            = optional(string)
-    skip_service_principal_aad_check       = optional(bool)
+    skip_service_principal_aad_check       = optional(bool, false)
   }))
+}
+
+variable "connectivity" {
+  description = <<EOF
+    Use this block to configure connectivity of this Landing Zone. Connectivity can be virtual networks, subnets, and even peerings to other virtual networks.
+
+    Limitations:
+    - Connecting Virtual Networks in different resource groups managed by this landing zone is currently unavailable. Configure this manually in the landing zone configuration.
+    - The key used for a peering object must be unique across all connectivity objects
+  EOF
+  default     = {}
+  type = map(object({
+    virtual_network_name = string
+    tags                 = optional(map(string), {})
+    address_space        = set(string)
+    resource_group_name  = optional(string)
+    location             = optional(string)
+    bgp_community        = optional(string)
+    ddos_protection_plan = optional(object({
+      id     = string
+      enable = string
+    }))
+    encryption = optional(object({
+      enforcement = string
+    }))
+    dns_servers                    = optional(set(string))
+    edge_zone                      = optional(string)
+    flow_timeout_in_minutes        = optional(string)
+    private_endpoint_vnet_policies = optional(string, "Disabled")
+    subnets = map(object({
+      name             = string
+      address_prefixes = list(string)
+      security_group   = optional(string)
+      delegation = optional(map(object({
+        name = string
+        service_delegation = object({
+          name    = string
+          actions = optional(set(string))
+        })
+      })))
+      default_outbound_access_enabled               = optional(bool, true)
+      private_endpoint_network_policies             = optional(string, "Disabled")
+      private_link_service_network_policies_enabled = optional(bool, true)
+      service_endpoints                             = optional(set(string))
+      service_endpoint_policy_ids                   = optional(set(string))
+      route_table_id                                = optional(string)
+    }))
+    peerings = optional(map(object({
+      name                                   = string
+      remote_virtual_network_id              = string
+      allow_virtual_network_access           = optional(bool, true)
+      allow_forwarded_traffic                = optional(bool, false)
+      allow_gateway_transit                  = optional(bool, false)
+      local_subnet_names                     = optional(list(string), [])
+      only_ipv6_peering_enabled              = optional(bool)
+      peer_complete_virtual_networks_enabled = optional(bool, true)
+      remote_subnet_names                    = optional(list(string), [])
+      use_remote_gateways                    = optional(bool, false)
+      triggers = optional(object({
+        remote_address_space = string
+      }))
+    })))
+    })
+  )
 }
 
