@@ -1,4 +1,4 @@
-resource "azuread_application" "app" {
+resource "azuread_application" "this" {
   display_name                   = var.azuread_application.display_name
   owners                         = var.owners
   sign_in_audience               = var.azuread_application.sign_in_audience
@@ -123,10 +123,10 @@ dynamic "required_resource_access" {
   }
 }
 
-resource "azuread_service_principal" "sp" {
+resource "azuread_service_principal" "this" {
   count = var.azuread_service_principal == null ? 0 : 1
 
-  client_id                     = azuread_application.app.client_id
+  client_id                     = azuread_application.this.client_id
   account_enabled               = var.azuread_service_principal.account_enabled
   alternative_names             = var.azuread_service_principal.alternative_names
   app_role_assignment_required  = var.azuread_service_principal.app_role_assignment_required
@@ -158,62 +158,39 @@ resource "azuread_service_principal" "sp" {
 }
 
 /* 
-
-        graph = {
-          resource_app_id = "00000003-0000-0000-c000-000000000000" //MicrosoftGraph
-          resource_access = {
-            application_group_read_all = {
-              id   = "5b567255-7703-4780-807c-7be8301ae99b"
-              type = "Role"
-            },
-            delegated_user_read = {
-              id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d"
-              type = "Scope"
-            },
-          }
-        },
+Auto concent application roles by assiging the requested roles to the service principal
 */
-
 locals {
   required_resource_access = var.azuread_application.required_resource_access != null ? flatten([
-    for required_resource_access_key, access in var.azuread_application.required_resource_access : [
+    for access_key, access in var.azuread_application.required_resource_access : [
       for resource_access_key, resource_access in access.resource_access : {
-        id = resource_access.id
-        type  = resource_access.type
-        resource_app_id  = access.resource_app_id
+        id = resource_access.id #Example "df021288-bdef-4463-88db-98f22de89214" # User.Read.All
+        type = resource_access.type 
+        resource_app_id = access.resource_app_id #Example "00000003-0000-0000-c000-000000000000" //MicrosoftGraph
       }
-    ]
+    ] if length(access.resource_access) > 0
   ]) : []
-  required_resource_access_roles = [
-    //Filter away the delegated permissions
+  //Filter away the scopes
+  required_resource_access_roles = var.azuread_service_principal != null ? [
     for entry in local.required_resource_access : entry
-    if entry.type == "Roles"
-  ]
+    if entry.type == "Role"
+  ] : []
 }
 
-output "local_required_resource_access" {
-  value = local.required_resource_access
+resource "azuread_service_principal" "resource_principals" {
+  for_each       = toset([for entry in local.required_resource_access_roles : entry.resource_app_id])
+  client_id      = each.value
+  use_existing   = true
 }
 
-
-
-
-resource "azuread_app_role_assignment" "sp" {
+resource "azuread_app_role_assignment" "this" {
   for_each = {
     for required_resource_access in local.required_resource_access_roles :
     required_resource_access.resource_app_id => required_resource_access.id
-    if length(azuread_service_principal.sp) > 0
   }
 
-  app_role_id         = each.value.resource_app_id
+  app_role_id         = each.value
   principal_object_id = azuread_service_principal.sp[0].object_id
-  resource_object_id  = each.value.id
+  resource_object_id  = azuread_service_principal.resource_principals[each.key].id
 }
 
-
-output "sp_length" {
-  value = length(azuread_service_principal.sp) > 0
-}
-output "app_role_assignment" {
-  value = azuread_app_role_assignment.sp
-}
