@@ -160,37 +160,46 @@ resource "azuread_service_principal" "this" {
 /* 
 Auto concent application roles by assiging the requested roles to the service principal
 */
+data "azuread_service_principals" "all" {
+  return_all = true
+}
+
 locals {
   required_resource_access = var.azuread_application.required_resource_access != null ? flatten([
     for access_key, access in var.azuread_application.required_resource_access : [
       for resource_access_key, resource_access in access.resource_access : {
-        id              = resource_access.id #Example "df021288-bdef-4463-88db-98f22de89214" # User.Read.All
-        type            = resource_access.type
-        resource_app_id = access.resource_app_id #Example "00000003-0000-0000-c000-000000000000" //MicrosoftGraph
+        id              = resource_access.id     # Example: "df021288-bdef-4463-88db-98f22de89214" (User.Read.All)
+        type            = resource_access.type   # Example: "Role" or "Scope"
+        resource_app_id = access.resource_app_id # Example: "00000003-0000-0000-c000-000000000000" (Microsoft Graph client/app ID)
+        resource_object_id = one([
+          for sp in data.azuread_service_principals.all.service_principals : sp.object_id
+          if sp.client_id == access.resource_app_id # Example: "38423b0f-3b79-4126-bb05-4f2f123ed55f" (Microsoft Graph objectID for your tenant)
+        ])
       }
     ] if length(access.resource_access) > 0
   ]) : []
-  //Filter away the scopes
-  required_resource_access_roles = var.azuread_service_principal != null ? [
-    for entry in local.required_resource_access : entry
-    if entry.type == "Role"
-  ] : []
-}
 
-resource "azuread_service_principal" "resource_principals" {
-  for_each     = toset([for entry in local.required_resource_access_roles : entry.resource_app_id])
-  client_id    = each.value
-  use_existing = true
+  //Convert the list of objects to a map with a unqie key
+  required_resource_access_map = {
+    for entry in local.required_resource_access :
+    "${entry.resource_app_id}-${entry.id}" => entry
+  }
+
+  // Filter out scopes and keep only Role-based assignments
+  required_resource_access_roles = var.azuread_service_principal != null ? {
+    for key, entry in local.required_resource_access_map :
+    key => entry
+    if entry.type == "Role"
+  } : {}
 }
 
 resource "azuread_app_role_assignment" "this" {
-  for_each = {
-    for required_resource_access in local.required_resource_access_roles :
-    required_resource_access.resource_app_id => required_resource_access.id
-  }
+  for_each = local.required_resource_access_roles
 
-  app_role_id         = each.value
-  principal_object_id = azuread_service_principal.sp[0].object_id
-  resource_object_id  = azuread_service_principal.resource_principals[each.key].id
+  app_role_id         = each.value.id
+  principal_object_id = azuread_service_principal.this[0].object_id
+  resource_object_id  = each.value.resource_object_id
 }
+
+/* Auto Concent scoped permissions */
 

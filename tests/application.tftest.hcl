@@ -1,10 +1,10 @@
 provider "tfe" {}
 
+provider "azuread" {}
+
 provider "azurerm" {
   features {}
 }
-
-provider "azuread" {}
 
 run "bootstrap_create_tfc_test_project" {
   variables {
@@ -86,6 +86,10 @@ variables {
               id   = "5b567255-7703-4780-807c-7be8301ae99b"
               type = "Role"
             },
+            application_user_read_all = {
+              id   = "df021288-bdef-4463-88db-98f22de89214"
+              type = "Role"
+            }
             delegated_user_read = {
               id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d"
               type = "Scope"
@@ -127,7 +131,7 @@ variables {
       service_principal = {
         account_enabled               = true
         alternative_names             = ["alt_name1", "alt_name2"]
-        app_role_assignment_required  = false
+        app_role_assignment_required  = true
         description                   = "Service Principal for Station Test: Maximum"
         login_url                     = "http://localhost/login"
         notes                         = "Notes for Service Principal"
@@ -411,6 +415,17 @@ run "application-required_resource_access" {
     ])
     error_message = "One or more resource_access entries do not match in id or type."
   }
+  #Verify that the resource_access that is if type "Application/Role" has been assigned to the service principal and is approved
+  assert {
+    condition     = module.applications["maximum"].app_role_assignments["${var.applications.maximum.required_resource_access["graph"].resource_app_id}-${var.applications.maximum.required_resource_access["graph"].resource_access["application_group_read_all"].id}"].app_role_id == var.applications.maximum.required_resource_access["graph"].resource_access["application_group_read_all"].id
+    error_message = "The required_resource_access for the Role permission has not been assiged to the service principal"
+  }
+
+  assert {
+    condition     = module.applications["maximum"].app_role_assignments["${var.applications.maximum.required_resource_access["graph"].resource_app_id}-${var.applications.maximum.required_resource_access["graph"].resource_access["application_user_read_all"].id}"].app_role_id == var.applications.maximum.required_resource_access["graph"].resource_access["application_user_read_all"].id
+    error_message = "The required_resource_access for application_user_read_all Role permission has not been assigned to the service principal"
+  }
+
 }
 run "application-optional_claims" {
 
