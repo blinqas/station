@@ -1,6 +1,6 @@
 moved {
   from = azuread_application.app
-  to = azuread_application.this
+  to   = azuread_application.this
 }
 resource "azuread_application" "this" {
   display_name                   = var.azuread_application.display_name
@@ -129,7 +129,7 @@ resource "azuread_application" "this" {
 
 moved {
   from = azuread_service_principal.sp
-  to = azuread_service_principal.this 
+  to   = azuread_service_principal.this
 }
 
 resource "azuread_service_principal" "this" {
