@@ -8,5 +8,6 @@ module "ad_groups" {
     each.value.owners == null ? [] : each.value.owners,
     [module.user_assigned_identity.principal_id]
   )
-  depends_on = [module.user_assigned_identity]
+  depends_on = [module.user_assigned_identity, module.user_assigned_identities]
+  // This was required to ensure the identity was created before the group as it caused issues in azuread v3
 }
