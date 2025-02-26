@@ -15,6 +15,12 @@ run "bootstrap_create_tfc_test_project" {
   }
 }
 
+run "setup" {
+  module {
+    source = "./tests/setup-common"
+  }
+}
+
 run "bootstrap_application" {
   //This fetches the objectid of the current user
   module {
@@ -146,6 +152,17 @@ variables {
         }
       }
     }
+  }
+}
+
+run "app_role_assignments" {
+  module {
+    source = "./"
+  }
+
+  assert {
+    condition     = var.applications == {} ? true : azuread_app_role_assignment.this["Application.ReadWrite.OwnedBy"].principal_object_id == module.user_assigned_identity.principal_id
+    error_message = "The Landing Zone identity was not assigned Application.ReadWrite.OwnedBy when `var.applications` was configured. These roles are required when managing Entra ID applications."
   }
 }
 
