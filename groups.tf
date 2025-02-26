@@ -8,4 +8,5 @@ module "ad_groups" {
     each.value.owners == null ? [] : each.value.owners,
     [module.user_assigned_identity.principal_id]
   )
+  depends_on = [module.user_assigned_identity]
 }
