@@ -9,19 +9,20 @@ locals {
     // Ensure Managed Identity has required permissions to read basic user information when the caller wants to create Entra ID Groups. Having only "Owner" on the group is not sufficient (even though the Terraform Provider docs says so).
     length(var.groups) == 0 ? {} : {
       "User.ReadBasic.All" = {
-        app_role_id        = "97235f07-e226-4f63-ace3-39588e11d3a1"
-        resource_object_id = var.management.msgraph_azuread_service_principal_object_id
+        app_role_id = data.azuread_service_principal.msgraph.app_role_ids["User.ReadBasic.All"]
+        // resource_object_id is set in the `azuread_app_role_assignment.this` resource
       }
       "Group.Read.All" = {
-        app_role_id        = "5b567255-7703-4780-807c-7be8301ae99b"
-        resource_object_id = var.management.msgraph_azuread_service_principal_object_id
+        app_role_id = data.azuread_service_principal.msgraph.app_role_ids["Group.Read.All"]
+        // resource_object_id is set in the `azuread_app_role_assignment.this` resource
       }
     },
 
     # When `var.applications` is specified, ensure the Landing Zone Identity have the correct permissions so it can manage it in their landing zone configuration.
     length(var.applications) == 0 ? {} : {
       "Application.ReadWrite.OwnedBy" = {
-        app_role_id = "18a4783c-866b-4cc7-a460-3d5e5662c884" # Application.ReadWrite.OwnedBy
+        app_role_id = data.azuread_service_principal.msgraph.app_role_ids["Application.ReadWrite.OwnedBy"]
+        // resource_object_id is set in the `azuread_app_role_assignment.this` resource
       }
     }
   )
@@ -47,7 +48,7 @@ resource "azuread_app_role_assignment" "this" {
   for_each            = local.required_app_roles
   app_role_id         = each.value.app_role_id
   principal_object_id = module.user_assigned_identity.principal_id
-  resource_object_id  = var.management.msgraph_azuread_service_principal_object_id
+  resource_object_id  = data.azuread_service_principal.msgraph.object_id
 }
 
 module "user_assigned_identities" {
