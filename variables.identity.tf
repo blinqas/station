@@ -5,6 +5,7 @@ variable "identity" {
   Example:
   identity = {
     name = "workload-prod" #Name will be prefixed with `mi-`
+
     role_assignments = {
       key_vault_admin = {
         scope = null # Defaults to the resource groups created by the workload
@@ -12,10 +13,18 @@ variable "identity" {
         description = "Needed to manage key vaults"
       }
     }
-    app_role_assignments = ["User.Read.All"]
+
+    app_role_assignments = {
+      "User.ReadBasic.All" = {
+        app_role_id        = data.azuread_service_principals.well_known["MicrosoftGraph"].app_role_ids["User.ReadBasic.All"]
+        resource_object_id = data.azuread_service_principals.well_known["MicrosoftGraph"].object_id
+      }
+    }
+
     group_memberships    = {
       "A group" = "ad-group-object-id"
     }
+
     directory_role_assignments = {
       Reader = {
         role_name = "Directory Readers"
@@ -37,8 +46,11 @@ variable "identity" {
       description                            = optional(string)
       skip_service_principal_aad_check       = optional(bool)
     })), {})
-    group_memberships    = optional(map(string), {})
-    app_role_assignments = optional(set(string), [])
+    group_memberships = optional(map(string), {})
+    app_role_assignments = optional(map(object({
+      app_role_id        = string
+      resource_object_id = string
+    })), {})
     directory_role_assignments = optional(map(object({
       role_name          = optional(string)
       role_id            = optional(string)
