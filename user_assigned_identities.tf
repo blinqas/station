@@ -9,20 +9,20 @@ locals {
     // Ensure Managed Identity has required permissions to read basic user information when the caller wants to create Entra ID Groups. Having only "Owner" on the group is not sufficient (even though the Terraform Provider docs says so).
     var.groups == {} ? {} : {
       "User.ReadBasic.All" = {
-        app_role_id = data.azuread_service_principal.msgraph.app_role_ids["User.ReadBasic.All"]
-        // resource_object_id is set in the `azuread_app_role_assignment.this` resource
+        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["User.ReadBasic.All"]
+        resource_object_id = data.azuread_service_principal.msgraph.object_id
       }
       "Group.Read.All" = {
-        app_role_id = data.azuread_service_principal.msgraph.app_role_ids["Group.Read.All"]
-        // resource_object_id is set in the `azuread_app_role_assignment.this` resource
+        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["Group.Read.All"]
+        resource_object_id = data.azuread_service_principal.msgraph.object_id
       }
     },
 
     # When `var.applications` is specified, ensure the Landing Zone Identity have the correct permissions so it can manage it in their landing zone configuration.
     var.applications == {} ? {} : {
       "Application.ReadWrite.OwnedBy" = {
-        app_role_id = data.azuread_service_principal.msgraph.app_role_ids["Application.ReadWrite.OwnedBy"]
-        // resource_object_id is set in the `azuread_app_role_assignment.this` resource
+        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["Application.ReadWrite.OwnedBy"]
+        resource_object_id = data.azuread_service_principal.msgraph.object_id
       }
     }
   )
@@ -33,23 +33,23 @@ module "user_assigned_identity" {
   source                     = "./user_assigned_identity"
   resource_group_name        = azurerm_resource_group.workload.name
   location                   = azurerm_resource_group.workload.location
-  app_role_assignments       = var.identity.app_role_assignments
+  app_role_assignments       = merge(var.identity.app_role_assignments, local.required_app_roles)
   directory_role_assignments = var.identity.directory_role_assignments
   group_memberships          = var.identity.group_memberships
   tags                       = local.tags
 }
 
-moved {
-  from = azuread_app_role_assignment.app_workload_roles
-  to   = azuread_app_role_assignment.this
-}
+#moved {
+#  from = azuread_app_role_assignment.app_workload_roles
+#  to   = azuread_app_role_assignment.this
+#}
 
-resource "azuread_app_role_assignment" "this" {
-  for_each            = local.required_app_roles
-  app_role_id         = each.value.app_role_id
-  principal_object_id = module.user_assigned_identity.principal_id
-  resource_object_id  = data.azuread_service_principal.msgraph.object_id
-}
+#resource "azuread_app_role_assignment" "this" {
+#  for_each            = local.required_app_roles
+#  app_role_id         = each.value.app_role_id
+#  principal_object_id = module.user_assigned_identity.principal_id
+#  resource_object_id  = data.azuread_service_principal.msgraph.object_id
+#}
 
 module "user_assigned_identities" {
   for_each                   = var.user_assigned_identities
