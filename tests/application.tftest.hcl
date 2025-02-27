@@ -97,7 +97,7 @@ variables {
           }
         },
         exchange_online = {
-          admin_consent = true //This should ensure that the app role assigment is not created automatcaly and needs admin concent
+          admin_consent = true //This should ensure that the app role assigment is not created automatcaly and needs admin consent
           resource_app_id = "00000002-0000-0ff1-ce00-000000000000" //office_365_exchange_online
           resource_access = {
             delegated_ews_accessasuser_all = {

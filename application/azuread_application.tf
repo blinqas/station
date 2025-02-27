@@ -167,7 +167,7 @@ resource "azuread_service_principal" "this" {
 }
 
 /* 
-Auto concent application roles by assiging the requested roles to the service principal
+Auto consent application roles by assiging the requested roles to the service principal
 */
 data "azuread_service_principals" "all" {
   return_all = true
@@ -195,7 +195,7 @@ locals {
     "${entry.resource_app_id}-${entry.id}" => entry
   }
 
-  // Filter out scopes and keep only Role-based assignments where `admin_concent` is false
+  // Filter out scopes and keep only Role-based assignments where `admin_consent` is false
   app_role_to_assign = var.azuread_service_principal != null ? {
     for key, entry in local.required_resource_access_map :
     key => entry
