@@ -30,31 +30,6 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "app_role_assignments" {
-  description = <<EOF
-    (Optional) A set of azuread_app_role_assignment resources to assign to the workload identity. Only built-in application roles are supported.
-
-    Example:
-    ```hcl
-    app_role_assignments = {
-      "User.ReadBasic.All" = {
-        app_role_id        = "97235f07-e226-4f63-ace3-39588e11d3a1"
-        resource_object_id = "microsoft-graph-enterprise-app-object-id"
-      }
-      "Group.Read.All" = {
-        app_role_id        = "5b567255-7703-4780-807c-7be8301ae99b"
-        resource_object_id = "microsoft-graph-enterprise-app-object-id"
-      }
-    }
-    ```
-  EOF
-  default     = {}
-  type = map(object({
-    app_role_id        = string
-    resource_object_id = string
-  }))
-}
-
 variable "resource_groups" {
   description = "Map of resource groups to create"
   default     = {}
