@@ -177,9 +177,10 @@ locals {
   required_resource_access = var.azuread_application.required_resource_access != null ? flatten([
     for access_key, access in var.azuread_application.required_resource_access : [
       for resource_access_key, resource_access in access.resource_access : {
-        id              = resource_access.id     # Example: "df021288-bdef-4463-88db-98f22de89214" (User.Read.All)
-        type            = resource_access.type   # Example: "Role" or "Scope"
-        resource_app_id = access.resource_app_id # Example: "00000003-0000-0000-c000-000000000000" (Microsoft Graph client/app ID)
+        id                 = resource_access.id     # Example: "df021288-bdef-4463-88db-98f22de89214" (User.Read.All)
+        type               = resource_access.type   # Example: "Role" or "Scope"
+        resource_app_id    = access.resource_app_id # Example: "00000003-0000-0000-c000-000000000000" (Microsoft Graph client/app ID)
+        admin_consent      = access.admin_consent   # Example: true or false
         resource_object_id = one([
           for sp in data.azuread_service_principals.all.service_principals : sp.object_id
           if sp.client_id == access.resource_app_id # Example: "38423b0f-3b79-4126-bb05-4f2f123ed55f" (Microsoft Graph objectID for your tenant)
@@ -188,27 +189,25 @@ locals {
     ] if length(access.resource_access) > 0
   ]) : []
 
-  //Convert the list of objects to a map with a unqie key
+  // Convert the list of objects to a map with a unique key
   required_resource_access_map = {
     for entry in local.required_resource_access :
     "${entry.resource_app_id}-${entry.id}" => entry
   }
 
-  // Filter out scopes and keep only Role-based assignments
-  required_resource_access_roles = var.azuread_service_principal != null ? {
+  // Filter out scopes and keep only Role-based assignments where `admin_concent` is false
+  app_role_to_assign = var.azuread_service_principal != null ? {
     for key, entry in local.required_resource_access_map :
     key => entry
-    if entry.type == "Role"
+    if entry.type == "Role" && entry.admin_consent != true
   } : {}
 }
 
+
 resource "azuread_app_role_assignment" "this" {
-  for_each = local.required_resource_access_roles
+  for_each = local.app_role_to_assign
 
   app_role_id         = each.value.id
   principal_object_id = azuread_service_principal.this[0].object_id
   resource_object_id  = each.value.resource_object_id
 }
-
-/* Auto Concent scoped permissions */
-

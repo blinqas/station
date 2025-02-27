@@ -98,7 +98,7 @@ variable "applications" {
     }))
 
     required_resource_access = optional(map(object({
-      auto_approve    = optional(bool)
+      admin_consent    = optional(bool)
       resource_app_id = string
       resource_access = map(object({
         id   = string

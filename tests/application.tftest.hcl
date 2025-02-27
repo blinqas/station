@@ -97,12 +97,17 @@ variables {
           }
         },
         exchange_online = {
+          admin_consent = true //This should ensure that the app role assigment is not created automatcaly and needs admin concent
           resource_app_id = "00000002-0000-0ff1-ce00-000000000000" //office_365_exchange_online
           resource_access = {
             delegated_ews_accessasuser_all = {
               id   = "3b5f3d61-589b-4a3c-a359-5dd4b5ee5bd5"
               type = "Scope"
             },
+            application_ews_accessasuser_all = {
+              id   = "dc890d15-9560-4a4c-9b7f-a736ec74ec40"
+              type = "Role"
+            }
           }
         }
       }
@@ -415,7 +420,7 @@ run "application-required_resource_access" {
     ])
     error_message = "One or more resource_access entries do not match in id or type."
   }
-  #Verify that the resource_access that is if type "Application/Role" has been assigned to the service principal and is approved
+  #Verify that the resource_access that is if type "Application/Role" has been assigned to the service principal and is approved when admin_consent is false
   assert {
     condition     = module.applications["maximum"].app_role_assignments["${var.applications.maximum.required_resource_access["graph"].resource_app_id}-${var.applications.maximum.required_resource_access["graph"].resource_access["application_group_read_all"].id}"].app_role_id == var.applications.maximum.required_resource_access["graph"].resource_access["application_group_read_all"].id
     error_message = "The required_resource_access for the Role permission has not been assiged to the service principal"
@@ -426,6 +431,11 @@ run "application-required_resource_access" {
     error_message = "The required_resource_access for application_user_read_all Role permission has not been assigned to the service principal"
   }
 
+  # Verify that the app role has not been assigned when "admin_consent" is true
+    assert {
+    condition     = !can(module.applications["maximum"].app_role_assignments["${var.applications.maximum.required_resource_access["exchange_online"].resource_app_id}-${var.applications.maximum.required_resource_access["exchange_online"].resource_access["application_ews_accessasuser_all"].id}"])
+    error_message = "The app role has been assigned to the service principal when admin_consent is true. "
+  }
 }
 run "application-optional_claims" {
 
