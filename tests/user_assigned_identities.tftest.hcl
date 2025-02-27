@@ -49,8 +49,8 @@ variables {
       name = "uai-01"
     },
     maximum = {
-      name                 = "uai-02"
-      location             = "norwayeast"
+      name     = "uai-02"
+      location = "norwayeast"
     }
   }
 }
