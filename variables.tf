@@ -57,19 +57,19 @@ variable "tags" {
 variable "applications" {
   description = <<EOT
   Map of applications to create. The body of each object is more or less identical to azuread_application 
-  with the exception of map usage instead of blocks (as blocks are impossible to define with HCL)
+  with the exception of map usage instead of blocks (as blocks are impossible to define with HCL).
   EOT
   default     = {}
   type = map(object({
     display_name                   = string
     owners                         = optional(list(string))
-    logo_image                     = optional(string) #Base64 encoded image
+    logo_image                     = optional(string) # Base64 encoded image
     sign_in_audience               = optional(string)
     group_membership_claims        = optional(list(string))
     identifier_uris                = optional(list(string))
     prevent_duplicate_names        = optional(bool)
     fallback_public_client_enabled = optional(bool)
-    notes                          = optional(string) #This can be used as description for the application. 1024 character limit.
+    notes                          = optional(string) # This can be used as description for the application. 1024 character limit.
     use_existing                   = optional(bool)
 
     single_page_application = optional(object({
@@ -162,6 +162,7 @@ variable "applications" {
     }))
   }))
 }
+
 
 variable "groups" {
   description = <<-EOF
