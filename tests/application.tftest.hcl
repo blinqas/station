@@ -97,7 +97,7 @@ variables {
           }
         },
         exchange_online = {
-          admin_consent = true //This should ensure that the app role assigment is not created automatcaly and needs admin consent
+          admin_consent   = true                                   //This should ensure that the app role assigment is not created automatcaly and needs admin consent
           resource_app_id = "00000002-0000-0ff1-ce00-000000000000" //office_365_exchange_online
           resource_access = {
             delegated_ews_accessasuser_all = {
@@ -432,7 +432,7 @@ run "application-required_resource_access" {
   }
 
   # Verify that the app role has not been assigned when "admin_consent" is true
-    assert {
+  assert {
     condition     = !can(module.applications["maximum"].app_role_assignments["${var.applications.maximum.required_resource_access["exchange_online"].resource_app_id}-${var.applications.maximum.required_resource_access["exchange_online"].resource_access["application_ews_accessasuser_all"].id}"])
     error_message = "The app role has been assigned to the service principal when admin_consent is true. "
   }
