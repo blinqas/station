@@ -122,6 +122,9 @@ resource "azuread_application" "app" {
       }
     }
   }
+  lifecycle {
+    ignore_changes = [ app_role ]
+  }
 }
 
 resource "azuread_service_principal" "sp" {
