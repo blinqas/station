@@ -80,8 +80,8 @@ variables {
 
       required_resource_access = {
         graph = {
-          resource_app_id = "00000003-0000-0000-c000-000000000000" //MicrosoftGraph (azuread_service_principal.MicrosoftGraph.client_id)
-          resource_object_id = "This should be overridden" //MicrosoftGraph (azuread_service_principal.MicrosoftGraph.object_id)
+          resource_app_id    = "00000003-0000-0000-c000-000000000000" //MicrosoftGraph (azuread_service_principal.MicrosoftGraph.client_id)
+          resource_object_id = "This should be overridden"            //MicrosoftGraph (azuread_service_principal.MicrosoftGraph.object_id)
           resource_access = {
             application_group_read_all = {
               id   = "5b567255-7703-4780-807c-7be8301ae99b"
@@ -98,9 +98,9 @@ variables {
           }
         },
         exchange_online = {
-          admin_consent   = true                                   //This should ensure that the app role assigment is not created automatcaly and needs admin consent
-          resource_app_id = "00000002-0000-0ff1-ce00-000000000000" //office_365_exchange_online
-          resource_object_id = "This should be overridden" //office_365_exchange_online (azuread_service_principal.Office365ExchangeOnline.object_id)
+          admin_consent      = true                                   //This should ensure that the app role assigment is not created automatcaly and needs admin consent
+          resource_app_id    = "00000002-0000-0ff1-ce00-000000000000" //office_365_exchange_online
+          resource_object_id = "This should be overridden"            //office_365_exchange_online (azuread_service_principal.Office365ExchangeOnline.object_id)
           resource_access = {
             delegated_ews_accessasuser_all = {
               id   = "3b5f3d61-589b-4a3c-a359-5dd4b5ee5bd5"

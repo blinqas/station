@@ -36,7 +36,7 @@ output "MicrosoftGraph" {
 }
 
 output "Office365ExchangeOnline" {
-  
+
   value = azuread_service_principal.Office365ExchangeOnline
 }
 
