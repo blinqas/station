@@ -169,22 +169,16 @@ resource "azuread_service_principal" "this" {
 /* 
 Auto consent application roles by assiging the requested roles to the service principal
 */
-data "azuread_service_principals" "all" {
-  return_all = true
-}
 
 locals {
   required_resource_access = var.azuread_application.required_resource_access != null ? flatten([
     for access_key, access in var.azuread_application.required_resource_access : [
       for resource_access_key, resource_access in access.resource_access : {
-        id              = resource_access.id     # Example: "df021288-bdef-4463-88db-98f22de89214" (User.Read.All)
-        type            = resource_access.type   # Example: "Role" or "Scope"
-        resource_app_id = access.resource_app_id # Example: "00000003-0000-0000-c000-000000000000" (Microsoft Graph client/app ID)
-        admin_consent   = access.admin_consent   # Example: true or false
-        resource_object_id = one([
-          for sp in data.azuread_service_principals.all.service_principals : sp.object_id
-          if sp.client_id == access.resource_app_id # Example: "38423b0f-3b79-4126-bb05-4f2f123ed55f" (Microsoft Graph objectID for your tenant)
-        ])
+        id                 = resource_access.id     # Example: "df021288-bdef-4463-88db-98f22de89214" (User.Read.All)
+        type               = resource_access.type   # Example: "Role" or "Scope"
+        resource_app_id    = access.resource_app_id # Example: "00000003-0000-0000-c000-000000000000" (Microsoft Graph client/app ID)
+        resource_object_id = access.resource_object_id #Example: "38423b0f-3b79-4126-bb05-4f2f123ed55f" (Microsoft Graph objectID for your tenant)
+        admin_consent      = access.admin_consent   # Example: true or false
       }
     ] if length(access.resource_access) > 0
   ]) : []
@@ -202,7 +196,6 @@ locals {
     if entry.type == "Role" && entry.admin_consent != true
   } : {}
 }
-
 
 resource "azuread_app_role_assignment" "this" {
   for_each = local.app_role_to_assign
