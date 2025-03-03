@@ -125,6 +125,9 @@ resource "azuread_application" "this" {
       }
     }
   }
+  lifecycle {
+    ignore_changes = [app_role]
+  }
 }
 
 moved {
