@@ -22,20 +22,20 @@ output "uuid_max" {
 data "azuread_application_published_app_ids" "well_known" {}
 
 
-data "azuread_service_principal" "MicrosoftGraph" {
+resource "azuread_service_principal" "MicrosoftGraph" {
   client_id = data.azuread_application_published_app_ids.well_known.result.MicrosoftGraph
 }
 
-data "azuread_service_principal" "Office365ExchangeOnline" {
+resource "azuread_service_principal" "Office365ExchangeOnline" {
   client_id = data.azuread_application_published_app_ids.well_known.result.Office365ExchangeOnline
 }
 
 output "MicrosoftGraph" {
-  value = data.azuread_service_principal.MicrosoftGraph
+  value = azuread_service_principal.MicrosoftGraph
 }
 
 output "Office365ExchangeOnline" {
 
-  value = data.azuread_service_principal.Office365ExchangeOnline
+  value = azuread_service_principal.Office365ExchangeOnline
 }
 
