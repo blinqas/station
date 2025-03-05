@@ -104,7 +104,7 @@ variable "applications" {
         type = string
       }))
     })))
-
+    # Microsoft Graph
     optional_claims = optional(object({
       access_token = optional(set(object({
         name                  = string
@@ -195,8 +195,6 @@ variable "groups" {
   }))
 }
 
-
-
 variable "user_assigned_identities" {
   description = <<EOF
   User Assigned Identities to create.
@@ -208,7 +206,12 @@ variable "user_assigned_identities" {
       name                = "uai-my-identity"
       resource_group_name = "rg-name"
       location            = "norwayeast"
-      app_role_assignments    = ["IdentityRiskEvent.ReadWrite.All"]
+      app_role_assignments = {
+        Application.ReadWrite.OwnedBy = {
+          app_role_id        = "18a4783c-866b-4cc7-a460-3d5e5662c884"
+          resource_object_id = "microsoft-graph-enterprise-app-object-id"
+        }
+      }
       group_memberships = {
         "Kubernetes Administrators" = azuread_group.k8s_admins.object_id
       }
@@ -220,10 +223,13 @@ variable "user_assigned_identities" {
   EOF
   default     = {}
   type = map(object({
-    name                 = string
-    resource_group_name  = optional(string)
-    location             = optional(string)
-    app_role_assignments = optional(set(string), [])
+    name                = string
+    resource_group_name = optional(string)
+    location            = optional(string)
+    app_role_assignments = optional(map(object({
+      app_role_id        = string
+      resource_object_id = string
+    })), {})
     role_assignments = optional(map(object({
       name                                   = optional(string)
       scope                                  = string

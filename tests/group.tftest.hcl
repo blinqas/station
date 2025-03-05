@@ -13,6 +13,12 @@ run "bootstrap_create_tfc_test_project" {
   }
 }
 
+run "setup" {
+  module {
+    source = "./tests/setup-common"
+  }
+}
+
 run "bootstrap_groups" {
   variables {
     user = {
@@ -76,6 +82,32 @@ variables {
         }
       }
     }
+  }
+}
+
+run "app_role_assignments" {
+  module {
+    source = "./"
+  }
+
+  variables {
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    groups = merge(var.groups, {
+      static = merge(var.groups.static, {
+        owners  = toset([run.bootstrap_groups.current.object_id]),
+        members = toset([run.bootstrap_groups.current.object_id, run.bootstrap_groups.test_user_object_id])
+      })
+    })
+  }
+
+  assert {
+    condition     = var.groups == {} ? true : module.user_assigned_identity.app_role_assignments["User.ReadBasic.All"].principal_object_id == module.user_assigned_identity.principal_id && module.user_assigned_identity.app_role_assignments["Group.Read.All"].principal_object_id == module.user_assigned_identity.principal_id
+    error_message = "The Landing Zone identity was not assigned User.ReadBasic.All and Group.Read.All when `var.groups` was configured. These roles are required when managing Entra ID groups."
   }
 }
 
