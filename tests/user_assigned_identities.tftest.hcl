@@ -1,5 +1,7 @@
 provider "tfe" {}
+
 provider "azuread" {}
+
 provider "azurerm" {
   features {}
 }
@@ -13,7 +15,6 @@ run "bootstrap_create_tfc_test_project" {
   }
 }
 
-
 run "bootstrap_uai" {
   variables {
     group_display_name = "station-uai-test-group"
@@ -23,6 +24,11 @@ run "bootstrap_uai" {
   }
 }
 
+run "setup" {
+  module {
+    source = "./tests/setup-common"
+  }
+}
 
 variables {
   tfe = {
@@ -43,40 +49,17 @@ variables {
       name = "uai-01"
     },
     maximum = {
-      name                 = "uai-02"
-      location             = "norwayeast"
-      app_role_assignments = ["User.Read.All"]
-      group_memberships = {
-        static = "This should be overwritten"
-      }
-      role_assignments = {
-        subscription_reader = {
-          role_definition_name = "Reader"
-          scope                = "This should be overwritten"
-        }
-      }
+      name     = "uai-02"
+      location = "norwayeast"
     }
   }
 }
 
-run "station-uai-main" {
+run "user_assigned_identity" {
   variables {
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
-      })
-    })
-
-    user_assigned_identities = merge(var.user_assigned_identities, {
-      maximum = merge(var.user_assigned_identities.maximum, {
-        group_memberships = {
-          static = run.bootstrap_uai.azuread_group.object_id
-        },
-        role_assignments = merge(var.user_assigned_identities.maximum.role_assignments, {
-          subscription_reader = merge(var.user_assigned_identities.maximum.role_assignments.subscription_reader, {
-            scope = run.bootstrap_uai.current_subscription.id
-          })
-        })
       })
     })
   }
@@ -100,27 +83,9 @@ run "station-uai-main" {
     ])
     error_message = "The location of the user-assigned identities does not match the expected values."
   }
-
-  assert {
-    condition     = module.user_assigned_identities["maximum"].group_memberships["static"].group_object_id == run.bootstrap_uai.azuread_group.object_id
-    error_message = "The user-assigned identity was not added to the correct static group."
-  }
-
-  assert {
-    condition     = module.user_assigned_identities["maximum"].app_role_assignments["User.Read.All"].app_role_id == "df021288-bdef-4463-88db-98f22de89214" //User.Read.All
-    error_message = "The app role assignments for the user-assigned identity do not match."
-  }
-
-  assert {
-    condition = alltrue([
-      module.user_assigned_identities["maximum"].role_assignments["subscription_reader"].role_definition_name == var.user_assigned_identities.maximum.role_assignments.subscription_reader.role_definition_name,
-      module.user_assigned_identities["maximum"].role_assignments["subscription_reader"].scope == var.user_assigned_identities.maximum.role_assignments.subscription_reader.scope
-    ])
-    error_message = "The role assignments for the user-assigned identity do not match."
-  }
 }
 
-run "station-uai-app_role_assignments" {
+run "app_role_assignments" {
   variables {
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
@@ -130,14 +95,12 @@ run "station-uai-app_role_assignments" {
 
     user_assigned_identities = merge(var.user_assigned_identities, {
       maximum = merge(var.user_assigned_identities.maximum, {
-        group_memberships = {
-          static = run.bootstrap_uai.azuread_group.object_id
-        },
-        role_assignments = merge(var.user_assigned_identities.maximum.role_assignments, {
-          subscription_reader = merge(var.user_assigned_identities.maximum.role_assignments.subscription_reader, {
-            scope = run.bootstrap_uai.current_subscription.id
-          })
-        })
+        app_role_assignments = {
+          "User.Read.All" = {
+            app_role_id        = run.setup.azuread_service_principal.msgraph.app_role_ids["User.Read.All"]
+            resource_object_id = run.setup.azuread_service_principal.msgraph.object_id
+          }
+        }
       })
     })
   }
@@ -145,26 +108,21 @@ run "station-uai-app_role_assignments" {
   module {
     source = "./"
   }
+
+  // Maximum
   assert {
-    condition     = module.user_assigned_identities["maximum"].app_role_assignments["User.Read.All"].app_role_id == "df021288-bdef-4463-88db-98f22de89214" //User.Read.All
+    condition     = module.user_assigned_identities["maximum"].app_role_assignments["User.Read.All"].app_role_id == run.setup.azuread_service_principal.msgraph.app_role_ids["User.Read.All"]
     error_message = "The app role assignments for the user-assigned identity do not match."
   }
 
+  // Minimum
   assert {
-    condition     = try(module.user_assigned_identities["minimum"].app_role_assignments["User.Read.All"], 0) == 0
-    error_message = "The app role assignments for the user-assigned identity should null."
-  }
-
-  assert {
-    condition = alltrue([
-      module.user_assigned_identities["maximum"].role_assignments["subscription_reader"].role_definition_name == var.user_assigned_identities.maximum.role_assignments.subscription_reader.role_definition_name,
-      module.user_assigned_identities["maximum"].role_assignments["subscription_reader"].scope == var.user_assigned_identities.maximum.role_assignments.subscription_reader.scope
-    ])
-    error_message = "The role assignments for the user-assigned identity do not match."
+    condition     = length(module.user_assigned_identities["minimum"].app_role_assignments) == 0
+    error_message = "The app role assignments for the user-assigned identity should be null when `var.user_assigned_identities[*].app_role_assignments` is not configured."
   }
 }
 
-run "station-uai-role_assignments" {
+run "role_assignments" {
   variables {
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
@@ -174,14 +132,12 @@ run "station-uai-role_assignments" {
 
     user_assigned_identities = merge(var.user_assigned_identities, {
       maximum = merge(var.user_assigned_identities.maximum, {
-        group_memberships = {
-          static = run.bootstrap_uai.azuread_group.object_id
-        },
-        role_assignments = merge(var.user_assigned_identities.maximum.role_assignments, {
-          subscription_reader = merge(var.user_assigned_identities.maximum.role_assignments.subscription_reader, {
-            scope = run.bootstrap_uai.current_subscription.id
-          })
-        })
+        role_assignments = {
+          subscription_reader = {
+            role_definition_name = "Reader"
+            scope                = run.bootstrap_uai.current_subscription.id
+          }
+        }
       })
     })
   }
@@ -191,7 +147,7 @@ run "station-uai-role_assignments" {
   }
 
   assert {
-    condition     = try(lenght(module.user_assigned_identities["minimum"].identity.role_assignments), 0) == 0
+    condition     = try(length(module.user_assigned_identities["minimum"].identity.role_assignments), 0) == 0
     error_message = "The minimum user-assigned identity should not have any role assignments."
   }
 
@@ -204,7 +160,7 @@ run "station-uai-role_assignments" {
   }
 }
 
-run "station-uai-group_memberships" {
+run "group_memberships" {
   variables {
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
@@ -216,12 +172,7 @@ run "station-uai-group_memberships" {
       maximum = merge(var.user_assigned_identities.maximum, {
         group_memberships = {
           static = run.bootstrap_uai.azuread_group.object_id
-        },
-        role_assignments = merge(var.user_assigned_identities.maximum.role_assignments, {
-          subscription_reader = merge(var.user_assigned_identities.maximum.role_assignments.subscription_reader, {
-            scope = run.bootstrap_uai.current_subscription.id
-          })
-        })
+        }
       })
     })
   }
@@ -233,18 +184,5 @@ run "station-uai-group_memberships" {
   assert {
     condition     = module.user_assigned_identities["maximum"].group_memberships["static"].group_object_id == run.bootstrap_uai.azuread_group.object_id
     error_message = "The user-assigned identity was not added to the correct static group."
-  }
-
-  assert {
-    condition     = module.user_assigned_identities["maximum"].app_role_assignments["User.Read.All"].app_role_id == "df021288-bdef-4463-88db-98f22de89214" //User.Read.All
-    error_message = "The app role assignments for the user-assigned identity do not match."
-  }
-
-  assert {
-    condition = alltrue([
-      module.user_assigned_identities["maximum"].role_assignments["subscription_reader"].role_definition_name == var.user_assigned_identities.maximum.role_assignments.subscription_reader.role_definition_name,
-      module.user_assigned_identities["maximum"].role_assignments["subscription_reader"].scope == var.user_assigned_identities.maximum.role_assignments.subscription_reader.scope
-    ])
-    error_message = "The role assignments for the user-assigned identity do not match."
   }
 }

@@ -21,8 +21,8 @@ variable "tags" {
 
 variable "app_role_assignments" {
   description = "Application Roles to assign the Managed Identity."
-  type        = set(string)
-  default     = []
+  type        = map(any)
+  default     = {}
 }
 
 variable "group_memberships" {

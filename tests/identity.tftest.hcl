@@ -3,6 +3,7 @@ provider "tfe" {}
 provider "azurerm" {
   features {}
 }
+
 provider "azuread" {}
 
 
@@ -17,6 +18,11 @@ run "bootstrap_create_tfc_test_project" {
   }
 }
 
+run "setup" {
+  module {
+    source = "./tests/setup-common"
+  }
+}
 
 variables {
   tfe = {
@@ -65,10 +71,17 @@ run "identity" {
           description          = "Needed to manage key vaults"
         }
       }
+
       group_memberships = {
         "Station Test Group" = run.bootstrap_create_tfc_test_project.azuread_group["test"].object_id
       }
-      app_role_assignments = ["User.ReadBasic.All"]
+
+      app_role_assignments = {
+        "User.ReadWrite.All" = {
+          app_role_id        = run.setup.azuread_service_principal.msgraph.app_role_ids["User.ReadWrite.All"]
+          resource_object_id = run.setup.azuread_service_principal.msgraph.object_id
+        }
+      }
 
       directory_role_assignments = {
         Reader = {
@@ -101,12 +114,11 @@ run "identity" {
     error_message = "The Landing Zone identity is not a member of the groups passed in via var.identity.group_memberships"
   }
 
-  // TODO: Implement after PR #180 is implemented
-  #// App Role Assignments
-  #assert {
-  #  condition     = length(var.identity.app_role_assignments) == 0
-  #  error_message = "The Landing Zone identity was not assigned all Application Role Assignments from var.identity.app_role_assignments"
-  #}
+  // App Role Assignments
+  assert {
+    condition     = alltrue([for k, v in var.identity.app_role_assignments : module.user_assigned_identity.app_role_assignments[k].app_role_id == v.app_role_id])
+    error_message = "The Landing Zone identity was not assigned all Application Role Assignments from var.identity.app_role_assignments"
+  }
 
   // Directory Role Assignments
   assert {

@@ -1,4 +1,9 @@
-resource "azurerm_role_assignment" "roles" {
+moved {
+  from = azurerm_role_assignment.roles
+  to   = azurerm_role_assignment.this
+}
+
+resource "azurerm_role_assignment" "this" {
   for_each                               = var.role_assignments
   name                                   = each.value.name
   scope                                  = each.value.scope

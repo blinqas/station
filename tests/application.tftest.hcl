@@ -15,6 +15,12 @@ run "bootstrap_create_tfc_test_project" {
   }
 }
 
+run "setup" {
+  module {
+    source = "./tests/setup-common"
+  }
+}
+
 run "bootstrap_application" {
   //This fetches the objectid of the current user
   module {
@@ -162,14 +168,42 @@ variables {
   }
 }
 
+run "app_role_assignments" {
+  module {
+    source = "./"
+  }
+
+  variables {
+    applications = merge(var.applications, {
+      maximum = merge(var.applications.maximum, {
+        owners = [run.setup.azuread_client_config.current.object_id],
+        service_principal = merge(var.applications.maximum.service_principal, {
+          owners = [run.setup.azuread_client_config.current.object_id]
+        })
+      })
+    })
+
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+  }
+
+  assert {
+    condition     = var.applications == {} ? true : module.user_assigned_identity.app_role_assignments["Application.ReadWrite.OwnedBy"].principal_object_id == module.user_assigned_identity.principal_id
+    error_message = "The Landing Zone identity was not assigned Application.ReadWrite.OwnedBy when `var.applications` was configured. These roles are required when managing Entra ID applications."
+  }
+}
+
 run "application-main" {
 
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.bootstrap_application.current.object_id],
+        owners = [run.setup.azuread_client_config.current.object_id],
         service_principal = merge(var.applications.maximum.service_principal, {
-          owners = [run.bootstrap_application.current.object_id]
+          owners = [run.setup.azuread_client_config.current.object_id]
         })
         required_resource_access = merge(var.applications.maximum.required_resource_access, {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
@@ -219,14 +253,14 @@ run "application-main" {
   }
   assert {
     condition = alltrue([
-      module.applications["minimum"].application.identifier_uris == null, //Default value when nothing is provided
+      length(module.applications["minimum"].application.identifier_uris) == 0, //Default value when nothing is provided
       module.applications["maximum"].application.identifier_uris == toset(var.applications.maximum.identifier_uris)
     ])
     error_message = "The var.applications.appName.identifier_uris identifier_uris does not match the identifier uris of the application."
   }
   assert {
     condition = alltrue([
-      module.applications["minimum"].application.group_membership_claims == null, //Default value when nothing is provided
+      length(module.applications["minimum"].application.group_membership_claims) == 0, //Default value when nothing is provided
       module.applications["maximum"].application.group_membership_claims == toset(var.applications.maximum.group_membership_claims)
     ])
     error_message = "The var.applications.appName.group_membership_claims does not match the group membership claims of the application."
@@ -260,9 +294,9 @@ run "application-single_page_application" {
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.bootstrap_application.current.object_id],
+        owners = [run.setup.azuread_client_config.current.object_id],
         service_principal = merge(var.applications.maximum.service_principal, {
-          owners = [run.bootstrap_application.current.object_id]
+          owners = [run.setup.azuread_client_config.current.object_id]
         })
         required_resource_access = merge(var.applications.maximum.required_resource_access, {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
@@ -301,9 +335,9 @@ run "application-api" {
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.bootstrap_application.current.object_id],
+        owners = [run.setup.azuread_client_config.current.object_id],
         service_principal = merge(var.applications.maximum.service_principal, {
-          owners = [run.bootstrap_application.current.object_id]
+          owners = [run.setup.azuread_client_config.current.object_id]
         })
         required_resource_access = merge(var.applications.maximum.required_resource_access, {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
@@ -372,7 +406,7 @@ run "application-required_resource_access" {
       maximum = merge(var.applications.maximum, {
         owners = [run.bootstrap_application.current.object_id],
         service_principal = merge(var.applications.maximum.service_principal, {
-          owners = [run.bootstrap_application.current.object_id]
+          owners = [run.setup.azuread_client_config.current.object_id]
         })
         required_resource_access = merge(var.applications.maximum.required_resource_access, {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
@@ -477,9 +511,9 @@ run "application-optional_claims" {
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.bootstrap_application.current.object_id],
+        owners = [run.setup.azuread_client_config.current.object_id],
         service_principal = merge(var.applications.maximum.service_principal, {
-          owners = [run.bootstrap_application.current.object_id]
+          owners = [run.setup.azuread_client_config.current.object_id]
         })
         required_resource_access = merge(var.applications.maximum.required_resource_access, {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
@@ -570,9 +604,9 @@ run "application-public_client" {
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.bootstrap_application.current.object_id],
+        owners = [run.setup.azuread_client_config.current.object_id],
         service_principal = merge(var.applications.maximum.service_principal, {
-          owners = [run.bootstrap_application.current.object_id]
+          owners = [run.setup.azuread_client_config.current.object_id]
         })
         required_resource_access = merge(var.applications.maximum.required_resource_access, {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
@@ -620,9 +654,9 @@ run "application-web" {
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.bootstrap_application.current.object_id],
+        owners = [run.setup.azuread_client_config.current.object_id],
         service_principal = merge(var.applications.maximum.service_principal, {
-          owners = [run.bootstrap_application.current.object_id]
+          owners = [run.setup.azuread_client_config.current.object_id]
         })
         required_resource_access = merge(var.applications.maximum.required_resource_access, {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
@@ -677,9 +711,9 @@ run "application-service_principal" {
   variables {
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
-        owners = [run.bootstrap_application.current.object_id],
+        owners = [run.setup.azuread_client_config.current.object_id],
         service_principal = merge(var.applications.maximum.service_principal, {
-          owners = [run.bootstrap_application.current.object_id]
+          owners = [run.setup.azuread_client_config.current.object_id]
         })
         required_resource_access = merge(var.applications.maximum.required_resource_access, {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
