@@ -17,7 +17,7 @@ To enable automatic assignment of permissions, we now require the following deta
 
 - The same person who approves the pull request to create the application is often the one who manually grants permissions in Entra ID. Automating this process avoids redundant approval steps.  
 - Reducing the number of resources created in the module helps lower Terraform Cloud (TFC) costs and improves Terraform plan execution time.  
-- Instead of mimicking the `required_resource_access` block definition from the `azuread` provider, we now require users to provide **both** `client_id` and `object_id`. This avoids using a data source to look up missing values, streamlining the module implementation.  
+- Instead of mimicking the `required_resource_access` block definition from the `azuread` provider, we now require users to provide **both** `client_id` and `object_id`. This avoids using a data source to look up missing values, reducing the TFC resource cost and removes redundant API calls  
 
 ## Implementation  
 
@@ -57,7 +57,7 @@ module "example" {
         }
 
         exchange_online = {
-          admin_consent     = true
+          auto_admin_consent     = false
           resource_app_id   = azuread_service_principal.Office365ExchangeOnline.client_id
           resource_object_id = azuread_service_principal.Office365ExchangeOnline.object_id
           resource_access = {
