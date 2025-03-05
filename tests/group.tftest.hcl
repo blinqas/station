@@ -106,7 +106,7 @@ run "app_role_assignments" {
   }
 
   assert {
-    condition     = var.groups == {} ? true : azuread_app_role_assignment.this["User.ReadBasic.All"].principal_object_id == module.user_assigned_identity.principal_id && azuread_app_role_assignment.this["Group.Read.All"].principal_object_id == module.user_assigned_identity.principal_id
+    condition     = var.groups == {} ? true : module.user_assigned_identity.app_role_assignments["User.ReadBasic.All"].principal_object_id == module.user_assigned_identity.principal_id && module.user_assigned_identity.app_role_assignments["Group.Read.All"].principal_object_id == module.user_assigned_identity.principal_id
     error_message = "The Landing Zone identity was not assigned User.ReadBasic.All and Group.Read.All when `var.groups` was configured. These roles are required when managing Entra ID groups."
   }
 }
