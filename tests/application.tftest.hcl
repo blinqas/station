@@ -98,7 +98,7 @@ variables {
           }
         },
         exchange_online = {
-          admin_consent      = true                                   //This should ensure that the app role assigment is not created automatcaly and needs admin consent
+          auto_admin_consent = false                                  //This should ensure that the app role assigment is not created automatcaly and needs admin consent
           resource_app_id    = "00000002-0000-0ff1-ce00-000000000000" //office_365_exchange_online
           resource_object_id = "This should be overridden"            //office_365_exchange_online (azuread_service_principal.Office365ExchangeOnline.object_id)
           resource_access = {
@@ -471,6 +471,7 @@ run "application-required_resource_access" {
     error_message = "The app role has been assigned to the service principal when admin_consent is true. "
   }
 }
+
 run "application-optional_claims" {
 
   variables {

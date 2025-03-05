@@ -181,7 +181,7 @@ locals {
         type               = resource_access.type      # Example: "Role" or "Scope"
         resource_app_id    = access.resource_app_id    # Example: "00000003-0000-0000-c000-000000000000" (Microsoft Graph client/app ID)
         resource_object_id = access.resource_object_id #Example: "38423b0f-3b79-4126-bb05-4f2f123ed55f" (Microsoft Graph objectID for your tenant)
-        admin_consent      = access.admin_consent      # Example: true or false
+        auto_admin_consent = access.auto_admin_consent # Example: true or false
       }
     ] if length(access.resource_access) > 0
   ]) : []
@@ -192,11 +192,11 @@ locals {
     "${entry.resource_app_id}-${entry.id}" => entry
   }
 
-  // Filter out scopes and keep only Role-based assignments where `admin_consent` is false
+  // Filter out scopes and keep only Role-based assignments where `auto_admin_consent` is false
   app_role_to_assign = var.azuread_service_principal != null ? {
     for key, entry in local.required_resource_access_map :
     key => entry
-    if entry.type == "Role" && entry.admin_consent != true
+    if entry.type == "Role" && entry.auto_admin_consent != false
   } : {}
 }
 
