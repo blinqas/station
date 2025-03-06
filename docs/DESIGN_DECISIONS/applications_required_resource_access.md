@@ -5,9 +5,9 @@
 
 ## Context  
 
-Previously, when using `var.applications.app_name.required_resource_access`, only the `resource_app_id` needed to be provided. However, roles were not automatically assigned, requiring a Global Admin to manually grant the necessary permissions in Entra ID after deployment.  
+Prior to v1.12.0 of Station, only the resource_app_id needed to be provided when using var.applications.app_name.required_resource_access. However, roles were not automatically assigned, requiring a Global Admin to manually grant the necessary permissions in Entra ID after deployment.
 
-To enable automatic assignment of permissions, we now require the following details:  
+Automatically grant admin consent for the application’s permissions within the organization by setting `auto_admin_consent = true` on `var.applications.app_name.required_resource_access`.
 
 - The **role ID** (e.g., `User.Read.All`)  
 - The **client ID** of the service principal where permissions should be assigned (e.g., Microsoft Graph)  
@@ -15,9 +15,9 @@ To enable automatic assignment of permissions, we now require the following deta
 
 ## Reasoning  
 
-- The same person who approves the pull request to create the application is often the one who manually grants permissions in Entra ID. Automating this process avoids redundant approval steps.  
-- Reducing the number of resources created in the module helps lower Terraform Cloud (TFC) costs and improves Terraform plan execution time.  
-- Instead of mimicking the `required_resource_access` block definition from the `azuread` provider, we now require users to provide **both** `client_id` and `object_id`. This avoids using a data source to look up missing values, reducing the TFC resource cost and removes redundant API calls  
+- Automating permission granting eliminates redundant approval steps, as the same person often approves the pull request and grants permissions in Entra ID.  
+- Reducing module resources lowers Terraform Cloud (TFC) costs and improves plan execution time.  
+- Users must now provide both client_id and object_id instead of mimicking required_resource_access from the azuread provider. This removes the need for data lookups, cutting TFC costs and redundant API calls.
 
 ## Implementation  
 
@@ -77,12 +77,10 @@ module "example" {
     }
   }
 }
-
-
 ``` 
 
-#### Known Limitations or drawbacks
+### Known Limitations or drawbacks
 - The `var.application` block now differs more from the `azuread_application` resource, which may require additional documentation or user education.
 
-#### Summary  
+## Summary  
 This change enables automatic assignment of application roles to the service principal, eliminating the need for manual consent in Entra ID after deployment. This improves efficiency, reduces redundant approvals, and optimizes resource usage in the module
