@@ -103,17 +103,17 @@ variables {
             },
           }
         },
-        exchange_online = {
+        sharepoint = {
           auto_admin_consent = false                                  //This should ensure that the app role assigment is not created automatcaly and needs admin consent
-          resource_app_id    = "00000002-0000-0ff1-ce00-000000000000" //office_365_exchange_online
-          resource_object_id = "This should be overridden"            //office_365_exchange_online (azuread_service_principal.Office365ExchangeOnline.object_id)
+          resource_app_id    = "0000000a-0000-0000-c000-000000000000" //sharepoint (azuread_service_principal.Office365SharePointOnline.client_id)
+          resource_object_id = "This should be overridden"            //sharepoint (azuread_service_principal.Office365SharePointOnline.object_id)
           resource_access = {
-            delegated_ews_accessasuser_all = {
-              id   = "3b5f3d61-589b-4a3c-a359-5dd4b5ee5bd5"
+            delegated_allsites_fullcontroll = {
+              id   = "56680e0d-d2a3-4ae1-80d8-3c4f2100e3d0"
               type = "Scope"
             },
-            application_ews_accessasuser_all = {
-              id   = "dc890d15-9560-4a4c-9b7f-a736ec74ec40"
+            application_sites_fullcontroll_all = {
+              id   = "678536fe-1083-478a-9c59-b99265e6b0d3"
               type = "Role"
             }
           }
@@ -180,8 +180,17 @@ run "app_role_assignments" {
         service_principal = merge(var.applications.maximum.service_principal, {
           owners = [run.setup.azuread_client_config.current.object_id]
         })
+        required_resource_access = merge(var.applications.maximum.required_resource_access, {
+          graph = merge(var.applications.maximum.required_resource_access.graph, {
+            resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
+          })
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
+          })
+        })
       })
     })
+
 
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
@@ -209,8 +218,8 @@ run "application-main" {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
             resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
           })
-          exchange_online = merge(var.applications.maximum.required_resource_access.exchange_online, {
-            resource_object_id = run.bootstrap_application.Office365ExchangeOnline.object_id
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
           })
         })
       })
@@ -302,8 +311,8 @@ run "application-single_page_application" {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
             resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
           })
-          exchange_online = merge(var.applications.maximum.required_resource_access.exchange_online, {
-            resource_object_id = run.bootstrap_application.Office365ExchangeOnline.object_id
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
           })
         })
       })
@@ -343,8 +352,8 @@ run "application-api" {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
             resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
           })
-          exchange_online = merge(var.applications.maximum.required_resource_access.exchange_online, {
-            resource_object_id = run.bootstrap_application.Office365ExchangeOnline.object_id
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
           })
         })
       })
@@ -412,8 +421,8 @@ run "application-required_resource_access" {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
             resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
           })
-          exchange_online = merge(var.applications.maximum.required_resource_access.exchange_online, {
-            resource_object_id = run.bootstrap_application.Office365ExchangeOnline.object_id
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
           })
         })
       })
@@ -501,7 +510,7 @@ run "application-required_resource_access" {
 
   # Verify that the app role has not been assigned when "admin_consent" is true
   assert {
-    condition     = !can(module.applications["maximum"].app_role_assignments["${var.applications.maximum.required_resource_access["exchange_online"].resource_app_id}-${var.applications.maximum.required_resource_access["exchange_online"].resource_access["application_ews_accessasuser_all"].id}"])
+    condition     = !can(module.applications["maximum"].app_role_assignments["${var.applications.maximum.required_resource_access["sharepoint"].resource_app_id}-${var.applications.maximum.required_resource_access["sharepoint"].resource_access["application_sites_fullcontroll_all"].id}"])
     error_message = "The app role has been assigned to the service principal when admin_consent is true. "
   }
 }
@@ -519,8 +528,8 @@ run "application-optional_claims" {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
             resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
           })
-          exchange_online = merge(var.applications.maximum.required_resource_access.exchange_online, {
-            resource_object_id = run.bootstrap_application.Office365ExchangeOnline.object_id
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
           })
         })
       })
@@ -612,8 +621,8 @@ run "application-public_client" {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
             resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
           })
-          exchange_online = merge(var.applications.maximum.required_resource_access.exchange_online, {
-            resource_object_id = run.bootstrap_application.Office365ExchangeOnline.object_id
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
           })
         })
       })
@@ -662,8 +671,8 @@ run "application-web" {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
             resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
           })
-          exchange_online = merge(var.applications.maximum.required_resource_access.exchange_online, {
-            resource_object_id = run.bootstrap_application.Office365ExchangeOnline.object_id
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
           })
         })
       })
@@ -719,8 +728,8 @@ run "application-service_principal" {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
             resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
           })
-          exchange_online = merge(var.applications.maximum.required_resource_access.exchange_online, {
-            resource_object_id = run.bootstrap_application.Office365ExchangeOnline.object_id
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
           })
         })
       })
