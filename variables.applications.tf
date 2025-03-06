@@ -61,7 +61,6 @@ variable "applications" {
         use_existing                  = false
       }
     }
-  EOF
   EOT
   default     = {}
   type = map(object({
