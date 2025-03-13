@@ -1,10 +1,10 @@
 provider "tfe" {}
 
+provider "azuread" {}
+
 provider "azurerm" {
   features {}
 }
-
-provider "azuread" {}
 
 run "bootstrap_create_tfc_test_project" {
   variables {
@@ -84,30 +84,43 @@ variables {
         ]
       }
 
-      required_resource_access = [
-        {
-          resource_app_id = "00000003-0000-0000-c000-000000000000" //MicrosoftGraph
+      required_resource_access = {
+        graph = {
+          resource_app_id    = "00000003-0000-0000-c000-000000000000" //MicrosoftGraph (azuread_service_principal.MicrosoftGraph.client_id)
+          resource_object_id = "This should be overridden"            //MicrosoftGraph (azuread_service_principal.MicrosoftGraph.object_id)
           resource_access = {
             application_group_read_all = {
               id   = "5b567255-7703-4780-807c-7be8301ae99b"
               type = "Role"
             },
+            application_user_read_all = {
+              id   = "df021288-bdef-4463-88db-98f22de89214"
+              type = "Role"
+            }
             delegated_user_read = {
               id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d"
               type = "Scope"
             },
           }
         },
-        {
-          resource_app_id = "00000002-0000-0ff1-ce00-000000000000" //office_365_exchange_online
+        sharepoint = {
+          auto_admin_consent = false                                  //This should ensure that the app role assigment is not created automatcaly and needs admin consent
+          resource_app_id    = "0000000a-0000-0000-c000-000000000000" //sharepoint (azuread_service_principal.Office365SharePointOnline.client_id)
+          resource_object_id = "This should be overridden"            //sharepoint (azuread_service_principal.Office365SharePointOnline.object_id)
           resource_access = {
-            delegated_ews_accessasuser_all = {
-              id   = "3b5f3d61-589b-4a3c-a359-5dd4b5ee5bd5"
+            delegated_allsites_fullcontroll = {
+              id   = "56680e0d-d2a3-4ae1-80d8-3c4f2100e3d0"
               type = "Scope"
             },
+            application_sites_fullcontroll_all = {
+              id   = "678536fe-1083-478a-9c59-b99265e6b0d3"
+              type = "Role"
+            }
           }
         }
-      ]
+      }
+
+
 
       optional_claims = {
         access_token = [{ name = "Test token" }, { name = "Test token 2" }]
@@ -131,7 +144,7 @@ variables {
       service_principal = {
         account_enabled               = true
         alternative_names             = ["alt_name1", "alt_name2"]
-        app_role_assignment_required  = false
+        app_role_assignment_required  = true
         description                   = "Service Principal for Station Test: Maximum"
         login_url                     = "http://localhost/login"
         notes                         = "Notes for Service Principal"
@@ -167,8 +180,17 @@ run "app_role_assignments" {
         service_principal = merge(var.applications.maximum.service_principal, {
           owners = [run.setup.azuread_client_config.current.object_id]
         })
+        required_resource_access = merge(var.applications.maximum.required_resource_access, {
+          graph = merge(var.applications.maximum.required_resource_access.graph, {
+            resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
+          })
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
+          })
+        })
       })
     })
+
 
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
@@ -191,6 +213,14 @@ run "application-main" {
         owners = [run.setup.azuread_client_config.current.object_id],
         service_principal = merge(var.applications.maximum.service_principal, {
           owners = [run.setup.azuread_client_config.current.object_id]
+        })
+        required_resource_access = merge(var.applications.maximum.required_resource_access, {
+          graph = merge(var.applications.maximum.required_resource_access.graph, {
+            resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
+          })
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
+          })
         })
       })
     })
@@ -277,6 +307,14 @@ run "application-single_page_application" {
         service_principal = merge(var.applications.maximum.service_principal, {
           owners = [run.setup.azuread_client_config.current.object_id]
         })
+        required_resource_access = merge(var.applications.maximum.required_resource_access, {
+          graph = merge(var.applications.maximum.required_resource_access.graph, {
+            resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
+          })
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
+          })
+        })
       })
     })
 
@@ -309,6 +347,14 @@ run "application-api" {
         owners = [run.setup.azuread_client_config.current.object_id],
         service_principal = merge(var.applications.maximum.service_principal, {
           owners = [run.setup.azuread_client_config.current.object_id]
+        })
+        required_resource_access = merge(var.applications.maximum.required_resource_access, {
+          graph = merge(var.applications.maximum.required_resource_access.graph, {
+            resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
+          })
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
+          })
         })
       })
     })
@@ -371,6 +417,14 @@ run "application-required_resource_access" {
         service_principal = merge(var.applications.maximum.service_principal, {
           owners = [run.setup.azuread_client_config.current.object_id]
         })
+        required_resource_access = merge(var.applications.maximum.required_resource_access, {
+          graph = merge(var.applications.maximum.required_resource_access.graph, {
+            resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
+          })
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
+          })
+        })
       })
     })
 
@@ -397,7 +451,7 @@ run "application-required_resource_access" {
     error_message = "The number of required_resource_access entries does not match whats provided in var.applications.maximum.required_resource_access."
   }
 
-  # 2Assert that each resource_app_id in expected exists in actual
+  # Assert that each resource_app_id in expected exists in actual
   assert {
     condition = alltrue([
       for expected in var.applications.maximum.required_resource_access :
@@ -443,8 +497,24 @@ run "application-required_resource_access" {
     ])
     error_message = "One or more resource_access entries do not match in id or type."
   }
+  #Verify that the resource_access that is if type "Application/Role" has been assigned to the service principal and is approved when admin_consent is false
+  assert {
+    condition     = module.applications["maximum"].app_role_assignments["${var.applications.maximum.required_resource_access["graph"].resource_app_id}-${var.applications.maximum.required_resource_access["graph"].resource_access["application_group_read_all"].id}"].app_role_id == var.applications.maximum.required_resource_access["graph"].resource_access["application_group_read_all"].id
+    error_message = "The required_resource_access for the Role permission has not been assiged to the service principal"
+  }
 
+  assert {
+    condition     = module.applications["maximum"].app_role_assignments["${var.applications.maximum.required_resource_access["graph"].resource_app_id}-${var.applications.maximum.required_resource_access["graph"].resource_access["application_user_read_all"].id}"].app_role_id == var.applications.maximum.required_resource_access["graph"].resource_access["application_user_read_all"].id
+    error_message = "The required_resource_access for application_user_read_all Role permission has not been assigned to the service principal"
+  }
+
+  # Verify that the app role has not been assigned when "admin_consent" is true
+  assert {
+    condition     = !can(module.applications["maximum"].app_role_assignments["${var.applications.maximum.required_resource_access["sharepoint"].resource_app_id}-${var.applications.maximum.required_resource_access["sharepoint"].resource_access["application_sites_fullcontroll_all"].id}"])
+    error_message = "The app role has been assigned to the service principal when admin_consent is true. "
+  }
 }
+
 run "application-optional_claims" {
 
   variables {
@@ -453,6 +523,14 @@ run "application-optional_claims" {
         owners = [run.setup.azuread_client_config.current.object_id],
         service_principal = merge(var.applications.maximum.service_principal, {
           owners = [run.setup.azuread_client_config.current.object_id]
+        })
+        required_resource_access = merge(var.applications.maximum.required_resource_access, {
+          graph = merge(var.applications.maximum.required_resource_access.graph, {
+            resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
+          })
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
+          })
         })
       })
     })
@@ -539,8 +617,17 @@ run "application-public_client" {
         service_principal = merge(var.applications.maximum.service_principal, {
           owners = [run.setup.azuread_client_config.current.object_id]
         })
+        required_resource_access = merge(var.applications.maximum.required_resource_access, {
+          graph = merge(var.applications.maximum.required_resource_access.graph, {
+            resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
+          })
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
+          })
+        })
       })
     })
+
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
@@ -580,8 +667,17 @@ run "application-web" {
         service_principal = merge(var.applications.maximum.service_principal, {
           owners = [run.setup.azuread_client_config.current.object_id]
         })
+        required_resource_access = merge(var.applications.maximum.required_resource_access, {
+          graph = merge(var.applications.maximum.required_resource_access.graph, {
+            resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
+          })
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
+          })
+        })
       })
     })
+
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
@@ -628,8 +724,17 @@ run "application-service_principal" {
         service_principal = merge(var.applications.maximum.service_principal, {
           owners = [run.setup.azuread_client_config.current.object_id]
         })
+        required_resource_access = merge(var.applications.maximum.required_resource_access, {
+          graph = merge(var.applications.maximum.required_resource_access.graph, {
+            resource_object_id = run.bootstrap_application.MicrosoftGraph.object_id
+          })
+          sharepoint = merge(var.applications.maximum.required_resource_access.sharepoint, {
+            resource_object_id = run.bootstrap_application.Office365SharePointOnline.object_id
+          })
+        })
       })
     })
+
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
