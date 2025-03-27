@@ -107,8 +107,8 @@ resource "azurerm_virtual_network_peering" "from" {
 resource "azurerm_virtual_hub_connection" "this" {
   provider                  = azurerm.connectivity
   for_each                  = var.connectivity
-  name                      = each.virtual_hub_connection.name
-  virtual_hub_id            = each.virtual_hub_connection.id
+  name                      = each.value.virtual_hub_connection.name
+  virtual_hub_id            = each.value.virtual_hub_connection.id
   remote_virtual_network_id = azurerm_virtual_network.this[each.key].id
 }
 
