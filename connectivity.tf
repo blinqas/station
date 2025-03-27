@@ -1,3 +1,10 @@
+resource "azurerm_network_security_group" "this" {
+  name                = "nsg-${tfe.project_name}"
+  location            = azurerm_resource_group.workload.location
+  resource_group_name = azurerm_resource_group.workload.name
+  tags                = local.tags
+}
+
 resource "azurerm_virtual_network" "this" {
   for_each                       = var.connectivity
   name                           = each.value.virtual_network_name
@@ -25,7 +32,7 @@ resource "azurerm_virtual_network" "this" {
     content {
       name                            = subnet.value.name
       address_prefixes                = subnet.value.address_prefixes
-      security_group                  = subnet.value.security_group
+      security_group                  = azurerm_network_security_group.this.id
       default_outbound_access_enabled = subnet.value.default_outbound_access_enabled
 
       dynamic "delegation" {
