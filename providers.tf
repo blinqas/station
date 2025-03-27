@@ -2,8 +2,9 @@ terraform {
   required_version = "~> 1.6"
   required_providers {
     azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~>4.15"
+      source                = "hashicorp/azurerm"
+      version               = "~>4.15"
+      configuration_aliases = [azurerm.connectivity]
     }
 
     azuread = {
@@ -17,3 +18,4 @@ terraform {
     }
   }
 }
+
