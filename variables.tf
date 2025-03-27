@@ -279,7 +279,7 @@ variable "connectivity" {
       triggers = optional(object({
         remote_address_space = string
       }))
-    })))
+    })), {})
     virtual_hub_connection = optional(object({
       name = string
       id   = string
