@@ -1,5 +1,5 @@
 resource "azurerm_network_security_group" "this" {
-  name                = "nsg-${tfe.project_name}"
+  name                = "nsg-${var.tfe.workspace_name}-${var.environment_name}"
   location            = azurerm_resource_group.workload.location
   resource_group_name = azurerm_resource_group.workload.name
   tags                = local.tags
