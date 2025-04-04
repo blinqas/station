@@ -12,6 +12,11 @@ resource "azurerm_role_assignment" "lz_owner" {
   principal_type       = "ServicePrincipal"
 }
 
+moved {
+  from = azurerm_role_assignment.user_input
+  to   = azurerm_role_assignment.lz_identity
+}
+
 // Role Assignments for the Landing Zone identity (via var.identity.role_assignments)
 resource "azurerm_role_assignment" "lz_identity" {
   for_each                               = local.role_assignments_merged
