@@ -30,7 +30,7 @@ locals {
 
 moved {
   from = azuread_app_role_assignment.app_workload_roles
-  to   = user_assigned_identity.azuread_app_role_assignment.this["Application.ReadWrite.OwnedBy"]
+  to   = module.user_assigned_identity.azuread_app_role_assignment.this["Application.ReadWrite.OwnedBy"]
 }
 
 module "user_assigned_identity" {
