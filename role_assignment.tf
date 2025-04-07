@@ -4,6 +4,11 @@ moved {
   to   = azurerm_role_assignment.lz_owner["default"]
 }
 
+moved {
+  from = azurerm_role_assignment.rg_user_specified
+  to   = azurerm_role_assignment.lz_owner
+}
+
 resource "azurerm_role_assignment" "lz_owner" {
   for_each             = merge({ default = azurerm_resource_group.workload }, azurerm_resource_group.user_specified)
   scope                = each.value.id
