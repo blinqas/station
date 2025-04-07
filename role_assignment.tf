@@ -1,7 +1,7 @@
 # Assign the Landing Zone identity Owner on this Landing Zone's resource groups
 moved {
   from = azurerm_role_assignment.rg_workload_owner
-  to   = azurerm_role_assignment.lz_owner
+  to   = azurerm_role_assignment.lz_owner["default"]
 }
 
 resource "azurerm_role_assignment" "lz_owner" {
