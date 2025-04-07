@@ -1,6 +1,11 @@
 # Assign the Landing Zone identity Owner on this Landing Zone's resource groups
 moved {
   from = azurerm_role_assignment.rg_workload_owner
+  to   = azurerm_role_assignment.lz_owner["default"]
+}
+
+moved {
+  from = azurerm_role_assignment.rg_user_specified
   to   = azurerm_role_assignment.lz_owner
 }
 
@@ -10,6 +15,11 @@ resource "azurerm_role_assignment" "lz_owner" {
   principal_id         = module.user_assigned_identity.principal_id
   role_definition_name = "Owner"
   principal_type       = "ServicePrincipal"
+}
+
+moved {
+  from = azurerm_role_assignment.user_input
+  to   = azurerm_role_assignment.lz_identity
 }
 
 // Role Assignments for the Landing Zone identity (via var.identity.role_assignments)
