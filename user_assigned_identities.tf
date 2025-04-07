@@ -28,6 +28,11 @@ locals {
   )
 }
 
+moved {
+  from = azuread_app_role_assignment.app_workload_roles
+  to   = user_assigned_identity.azuread_app_role_assignment.this["Application.ReadWrite.OwnedBy"]
+}
+
 module "user_assigned_identity" {
   name                       = var.identity.name == null ? "mi-${var.tfe.workspace_name}-${var.environment_name}" : var.identity.name
   source                     = "./user_assigned_identity"
