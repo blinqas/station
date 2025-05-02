@@ -66,7 +66,7 @@ variable "groups" {
     description      = optional(string)
     owners           = optional(list(string))
     members          = optional(set(string))
-    security_enabled = optional(bool)
+    security_enabled = optional(bool, true)
     mail_enabled     = optional(bool)
     types            = optional(set(string))
     dynamic_membership = optional(object({
