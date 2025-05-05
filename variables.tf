@@ -150,7 +150,6 @@ variable "tfe" {
   - Either of tfe.vcs_repo.(oauth_token_id|github_app_installation_id) must be provided, both can not be used at the same time.
   - tfe.workspace_env_vars lets you configure Environment Variables for the Terraform Cloud runtime environment
   - tfe.workspace_vars lets you configure Terraform variables
-  - tfe.module_outputs_to_workspace_var.(groups|applications|user_assigned_identities) sets output from the respective 
     resource into respective Terraform variables on the Terraform Cloud workspace. Useful when you need group object ids
     for the groups Station Deployments provisioned in your workload environment.
   - tfe.workspace_settings lets you configure the workspace settings like agent_pool_id and execution_mode. If agent_pool_id is provided, execution_mode must be set to "agent".
@@ -190,13 +189,6 @@ variable "tfe" {
       hcl         = optional(bool, false)
       sensitive   = optional(bool, false)
     })))
-    module_outputs_to_workspace_var = optional(object({
-      groups                   = optional(bool)
-      applications             = optional(bool)
-      user_assigned_identities = optional(bool)
-      resource_groups          = optional(bool)
-      role_definitions         = optional(bool)
-    }))
   })
 }
 

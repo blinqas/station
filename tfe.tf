@@ -62,8 +62,6 @@ module "station-tfe" {
       sensitive   = false
     }
     },
-    # Optionals
-    #var.tfe.module_outputs_to_workspace_var.groups ? {
     try(length(module.ad_groups) > 0) ? {
       groups = {
         value = replace(jsonencode({ for k, v in module.ad_groups : k => {
