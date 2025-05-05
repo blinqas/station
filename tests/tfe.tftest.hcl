@@ -184,7 +184,7 @@ run "tfe_workspace_variables" {
 
 }
 
-run "tfe_module_outputs_to_workspace_var" {
+run "tfe_outputs_to_workspace_variables" {
 
   variables {
     // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
@@ -239,18 +239,21 @@ run "tfe_module_outputs_to_workspace_var" {
   }
 
   assert {
-    condition     = module.station-tfe.workspace_variables.applications["minimum_tfe_test"].display_name == var.applications["minimum_tfe_test"].display_name
+    # We have to parse the hcl string to get the variable as a terraform object 
+    condition = jsondecode(replace(module.station-tfe.workspace_variables.applications.value, "/(\\\"[^\"]+\\\") =/", "$1:"))["minimum_tfe_test"].display_name == var.applications["minimum_tfe_test"].display_name
     error_message = "The application name did not match the input variable"
   }
 
   assert {
-    condition     = module.station-tfe.workspace_variables.applications["minimum_tfe_test"].client_id != null
+    # We have to parse the hcl string to get the variable as a terraform object 
+    condition = jsondecode(replace(module.station-tfe.workspace_variables.applications.value, "/(\\\"[^\"]+\\\") =/", "$1:"))["minimum_tfe_test"].client_id != null
     error_message = "The application client_id is null"
   }
 
   assert {
-    condition     = module.station-tfe.workspace_variables.applications["minimum_tfe_test"].principal_id != null
-    error_message = "The application principal_id is null"
+    # We have to parse the hcl string to get the variable as a terraform object 
+    condition = jsondecode(replace(module.station-tfe.workspace_variables.applications.value, "/(\\\"[^\"]+\\\") =/", "$1:"))["minimum_tfe_test"].object_id != null
+    error_message = "The application object_id is null"
   }
 
   assert {
