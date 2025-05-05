@@ -239,17 +239,17 @@ run "tfe_module_outputs_to_workspace_var" {
   }
 
   assert {
-    condition     = module.station-tfe.workspace_variables.applications.minimum_tfe_test.display_name == var.applications.minimum_tfe_test.display_name
+    condition     = module.station-tfe.workspace_variables.applications["minimum_tfe_test"].display_name == var.applications["minimum_tfe_test"].display_name
     error_message = "The application name did not match the input variable"
   }
 
   assert {
-    condition     = module.station-tfe.workspace_variables.applications.minimum_tfe_test.client_id != null
+    condition     = module.station-tfe.workspace_variables.applications["minimum_tfe_test"].client_id != null
     error_message = "The application client_id is null"
   }
 
   assert {
-    condition     = module.station-tfe.workspace_variables.applications.minimum_tfe_test.principal_id != null
+    condition     = module.station-tfe.workspace_variables.applications["minimum_tfe_test"].principal_id != null
     error_message = "The application principal_id is null"
   }
 
