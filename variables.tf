@@ -222,11 +222,12 @@ variable "role_assignments" {
 
 variable "connectivity" {
   description = <<EOF
-    Use this block to configure connectivity of this Landing Zone. Connectivity can be virtual networks, subnets, and even peerings to other virtual networks.
+    Use this block to configure connectivity of this Landing Zone. Connectivity can be virtual networks, subnets, peerings to other virtual networks and VWAN hub connections.
 
     Limitations:
     - Connecting Virtual Networks in different resource groups managed by this landing zone is currently unavailable. Configure this manually in the landing zone configuration.
     - The key used for a peering object must be unique across all connectivity objects
+    - Delete or rename operation on `.subnets.*.security_group_name` will fail because AzureRM does not delete the NSG association _before_ it attempts to re-create the NSG. I believe this is a limitation of the `azurerm_virtual_network` resource.
   EOF
   default     = {}
   type = map(object({
@@ -304,5 +305,15 @@ variable "connectivity" {
     }))
     })
   )
+
+  validation {
+    error_message = "subnets: only one of `security_group_id` or `security_group_name` may be set for each subnet."
+    condition = alltrue(([
+      for k, v in var.connectivity : alltrue([
+        // Return false (failing) if both security_group_id and security_group_name is set
+        for kk, snet in v.subnets : !(snet.security_group_id != null && snet.security_group_name != null)
+      ])
+    ]))
+  }
 }
 
