@@ -1,6 +1,21 @@
+locals {
+  // https://developer.hashicorp.com/terraform/language/functions/flatten#flattening-nested-structures-for-for_each
+  subnets_with_nsg_raw = flatten([
+    for connKey, conn in var.connectivity : [
+      for subnetKey, subnet in conn.subnets : merge(subnet, {
+        "compositeKey" = format("%s_%s", connKey, subnetKey)
+      }) if subnet.security_group_name != null
+    ]
+  ])
+
+  subnets_with_nsg = tomap({
+    for subnet in local.subnets_with_nsg_raw : subnet.compositeKey => subnet
+  })
+}
+
 resource "azurerm_network_security_group" "this" {
-  for_each            = var.connectivity
-  name                = "nsg-${each.value.virtual_network_name}"
+  for_each            = local.subnets_with_nsg
+  name                = each.value.security_group_name
   location            = azurerm_resource_group.workload.location
   resource_group_name = azurerm_resource_group.workload.name
   tags                = local.tags
@@ -31,9 +46,16 @@ resource "azurerm_virtual_network" "this" {
     for_each = each.value.subnets
 
     content {
-      name                            = subnet.value.name
-      address_prefixes                = subnet.value.address_prefixes
-      security_group                  = azurerm_network_security_group.this[each.key].id
+      name             = subnet.value.name
+      address_prefixes = subnet.value.address_prefixes
+      // Use value from `var.connectivity.subnets.this.security_group_id
+      // fallback to resolved id of `var.connectivity.subnets.this.security_group_name`
+      // fallback to null.
+      // In essence 
+      // security_group_id > security_group_name > null
+      security_group = try(subnet.value.security_group_id, try(
+        azurerm_network_security_group.this["${each.key}_${subnet.key}"].id, null
+      ))
       default_outbound_access_enabled = subnet.value.default_outbound_access_enabled
 
       dynamic "delegation" {
@@ -48,7 +70,6 @@ resource "azurerm_virtual_network" "this" {
             content {
               name    = service_delegation.value[0].name
               actions = service_delegation.value[0].actions
-
             }
           }
         }
@@ -112,11 +133,50 @@ resource "azurerm_virtual_network_peering" "from" {
   virtual_network_name                   = regex("([^//]+)$", each.value.remote_virtual_network_id)[0] // Extract Virtual Network name from Resource ID
 }
 
+locals {
+  # Generates a map of VWAN Hub Connections from `var.connectivity` where a Hub Connection is
+  # configured. This is required as virtual_hub_connections is an optional object in `var.connectivity`.
+  virtual_hub_connections = { for k, v in var.connectivity : k => merge(v.virtual_hub_connection, {
+    remote_virtual_network_id = azurerm_virtual_network.this[k].id
+  }) if !(v.virtual_hub_connection == null) }
+}
+
 resource "azurerm_virtual_hub_connection" "this" {
   provider                  = azurerm.connectivity
-  for_each                  = var.connectivity
-  name                      = each.value.virtual_hub_connection.name
-  virtual_hub_id            = each.value.virtual_hub_connection.id
-  remote_virtual_network_id = azurerm_virtual_network.this[each.key].id
+  for_each                  = local.virtual_hub_connections
+  name                      = each.value.name
+  virtual_hub_id            = each.value.id
+  remote_virtual_network_id = each.value.remote_virtual_network_id
+  internet_security_enabled = each.value.internet_security_enabled
+
+  dynamic "routing" {
+    for_each = each.value.routing == null ? [] : [each.value.routing]
+
+    content {
+      associated_route_table_id                   = routing.value[0].associated_route_table_id
+      inbound_route_map_id                        = routing.value[0].inbound_route_map_id
+      outbound_route_map_id                       = routing.value[0].outbound_route_map_id
+      static_vnet_local_route_override_criteria   = routing.value[0].static_vnet_local_route_override_criteria
+      static_vnet_propagate_static_routes_enabled = routing.value[0].static_vnet_propagate_static_routes_enabled
+
+      dynamic "propagated_route_table" {
+        for_each = routing.value[0].propogated_routed_table == null ? [] : [routing.value[0].propogated_routed_table]
+
+        content {
+          labels          = propogated_route_table.value[0].labels
+          route_table_ids = propogated_route_table.value[0].route_table_ids
+        }
+      }
+
+      dynamic "static_vnet_route" {
+        for_each = routing.value[0].static_vnet_route == null ? [] : [routing.value[0].static_vnet_route]
+        content {
+          name                = static_vnet.value[0].name
+          address_prefixes    = static_vnet.value[0].address_prefixes
+          next_hop_ip_address = static_vnet.value[0].next_hop_ip_address
+        }
+      }
+    }
+  }
 }
 

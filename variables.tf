@@ -248,9 +248,10 @@ variable "connectivity" {
     flow_timeout_in_minutes        = optional(string)
     private_endpoint_vnet_policies = optional(string, "Disabled")
     subnets = map(object({
-      name             = string
-      address_prefixes = list(string)
-      security_group   = optional(string)
+      name                = string
+      address_prefixes    = list(string)
+      security_group_id   = optional(string)
+      security_group_name = optional(string)
       delegation = optional(map(object({
         name = string
         service_delegation = object({
@@ -281,8 +282,25 @@ variable "connectivity" {
       }))
     })), {})
     virtual_hub_connection = optional(object({
-      name = string
-      id   = string
+      name                      = string
+      id                        = string
+      internet_security_enabled = optional(bool, false)
+      routing = optional(object({
+        associated_route_table_id = optional(string)
+        inbound_route_map_id      = optional(string)
+        outbound_route_map_id     = optional(string)
+        propogated_route_table = optional(object({
+          labels          = optional(list(string))
+          route_table_ids = optional(list(string))
+        }))
+        static_vnet_local_route_override_criteria   = optional(string, "Contains")
+        static_vnet_propogate_static_routes_enabled = optional(bool, true)
+        static_vnet_route = optional(object({
+          name                = optional(string)
+          address_prefixes    = optional(list(string))
+          next_hop_ip_address = optional(string)
+        }))
+      }))
     }))
     })
   )
