@@ -228,6 +228,7 @@ variable "connectivity" {
     - Connecting Virtual Networks in different resource groups managed by this landing zone is currently unavailable. Configure this manually in the landing zone configuration.
     - The key used for a peering object must be unique across all connectivity objects
     - Delete or rename operation on `.subnets.*.security_group_name` will fail because AzureRM does not delete the NSG association _before_ it attempts to re-create the NSG. I believe this is a limitation of the `azurerm_virtual_network` resource.
+    - The VWAN Virtual Hub peering option can only peer to VWAN Hubs that are in the configured `azurerm.connectivity` subscription.
   EOF
   default     = {}
   type = map(object({
