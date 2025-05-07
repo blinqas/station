@@ -7,7 +7,7 @@ locals {
   */
   required_app_roles = merge(
     // Ensure Managed Identity has required permissions to read basic user information when the caller wants to create Entra ID Groups. Having only "Owner" on the group is not sufficient (even though the Terraform Provider docs says so).
-    var.groups == {} ? {} : {
+    length(var.groups) == 0 ? {} : {
       "User.ReadBasic.All" = {
         app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["User.ReadBasic.All"]
         resource_object_id = data.azuread_service_principal.msgraph.object_id
@@ -19,13 +19,18 @@ locals {
     },
 
     # When `var.applications` is specified, ensure the Landing Zone Identity have the correct permissions so it can manage it in their landing zone configuration.
-    var.applications == {} ? {} : {
+    length(var.applications) == 0 ? {} : {
       "Application.ReadWrite.OwnedBy" = {
         app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["Application.ReadWrite.OwnedBy"]
         resource_object_id = data.azuread_service_principal.msgraph.object_id
       }
     }
   )
+}
+
+moved {
+  from = azuread_app_role_assignment.app_workload_roles
+  to   = module.user_assigned_identity.azuread_app_role_assignment.this["Application.ReadWrite.OwnedBy"]
 }
 
 module "user_assigned_identity" {
