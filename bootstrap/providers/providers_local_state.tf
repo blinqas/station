@@ -7,7 +7,7 @@ terraform {
 
     azuread = {
       source  = "hashicorp/azuread"
-      version = ">= 2.45, < 4"
+      version = "~>3.0"
     }
 
     tfe = {
@@ -34,4 +34,5 @@ provider "tfe" {
 provider "github" {
   #GITHUB_TOKEN enviorment varible has to be set for auth
   #GITHUB_OWNER enviorment varible has to be set to select correct org
-}  
+}
+
