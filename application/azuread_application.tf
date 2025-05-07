@@ -1,4 +1,8 @@
-resource "azuread_application" "app" {
+moved {
+  from = azuread_application.app
+  to   = azuread_application.this
+}
+resource "azuread_application" "this" {
   display_name                   = var.azuread_application.display_name
   owners                         = var.owners
   sign_in_audience               = var.azuread_application.sign_in_audience
@@ -50,15 +54,13 @@ resource "azuread_application" "app" {
   }
 
   dynamic "required_resource_access" {
-    for_each = var.azuread_application.required_resource_access == null ? [] : var.azuread_application.required_resource_access
+    for_each = var.azuread_application.required_resource_access == null ? {} : var.azuread_application.required_resource_access
 
     content {
       resource_app_id = required_resource_access.value.resource_app_id
 
       dynamic "resource_access" {
-        for_each = {
-          for key, resource in required_resource_access.value.resource_access : key => resource
-        }
+        for_each = required_resource_access.value.resource_access == null ? {} : required_resource_access.value.resource_access
 
         content {
           id   = resource_access.value.id
@@ -67,6 +69,7 @@ resource "azuread_application" "app" {
       }
     }
   }
+
 
   dynamic "optional_claims" {
     for_each = var.azuread_application.optional_claims == null ? [] : [var.azuread_application.optional_claims]
@@ -122,12 +125,20 @@ resource "azuread_application" "app" {
       }
     }
   }
+  lifecycle {
+    ignore_changes = [app_role]
+  }
 }
 
-resource "azuread_service_principal" "sp" {
+moved {
+  from = azuread_service_principal.sp
+  to   = azuread_service_principal.this
+}
+
+resource "azuread_service_principal" "this" {
   count = var.azuread_service_principal == null ? 0 : 1
 
-  client_id                     = azuread_application.app.client_id
+  client_id                     = azuread_application.this.client_id
   account_enabled               = var.azuread_service_principal.account_enabled
   alternative_names             = var.azuread_service_principal.alternative_names
   app_role_assignment_required  = var.azuread_service_principal.app_role_assignment_required
@@ -158,3 +169,41 @@ resource "azuread_service_principal" "sp" {
   }
 }
 
+/* 
+Auto consent application roles by assiging the requested roles to the service principal
+*/
+
+locals {
+  required_resource_access = var.azuread_application.required_resource_access != null ? flatten([
+    for access_key, access in var.azuread_application.required_resource_access : [
+      for resource_access_key, resource_access in access.resource_access : {
+        id                 = resource_access.id        # Example: "df021288-bdef-4463-88db-98f22de89214" (User.Read.All)
+        type               = resource_access.type      # Example: "Role" or "Scope"
+        resource_app_id    = access.resource_app_id    # Example: "00000003-0000-0000-c000-000000000000" (Microsoft Graph client/app ID)
+        resource_object_id = access.resource_object_id #Example: "38423b0f-3b79-4126-bb05-4f2f123ed55f" (Microsoft Graph objectID for your tenant)
+        auto_admin_consent = access.auto_admin_consent # Example: true or false
+      }
+    ] if length(access.resource_access) > 0
+  ]) : []
+
+  // Convert the list of objects to a map with a unique key
+  required_resource_access_map = {
+    for entry in local.required_resource_access :
+    "${entry.resource_app_id}-${entry.id}" => entry
+  }
+
+  // Filter out scopes and keep only Role-based assignments where `auto_admin_consent` is false
+  app_role_to_assign = var.azuread_service_principal != null ? {
+    for key, entry in local.required_resource_access_map :
+    key => entry
+    if entry.type == "Role" && entry.auto_admin_consent != false
+  } : {}
+}
+
+resource "azuread_app_role_assignment" "this" {
+  for_each = local.app_role_to_assign
+
+  app_role_id         = each.value.id
+  principal_object_id = azuread_service_principal.this[0].object_id
+  resource_object_id  = each.value.resource_object_id
+}

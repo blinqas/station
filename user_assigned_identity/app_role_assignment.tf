@@ -1,15 +1,13 @@
-data "azuread_application_published_app_ids" "well_known" {}
-
-resource "azuread_service_principal" "msgraph" {
-  client_id    = data.azuread_application_published_app_ids.well_known.result.MicrosoftGraph
-  use_existing = true
+moved {
+  from = azuread_app_role_assignment.app_workload_roles
+  to   = azuread_app_role_assignment.this
 }
 
-resource "azuread_app_role_assignment" "app_workload_roles" {
+resource "azuread_app_role_assignment" "this" {
   for_each            = var.app_role_assignments
-  app_role_id         = azuread_service_principal.msgraph.app_role_ids[each.value]
+  app_role_id         = each.value.app_role_id
   principal_object_id = azurerm_user_assigned_identity.identity.principal_id
-  resource_object_id  = azuread_service_principal.msgraph.object_id
+  resource_object_id  = each.value.resource_object_id
 }
 
 

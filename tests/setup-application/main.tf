@@ -18,3 +18,24 @@ resource "random_uuid" "max" {
 output "uuid_max" {
   value = random_uuid.max
 }
+
+data "azuread_application_published_app_ids" "well_known" {}
+
+
+data "azuread_service_principal" "MicrosoftGraph" {
+  client_id = data.azuread_application_published_app_ids.well_known.result["MicrosoftGraph"]
+}
+
+data "azuread_service_principal" "Office365SharePointOnline" {
+  client_id = data.azuread_application_published_app_ids.well_known.result["Office365SharePointOnline"]
+}
+
+
+output "MicrosoftGraph" {
+  value = data.azuread_service_principal.MicrosoftGraph
+}
+
+output "Office365SharePointOnline" {
+  value = data.azuread_service_principal.Office365SharePointOnline
+}
+
