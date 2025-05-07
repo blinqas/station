@@ -30,13 +30,6 @@ variables {
       agent_pool_id  = null # Not adding this as it will require us to setup a private runner
     }
 
-    module_outputs_to_workspace_var = {
-      applications             = true
-      groups                   = true
-      user_assigned_identities = true
-      resource_groups          = true
-    }
-
     workspace_vars = {
       #Test environment variables
       tfe_test_env_var_1 = {
@@ -75,37 +68,6 @@ variables {
       }
     }
   }
-  # Added to be able to test the passing of the created groups into the TFC workspace variables
-  groups = {
-    minimal_tfe_test = {
-      display_name     = "Station test: groups minimal"
-      security_enabled = true
-    }
-  }
-
-  # Added to be able to test the passing of the created user_assigned_identities into the TFC workspace variables
-  user_assigned_identities = {
-    minimum_tfe = {
-      name = "tfe-tests"
-    }
-  }
-  # Added to be able to test the passing of the created resource_groups into the TFC workspace variables
-  resource_groups = {
-    test_rg = {
-      name     = "station_tfe_test_rg",
-      location = "norwayeast"
-      tags = {
-        testkey1 = "testValue1",
-        testkey2 = "testValue2"
-      }
-    }
-  }
-  # Adding the different modules to test the tfe.module_outputs_to_workspace_var
-  applications = {
-    minimum_tfe_test = {
-      display_name = "Station test tfe: minimum"
-    }
-  }
 }
 
 
@@ -119,7 +81,6 @@ run "tfe_create_workspace" {
       })
     })
   }
-
 
   module {
     source = "./"
@@ -223,7 +184,7 @@ run "tfe_workspace_variables" {
 
 }
 
-run "tfe_module_outputs_to_workspace_var" {
+run "tfe_outputs_to_workspace_variables" {
 
   variables {
     // Insert the real project id from the generted tfe_project resource in setup-tfe-project (Test module)
@@ -232,6 +193,38 @@ run "tfe_module_outputs_to_workspace_var" {
         id = run.bootstrap_create_tfc_test_project.id
       })
     })
+
+    applications = {
+      minimum_tfe_test = {
+        display_name = "Station test tfe: minimum"
+      }
+    }
+
+    resource_groups = {
+      test_rg = {
+        name     = "station_tfe_test_rg",
+        location = "norwayeast"
+        tags = {
+          testkey1 = "testValue1",
+          testkey2 = "testValue2"
+        }
+      }
+    }
+
+    # Added to be able to test the passing of the created groups into the TFC workspace variables
+    groups = {
+      minimal_tfe_test = {
+        display_name     = "Station test: groups minimal"
+        security_enabled = true
+      }
+    }
+
+    # Added to be able to test the passing of the created user_assigned_identities into the TFC workspace variables
+    user_assigned_identities = {
+      minimum_tfe = {
+        name = "tfe-tests"
+      }
+    }
   }
 
   #This should output the the creat
@@ -239,11 +232,30 @@ run "tfe_module_outputs_to_workspace_var" {
     source = "./"
   }
 
-  # Assertions for the output variable from the application
+  # Assertions for the workspace variable when applications are created
   assert {
     condition     = module.station-tfe.workspace_variables.applications.value != null
-    error_message = "The application output variable is empty. "
+    error_message = "No applications where added to the workspace variables"
   }
+
+  assert {
+    # We have to parse the hcl string to get the variable as a terraform object 
+    condition     = jsondecode(replace(module.station-tfe.workspace_variables.applications.value, "/(\\\"[^\"]+\\\") =/", "$1:"))["minimum_tfe_test"].display_name == var.applications["minimum_tfe_test"].display_name
+    error_message = "The application name did not match the input variable"
+  }
+
+  assert {
+    # We have to parse the hcl string to get the variable as a terraform object 
+    condition     = jsondecode(replace(module.station-tfe.workspace_variables.applications.value, "/(\\\"[^\"]+\\\") =/", "$1:"))["minimum_tfe_test"].client_id != null
+    error_message = "The application client_id is null"
+  }
+
+  assert {
+    # We have to parse the hcl string to get the variable as a terraform object 
+    condition     = jsondecode(replace(module.station-tfe.workspace_variables.applications.value, "/(\\\"[^\"]+\\\") =/", "$1:"))["minimum_tfe_test"].object_id != null
+    error_message = "The application object_id is null"
+  }
+
   assert {
     condition     = module.station-tfe.workspace_variables.applications.hcl == true
     error_message = "The application workspace variable is not of type hcl"
