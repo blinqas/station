@@ -53,9 +53,10 @@ resource "azurerm_virtual_network" "this" {
       // fallback to null.
       // In essence 
       // security_group_id > security_group_name > null
-      security_group = try(subnet.value.security_group_id, try(
-        azurerm_network_security_group.this["${each.key}_${subnet.key}"].id, null
-      ))
+      security_group = try(coalesce(
+        subnet.value.security_group_id,
+        azurerm_network_security_group.this["${each.key}_${subnet.key}"].id
+      ), null)
       default_outbound_access_enabled = subnet.value.default_outbound_access_enabled
 
       dynamic "delegation" {
@@ -160,7 +161,7 @@ resource "azurerm_virtual_hub_connection" "this" {
       static_vnet_propagate_static_routes_enabled = routing.value[0].static_vnet_propagate_static_routes_enabled
 
       dynamic "propagated_route_table" {
-        for_each = routing.value[0].propogated_routed_table == null ? [] : [routing.value[0].propogated_routed_table]
+        for_each = routing.value[0].propogated_route_table == null ? [] : [routing.value[0].propogated_route_table]
 
         content {
           labels          = propogated_route_table.value[0].labels
