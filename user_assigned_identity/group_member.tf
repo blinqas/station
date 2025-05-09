@@ -11,7 +11,7 @@ resource "terraform_data" "this" {
 }
 
 resource "time_sleep" "this" {
-  depends_on      = [terraform_data.this]
   create_duration = "30s"
+  depends_on      = [terraform_data.this]
 }
 
