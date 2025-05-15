@@ -4,6 +4,10 @@ provider "azurerm" {
 }
 provider "azuread" {}
 
+test {
+  parallel = true
+}
+
 run "bootstrap_create_tfc_test_project" {
   variables {
     tfc_project_name = "tests_group"
