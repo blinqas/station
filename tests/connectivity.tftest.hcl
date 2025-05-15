@@ -6,6 +6,9 @@ provider "azurerm" {
 
 provider "azuread" {}
 
+test {
+  parallel = true
+}
 
 run "setup_create_hub_vnet" {
   variables {
