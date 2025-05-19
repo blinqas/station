@@ -186,25 +186,3 @@ set -e TF_CLOUD_ORGANIZATION
 set -e TF_WORKSPACE
 ```
 
----
-
-Why this exists
-
-HCP Terraform binds GitHub App installations to user accounts, not organizations. This bootstrap process creates persistent service accounts and application bindings, so deployments don’t break when users leave.
-
----
-
-Next Steps
-
-Now that Station is bootstrapped, you can:
-	•	Deploy new Landing Zones on demand
-	•	Let teams manage infrastructure via GitHub PRs
-	•	Automate secure Azure provisioning using OIDC
-
----
-
-Resources
-	•	Station Docs
-	•	Terraform Cloud API
-	•	GitHub App Docs
-
