@@ -61,8 +61,7 @@ Use this account for all GitHub App actions below.
 
 Used by Terraform to manage GitHub (via `integrations/github` provider)
 
-1. Create a new GitHub App at  
-   `https://github.com/organizations/<your-org>/settings/apps/new`
+1. Create a new GitHub App at `https://github.com/organizations/<your-org>/settings/apps/new`
 
    Recommended settings:
    - Name: `Station LZ (Org Name)`
