@@ -14,17 +14,11 @@ variable "default_location" {
   type        = string
 }
 
-variable "environment_name" {
-  description = "The name of the deployment environment for the workload. Ex: dev/staging/production"
-  default     = "dev"
-  type        = string
-}
-
 variable "resource_group_name" {
   description = <<EOF
     The name of the workload resource group. The final name is prefixed with `rg-`.
 
-    If a value is not provided, Station will set the name to `rg-var.tfe.workspace_name-var.environment_name`
+    If a value is not provided, Station will set the name to `rg-var.tfe.workspace_name`
   EOF
   default     = null
   type        = string
@@ -47,7 +41,6 @@ variable "tags" {
     Station configures the following map in tags.tf:
     {
       "station-id"  = random_id.workload.hex
-      "environment" = var.environment_name
     }
   EOF
   default     = {}
