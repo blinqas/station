@@ -264,7 +264,7 @@ variable "connectivity" {
       triggers = optional(object({
         remote_address_space = string
       }))
-    })))
+    })), {})
     })
   )
 }

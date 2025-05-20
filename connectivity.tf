@@ -35,11 +35,11 @@ resource "azurerm_virtual_network" "this" {
           name = delegation.value.name
 
           dynamic "service_delegation" {
-            for_each = delegation.value.service_delegation == null ? [] : [delegation.value.service_delegation]
+            for_each = delegation.value.service_delegation == null ? [] : [1]
 
             content {
-              name    = service_delegation.value[0].name
-              actions = service_delegation.value[0].actions
+              name    = delegation.value.service_delegation.name
+              actions = delegation.value.service_delegation.actions
 
             }
           }
