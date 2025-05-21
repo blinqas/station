@@ -22,7 +22,7 @@ config = {
   }
 
   github = {
-    owner       = ""
+    owner       = "" # Organization
     repository  = "alz-applications"
     description = "Terraform Configuration for Application Landing Zones"
     branch      = "main"
