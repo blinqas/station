@@ -25,16 +25,12 @@ provider "azurerm" {
 }
 
 provider "github" {
-  owner = var.config.github.owner
+  owner = var.github_owner
   app_auth {
-    id              = var.config.github.provider.id
-    installation_id = var.config.github.provider.installation_id
+    id              = var.github_app_id
+    installation_id = var.github_app_installation_id
     pem_file        = base64decode(var.github_app_pem_file)
   }
 }
 
-provider "tfe" {
-  organization = var.config.terraform_cloud.organization_name
-  token        = var.tfe_token
-}
-
+provider "tfe" {}
