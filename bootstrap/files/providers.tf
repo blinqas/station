@@ -24,6 +24,8 @@ provider "azurerm" {
   features {}
 }
 
+provider "azuread" {}
+
 provider "github" {
   owner = var.github_owner
   app_auth {
