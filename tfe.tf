@@ -8,8 +8,7 @@ module "station-tfe" {
   workspace_settings    = try(var.tfe.workspace_settings, null)
   vcs_repo              = try(var.tfe.vcs_repo, null)
   file_triggers_enabled = try(var.tfe.vcs_repo.tags_regex, null) == null ? true : false # if tags_regex is supplied, set to false, this removes an uneccessary step
-  workspace_vars = merge(try(var.tfe.workspace_vars, {}), {
-    # Terraform variables are prefixed with TF_VAR_ to suppress TFC Runner warning of unused variables.
+  global_vars = merge(try(var.tfe.global_vars, {}), {
     station_id = {
       value       = random_id.workload.hex
       category    = "terraform"
@@ -17,6 +16,21 @@ module "station-tfe" {
       hcl         = false
       sensitive   = false
     },
+    ARM_SUBSCRIPTION_ID = {
+      value       = var.subscription_id
+      category    = "env"
+      description = "The Subscription ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
+      sensitive   = false
+    },
+    ARM_TENANT_ID = {
+      value       = var.tenant_id
+      category    = "env"
+      description = "The Azure Tenant ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
+      sensitive   = false
+    }
+    }
+  )
+  workspace_vars = merge(try(var.tfe.workspace_vars, {}), {
     workload_resource_group_name = {
       value       = azurerm_resource_group.workload.name
       category    = "terraform"
@@ -42,18 +56,7 @@ module "station-tfe" {
       description = "The client ID for the Service Principal / Application used when authenticating to Azure. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-terraform-cloud"
       sensitive   = false
     },
-    ARM_SUBSCRIPTION_ID = {
-      value       = var.subscription_id
-      category    = "env"
-      description = "The Subscription ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
-      sensitive   = false
-    },
-    ARM_TENANT_ID = {
-      value       = var.tenant_id
-      category    = "env"
-      description = "The Azure Tenant ID to connect to. https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/azure-configuration#configure-the-azurerm-or-azuread-provider"
-      sensitive   = false
-    }
+
     },
     try(length(module.ad_groups) > 0) ? {
       groups = {

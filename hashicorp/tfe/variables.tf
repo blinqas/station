@@ -38,6 +38,17 @@ variable "workspace_vars" {
   }))
   default = null
 }
+variable "global_vars" {
+  description = "Map of variables to provision on the workspace in Terraform Cloud"
+  type = map(object({
+    value       = any
+    category    = string
+    description = string
+    hcl         = optional(bool, false)
+    sensitive   = optional(bool, false)
+  }))
+  default = null
+}
 
 variable "vcs_repo" {
   description = "Settings for the workspace's VCS repository, enabling the UI/VCS-driven run workflow."
