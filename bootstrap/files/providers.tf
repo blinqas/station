@@ -17,7 +17,7 @@ terraform {
       version = "~>0.65"
     }
   }
-   cloud {}
+  cloud {}
 }
 
 provider "azurerm" {
