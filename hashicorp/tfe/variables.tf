@@ -39,7 +39,7 @@ variable "workspace_vars" {
   default = null
 }
 variable "global_vars" {
-  description = "Map of variables to provision on the workspace in Terraform Cloud"
+  description = "Map of variables defined at the organization level, shared across all workspaces."
   type = map(object({
     value       = any
     category    = string
