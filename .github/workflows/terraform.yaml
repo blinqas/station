@@ -103,5 +103,5 @@ jobs:
         - name: Terraform init
           run: terraform init
           
-        - name: Terraform test
-          run: terraform test -parallelism=10
+        - name: Run test file ${{ matrix.test_file }}
+          run: terraform test -filter=${{ matrix.test_file }}
