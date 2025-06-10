@@ -211,8 +211,7 @@ variable "connectivity" {
 
     Limitations:
     - Connecting Virtual Networks in different resource groups managed by this landing zone is currently unavailable. Configure this manually in the landing zone configuration.
-    - The key used for a peering object must be unique across all connectivity objects
-    - Delete or rename operation on `.subnets.*.security_group_name` will fail because AzureRM does not delete the NSG association _before_ it attempts to re-create the NSG. I believe this is a limitation of the `azurerm_virtual_network` resource.
+    - The key used for a peering object must be unique across all connectivity objects.
     - The VWAN Virtual Hub peering option can only peer to VWAN Hubs that are in the configured `azurerm.connectivity` subscription.
   EOF
   default     = {}
@@ -223,6 +222,7 @@ variable "connectivity" {
     resource_group_name  = optional(string)
     location             = optional(string)
     bgp_community        = optional(string)
+    security_group_name  = optional(string)
     ddos_protection_plan = optional(object({
       id     = string
       enable = string
@@ -235,10 +235,8 @@ variable "connectivity" {
     flow_timeout_in_minutes        = optional(string)
     private_endpoint_vnet_policies = optional(string, "Disabled")
     subnets = map(object({
-      name                = string
-      address_prefixes    = list(string)
-      security_group_id   = optional(string)
-      security_group_name = optional(string)
+      name             = string
+      address_prefixes = list(string)
       delegation = optional(map(object({
         name = string
         service_delegation = object({
@@ -291,15 +289,5 @@ variable "connectivity" {
     }))
     })
   )
-
-  validation {
-    error_message = "subnets: only one of `security_group_id` or `security_group_name` may be set for each subnet."
-    condition = alltrue(([
-      for k, v in var.connectivity : alltrue([
-        // Return false (failing) if both security_group_id and security_group_name is set
-        for kk, snet in v.subnets : !(snet.security_group_id != null && snet.security_group_name != null)
-      ])
-    ]))
-  }
 }
 

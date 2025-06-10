@@ -1,26 +1,3 @@
-locals {
-  // https://developer.hashicorp.com/terraform/language/functions/flatten#flattening-nested-structures-for-for_each
-  subnets_with_nsg_raw = flatten([
-    for connKey, conn in var.connectivity : [
-      for subnetKey, subnet in conn.subnets : merge(subnet, {
-        "compositeKey" = format("%s_%s", connKey, subnetKey)
-      }) if subnet.security_group_name != null
-    ]
-  ])
-
-  subnets_with_nsg = tomap({
-    for subnet in local.subnets_with_nsg_raw : subnet.compositeKey => subnet
-  })
-}
-
-resource "azurerm_network_security_group" "this" {
-  for_each            = local.subnets_with_nsg
-  name                = each.value.security_group_name
-  location            = azurerm_resource_group.workload.location
-  resource_group_name = azurerm_resource_group.workload.name
-  tags                = local.tags
-}
-
 resource "azurerm_virtual_network" "this" {
   for_each                       = var.connectivity
   name                           = each.value.virtual_network_name
@@ -41,49 +18,66 @@ resource "azurerm_virtual_network" "this" {
       enforcement = encryption.value[0].enforcement
     }
   }
+}
 
-  dynamic "subnet" {
-    for_each = each.value.subnets
+# Network Security Group(s)
+// Create NSG only if var.connectivity[subnet].security_group_name is supplied.
+resource "azurerm_network_security_group" "this" {
+  for_each            = { for k, v in var.connectivity : k => v if v.security_group_name != null }
+  name                = each.value.security_group_name
+  resource_group_name = azurerm_resource_group.workload.name
+  location            = azurerm_resource_group.workload.location
+}
 
+// Associate NSG with Subnets only if var.connectivity[subnet].security_group_name is supplied.
+resource "azurerm_subnet_network_security_group_association" "this" {
+  for_each                  = { for k, v in local.subnets : k => v if var.connectivity[v.network_key].security_group_name != null }
+  network_security_group_id = azurerm_network_security_group.this[each.value.network_key].id
+  subnet_id                 = azurerm_subnet.this[each.key].id
+}
+
+# Subnet(s)
+locals {
+  subnets_flatten = flatten([
+    for network_key, network in var.connectivity : [
+      for subnet_key, subnet in network.subnets : merge(subnet, {
+        network_key = network_key
+        network_id  = azurerm_virtual_network.this[network_key].id
+        subnet_key  = subnet_key
+      })
+    ]
+  ])
+  subnets = tomap({
+    for subnet in local.subnets_flatten : "${subnet.network_key}.${subnet.subnet_key}" => subnet
+  })
+}
+
+resource "azurerm_subnet" "this" {
+  for_each                                      = local.subnets
+  name                                          = each.value.name
+  resource_group_name                           = azurerm_virtual_network.this[each.value.network_key].resource_group_name
+  virtual_network_name                          = azurerm_virtual_network.this[each.value.network_key].name
+  address_prefixes                              = each.value.address_prefixes
+  default_outbound_access_enabled               = each.value.default_outbound_access_enabled
+  private_endpoint_network_policies             = each.value.private_endpoint_network_policies
+  private_link_service_network_policies_enabled = each.value.private_link_service_network_policies_enabled
+  service_endpoints                             = each.value.service_endpoints
+  service_endpoint_policy_ids                   = each.value.service_endpoint_policy_ids
+
+  dynamic "delegation" {
+    for_each = each.value.delegation == null ? {} : each.value.delegation
     content {
-      name             = subnet.value.name
-      address_prefixes = subnet.value.address_prefixes
-      // Use value from `var.connectivity.subnets.this.security_group_id
-      // fallback to resolved id of `var.connectivity.subnets.this.security_group_name`
-      // fallback to null.
-      // In essence 
-      // security_group_id > security_group_name > null
-      security_group = try(coalesce(
-        subnet.value.security_group_id,
-        azurerm_network_security_group.this["${each.key}_${subnet.key}"].id
-      ), null)
-      default_outbound_access_enabled = subnet.value.default_outbound_access_enabled
+      name = delegation.value.name
 
-      dynamic "delegation" {
-        for_each = subnet.value.delegation == null ? {} : subnet.value.delegation
-
-        content {
-          name = delegation.value.name
-
-          dynamic "service_delegation" {
-            for_each = delegation.value.service_delegation == null ? [] : [1]
-
-            content {
-              name    = delegation.value.service_delegation.name
-              actions = delegation.value.service_delegation.actions
-            }
-          }
-        }
+      service_delegation {
+        name    = delegation.value.service_delegation.name
+        actions = delegation.value.service_delegation.actions
       }
-      private_endpoint_network_policies             = subnet.value.private_endpoint_network_policies
-      private_link_service_network_policies_enabled = subnet.value.private_link_service_network_policies_enabled
-      route_table_id                                = subnet.value.route_table_id
-      service_endpoints                             = subnet.value.service_endpoints
-      service_endpoint_policy_ids                   = subnet.value.service_endpoint_policy_ids
     }
   }
 }
 
+// Virtual Network Peering(s)
 locals {
   // Collect all peerings objects from all var.connectivity entries into one map
   // See https://developer.hashicorp.com/terraform/language/functions/flatten#flattening-nested-structures-for-for_each
