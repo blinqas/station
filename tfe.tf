@@ -24,13 +24,6 @@ module "station-tfe" {
       hcl         = false
       sensitive   = false
     },
-    environment_name = {
-      value       = var.environment_name
-      category    = "terraform"
-      description = "Name of the current deployment environment. Often dev/test/stage/prod."
-      hcl         = false
-      sensitive   = false
-    },
     tags = {
       value       = replace(jsonencode(local.tags), "/(\".*?\"):/", "$1 = ")
       category    = "terraform"
@@ -62,8 +55,6 @@ module "station-tfe" {
       sensitive   = false
     }
     },
-    # Optionals
-    #var.tfe.module_outputs_to_workspace_var.groups ? {
     try(length(module.ad_groups) > 0) ? {
       groups = {
         value = replace(jsonencode({ for k, v in module.ad_groups : k => {
@@ -79,8 +70,10 @@ module "station-tfe" {
     try(length(module.applications) > 0) ? {
       applications = {
         value = replace(jsonencode({ for k, v in module.applications : k => {
-          client_id = v.application.client_id
-          object_id = v.application.object_id
+          id           = v.application.id
+          display_name = v.application.display_name
+          client_id    = v.application.client_id
+          object_id    = v.application.object_id
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "User Assigned Identities provisioned by Station"

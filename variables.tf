@@ -14,17 +14,11 @@ variable "default_location" {
   type        = string
 }
 
-variable "environment_name" {
-  description = "The name of the deployment environment for the workload. Ex: dev/staging/production"
-  default     = "dev"
-  type        = string
-}
-
 variable "resource_group_name" {
   description = <<EOF
     The name of the workload resource group. The final name is prefixed with `rg-`.
 
-    If a value is not provided, Station will set the name to `rg-var.tfe.workspace_name-var.environment_name`
+    If a value is not provided, Station will set the name to `rg-var.tfe.workspace_name`
   EOF
   default     = null
   type        = string
@@ -47,7 +41,6 @@ variable "tags" {
     Station configures the following map in tags.tf:
     {
       "station-id"  = random_id.workload.hex
-      "environment" = var.environment_name
     }
   EOF
   default     = {}
@@ -150,7 +143,6 @@ variable "tfe" {
   - Either of tfe.vcs_repo.(oauth_token_id|github_app_installation_id) must be provided, both can not be used at the same time.
   - tfe.workspace_env_vars lets you configure Environment Variables for the Terraform Cloud runtime environment
   - tfe.workspace_vars lets you configure Terraform variables
-  - tfe.module_outputs_to_workspace_var.(groups|applications|user_assigned_identities) sets output from the respective 
     resource into respective Terraform variables on the Terraform Cloud workspace. Useful when you need group object ids
     for the groups Station Deployments provisioned in your workload environment.
   - tfe.workspace_settings lets you configure the workspace settings like agent_pool_id and execution_mode. If agent_pool_id is provided, execution_mode must be set to "agent".
@@ -190,13 +182,6 @@ variable "tfe" {
       hcl         = optional(bool, false)
       sensitive   = optional(bool, false)
     })))
-    module_outputs_to_workspace_var = optional(object({
-      groups                   = optional(bool)
-      applications             = optional(bool)
-      user_assigned_identities = optional(bool)
-      resource_groups          = optional(bool)
-      role_definitions         = optional(bool)
-    }))
   })
 }
 

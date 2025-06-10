@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.6"
+  required_version = "~> 1.9"
   required_providers {
     azurerm = {
       source                = "hashicorp/azurerm"
@@ -9,12 +9,12 @@ terraform {
 
     azuread = {
       source  = "hashicorp/azuread"
-      version = "~>2.45"
+      version = "~>3.0"
     }
 
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.6"
+      version = "~>3.6"
     }
   }
 }
