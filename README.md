@@ -115,10 +115,12 @@ MIT
 | <a name="output_client_id"></a> [client\_id](#output\_client\_id) | n/a |
 | <a name="output_groups"></a> [groups](#output\_groups) | n/a |
 | <a name="output_landing_zone_identity"></a> [landing\_zone\_identity](#output\_landing\_zone\_identity) | n/a |
+| <a name="output_network_security_groups"></a> [network\_security\_groups](#output\_network\_security\_groups) | n/a |
 | <a name="output_peerings"></a> [peerings](#output\_peerings) | n/a |
 | <a name="output_resource_group"></a> [resource\_group](#output\_resource\_group) | n/a |
 | <a name="output_resource_groups_user_specified"></a> [resource\_groups\_user\_specified](#output\_resource\_groups\_user\_specified) | n/a |
 | <a name="output_role_assignments"></a> [role\_assignments](#output\_role\_assignments) | Map of role assignments.<br/><br/>    - lz\_owner: Owner role assignment on the default landing zone resource group<br/>    - lz\_identity: Role assignments created through `var.identity.role_assignment`<br/>    - others: Role assignments created through `var.role_assignments` |
+| <a name="output_subnets"></a> [subnets](#output\_subnets) | n/a |
 | <a name="output_subscription_id"></a> [subscription\_id](#output\_subscription\_id) | n/a |
 | <a name="output_tenant_id"></a> [tenant\_id](#output\_tenant\_id) | n/a |
 | <a name="output_tfe"></a> [tfe](#output\_tfe) | n/a |
