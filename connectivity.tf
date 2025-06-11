@@ -27,6 +27,7 @@ resource "azurerm_network_security_group" "this" {
   name                = each.value.security_group_name
   resource_group_name = azurerm_resource_group.workload.name
   location            = azurerm_resource_group.workload.location
+  tags                = local.tags
 }
 
 // Associate NSG with Subnets only if var.connectivity[subnet].security_group_name is supplied.
