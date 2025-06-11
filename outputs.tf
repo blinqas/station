@@ -50,6 +50,14 @@ output "virtual_networks" {
   value = azurerm_virtual_network.this
 }
 
+output "subnets" {
+  value = azurerm_subnet.this
+}
+
+output "network_security_groups" {
+  value = azurerm_network_security_group.this
+}
+
 output "peerings" {
   value = {
     to   = azurerm_virtual_network_peering.to
