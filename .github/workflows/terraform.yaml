@@ -77,6 +77,8 @@ jobs:
       matrix:
         test_file: ${{ fromJson(needs.list_test_files.outputs.test_files) }}
       max-parallel: 10
+    continue-on-error: true # Ensures that the other tests continue even if one fails.
+
     env:
         TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
         TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
