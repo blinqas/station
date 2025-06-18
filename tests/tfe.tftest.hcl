@@ -95,7 +95,7 @@ run "tfe_create_workspace" {
   }
 
   assert {
-    condition     = module.station-tfe.workspace.description == "Workspace description"
+    condition     = module.station-tfe.workspace.description == "Workspace description for var.tfe"
     error_message = "The workspace description does NOT match the input"
   }
 
