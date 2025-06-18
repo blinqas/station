@@ -13,7 +13,7 @@ test {
 
 run "bootstrap_create_tfc_test_project" {
   variables {
-    tfc_project_name = "tests_application"
+    tfc_project_name = "tests_applications"
   }
   module {
     source = "./tests/setup-tfe-project"
@@ -38,11 +38,11 @@ variables {
   tfe = {
     project = {
       id   = "# Overridden"
-      name = "tests_group"
+      name = "tests_applications"
     }
     organization_name     = "blinq-west-lab"
     workspace_name        = "application_test"
-    workspace_description = "Workspace description"
+    workspace_description = "Workspace description for var.applications"
     workspace_settings = {
       execution_mode = "remote"
     }

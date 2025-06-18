@@ -12,7 +12,7 @@ test {
 
 run "bootstrap_create_tfc_test_project" {
   variables {
-    tfc_project_name = "Station Tests for identity"
+    tfc_project_name = "tests_identity"
     create_ad_group  = true
   }
 
