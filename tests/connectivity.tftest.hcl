@@ -22,7 +22,7 @@ run "setup_create_hub_vnet" {
   }
 }
 
-run "bootstrap_create_tfc_test_project" {
+run "setup_create_tfc_test_project" {
   variables {
     tfc_project_name = "test_peering"
   }
@@ -96,16 +96,6 @@ variables {
 
 }
 
-run "setup_create_tfc_test_project" {
-  variables {
-    tfc_project_name = "test_peering"
-  }
-  module {
-    source = "./tests/setup-tfe-project"
-  }
-}
-
-
 run "station-connectivity" {
   variables {
     // Overide the min network to use the outputed vnet ID from the setup_create_hub_vnet module
@@ -126,10 +116,10 @@ run "station-connectivity" {
         })
       })
     })
-    // Override project ID from `bootstrap_create_tfc_test_project`
+    // Override project ID from `setup_create_tfc_test_project`
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
-        id = run.bootstrap_create_tfc_test_project.id
+        id = run.setup_create_tfc_test_project.id
       })
     })
   }
