@@ -71,7 +71,6 @@ jobs:
   terraform_test:
     environment: E2E_testing
     needs: ["validate", "list_test_files"]
-    concurrency: terraform-test-group
     runs-on: ubuntu-latest
     name: 🥼 Terraform tests
     strategy:
