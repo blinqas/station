@@ -64,11 +64,13 @@ jobs:
       - id: set-matrix
         run: |
           files=$(find tests -name '*.tftest.hcl' | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          echo "test_files=$files" >> $GITHUB_OUTPUT     
+          echo "Found test files: $files"
+          printf 'test_files=%s\n' "$files" >> "$GITHUB_OUTPUT"
+  
 
   terraform_test:
     environment: E2E_testing
-    needs: validate
+    needs: ["validate", "list_test_files"]
     concurrency: terraform-test-group
     runs-on: ubuntu-latest
     name: 🥼 Terraform tests
