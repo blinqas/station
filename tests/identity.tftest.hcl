@@ -131,7 +131,7 @@ run "identity" {
 
   // Name is set correctly
   assert {
-    condition     = module.user_assigned_identity.name == "mi-${var.tfe.workspace_name}-${var.environment_name}"
+    condition     = module.user_assigned_identity.name == "mi-${var.tfe.workspace_name}"
     error_message = "The Landing Zone identity is not given the correct default name of..."
   }
 }
