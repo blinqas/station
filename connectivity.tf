@@ -156,11 +156,11 @@ resource "azurerm_virtual_hub_connection" "this" {
       static_vnet_propagate_static_routes_enabled = routing.value[0].static_vnet_propagate_static_routes_enabled
 
       dynamic "propagated_route_table" {
-        for_each = routing.value[0].propogated_route_table == null ? [] : [routing.value[0].propogated_route_table]
+        for_each = routing.value[0].propagated_route_table == null ? [] : [routing.value[0].propagated_route_table]
 
         content {
-          labels          = propogated_route_table.value[0].labels
-          route_table_ids = propogated_route_table.value[0].route_table_ids
+          labels          = propagated_route_table.value[0].labels
+          route_table_ids = propagated_route_table.value[0].route_table_ids
         }
       }
 
