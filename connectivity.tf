@@ -167,9 +167,9 @@ resource "azurerm_virtual_hub_connection" "this" {
       dynamic "static_vnet_route" {
         for_each = routing.value[0].static_vnet_route == null ? [] : [routing.value[0].static_vnet_route]
         content {
-          name                = static_vnet.value[0].name
-          address_prefixes    = static_vnet.value[0].address_prefixes
-          next_hop_ip_address = static_vnet.value[0].next_hop_ip_address
+          name                = static_vnet_route.value[0].name
+          address_prefixes    = static_vnet_route.value[0].address_prefixes
+          next_hop_ip_address = static_vnet_route.value[0].next_hop_ip_address
         }
       }
     }
