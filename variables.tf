@@ -289,5 +289,26 @@ variable "connectivity" {
     }))
     })
   )
+
+  validation {
+    condition = length(
+      distinct(
+        flatten([
+          for vnet_key, vnet in var.connectivity : [
+            for peering_key, peering in lookup(vnet, "peerings", {}) : 
+              "${vnet_key}:${peering_key}"
+          ]
+        ])
+      )
+    ) == length(
+      flatten([
+        for vnet_key, vnet in var.connectivity : [
+          for peering_key, peering in lookup(vnet, "peerings", {}) : 
+            "${vnet_key}:${peering_key}"
+        ]
+      ])
+    )
+    error_message = "The key used for a peering object must be unique across all connectivity objects."
+  }
 }
 
