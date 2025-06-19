@@ -295,16 +295,16 @@ variable "connectivity" {
       distinct(
         flatten([
           for vnet_key, vnet in var.connectivity : [
-            for peering_key, peering in lookup(vnet, "peerings", {}) : 
-              "${vnet_key}:${peering_key}"
+            for peering_key, peering in lookup(vnet, "peerings", {}) :
+            "${vnet_key}:${peering_key}"
           ]
         ])
       )
-    ) == length(
+      ) == length(
       flatten([
         for vnet_key, vnet in var.connectivity : [
-          for peering_key, peering in lookup(vnet, "peerings", {}) : 
-            "${vnet_key}:${peering_key}"
+          for peering_key, peering in lookup(vnet, "peerings", {}) :
+          "${vnet_key}:${peering_key}"
         ]
       ])
     )
