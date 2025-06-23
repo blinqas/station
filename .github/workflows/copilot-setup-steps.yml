@@ -1,0 +1,54 @@
+# Copilot Setup Steps
+# https://docs.github.com/en/copilot/customizing-copilot/customizing-the-development-environment-for-copilot-coding-agent
+name: "Copilot Setup Steps"
+
+# Automatically run the setup steps when they are changed to allow for easy validation, and
+# allow manual testing through the repository's "Actions" tab
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
+  copilot-setup-steps:
+    environment: E2E_testing
+    runs-on: ubuntu-latest
+    env:
+        TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
+        TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+    # Set the permissions to the lowest permissions possible needed for your steps.
+    # Copilot will be given its own token for its operations.
+    permissions:
+      # If you want to clone the repository as part of your setup steps, for example to install dependencies, you'll need the `contents: read` permission. If you don't clone the repository in your setup steps, Copilot will do this for you automatically after the steps complete.
+      id-token: write
+      contents: read
+
+    # You can define any steps you want, and they will run before the agent starts.
+    # If you do not check out your code, Copilot will do this for you.
+    steps:
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id:       ${{ secrets.AZ_CLIENT_ID }}
+          subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+          tenant-id:       ${{ secrets.AZ_TENANT_ID }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Append Github Actions Run ID to Terraform Cloud Project Name
+        run: echo "TF_VAR_tfc_project_name=${{ secrets.TF_VAR_TFC_PROJECT_NAME }}-${{ github.run_id }}-tests" >> $GITHUB_ENV
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.10.0"
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+      
