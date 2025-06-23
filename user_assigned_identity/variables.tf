@@ -21,8 +21,11 @@ variable "tags" {
 
 variable "app_role_assignments" {
   description = "Application Roles to assign the Managed Identity."
-  type        = map(any)
-  default     = {}
+  type = map(object({
+    app_role_id        = string
+    resource_object_id = string
+  }))
+  default = {}
 }
 
 variable "group_memberships" {
@@ -33,13 +36,28 @@ variable "group_memberships" {
 
 variable "role_assignments" {
   description = "Azure Roles to assign the Managed Identity."
-  type        = map(any)
-  default     = {}
+  type = map(object({
+    name                                   = optional(string)
+    scope                                  = optional(string)
+    role_definition_id                     = optional(string)
+    role_definition_name                   = optional(string)
+    condition                              = optional(string)
+    condition_version                      = optional(string)
+    delegated_managed_identity_resource_id = optional(string)
+    description                            = optional(string)
+    skip_service_principal_aad_check       = optional(bool)
+  }))
+  default = {}
 }
 
 variable "directory_role_assignments" {
   description = "Azure Directory Roles to assign the Managed Identity."
   default     = {}
-  type        = map(any)
+  type = map(object({
+    role_name          = optional(string)
+    role_id            = optional(string)
+    app_scope_id       = optional(string)
+    directory_scope_id = optional(string)
+  }))
 }
 
