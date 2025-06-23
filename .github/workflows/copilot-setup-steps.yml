@@ -32,12 +32,12 @@ jobs:
     # You can define any steps you want, and they will run before the agent starts.
     # If you do not check out your code, Copilot will do this for you.
     steps:
-      - name: Log in to Azure
-        uses: azure/login@v2
-        with:
-          client-id:       ${{ secrets.AZ_CLIENT_ID }}
-          subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
-          tenant-id:       ${{ secrets.AZ_TENANT_ID }}
+      #- name: Log in to Azure
+      #  uses: azure/login@v2
+      #  with:
+      #    client-id:       ${{ secrets.AZ_CLIENT_ID }}
+      #    subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+      #    tenant-id:       ${{ secrets.AZ_TENANT_ID }}
 
       - name: Checkout code
         uses: actions/checkout@v4
