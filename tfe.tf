@@ -24,6 +24,13 @@ module "station-tfe" {
       hcl         = false
       sensitive   = false
     },
+    environment_name = {
+      value       = var.environment_name
+      category    = "terraform"
+      description = "Name of the current deployment environment. Often dev/test/stage/prod."
+      hcl         = false
+      sensitive   = false
+    },
     tags = {
       value       = replace(jsonencode(local.tags), "/(\".*?\"):/", "$1 = ")
       category    = "terraform"
