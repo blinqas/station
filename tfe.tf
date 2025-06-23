@@ -105,6 +105,33 @@ module "station-tfe" {
         hcl         = true
         sensitive   = false
       }
+    } : {},
+    try(length(azurerm_virtual_network.this) > 0) ? {
+      virtual_networks = {
+        value       = replace(jsonencode(azurerm_virtual_network.this), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
+        category    = "terraform"
+        description = "Virtual Network(s) provisioned with Station"
+        hcl         = true
+        sensitive   = false
+      }
+    } : {},
+    try(length(azurerm_subnet.this) > 0) ? {
+      subnets = {
+        value       = replace(jsonencode(azurerm_subnet.this), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
+        category    = "terraform"
+        description = "Subnet(s) provisioned with Station"
+        hcl         = true
+        sensitive   = false
+      }
+    } : {},
+    try(length(azurerm_network_security_group.this) > 0) ? {
+      network_security_groups = {
+        value       = replace(jsonencode(azurerm_network_security_group.this), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
+        category    = "terraform"
+        description = "NSG(s) provisioned with Station"
+        hcl         = true
+        sensitive   = false
+      }
     } : {}
   )
 }

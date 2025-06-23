@@ -34,24 +34,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  validate:
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/trunk')
-    runs-on: ubuntu-latest
-    name: 🔍 Terraform Validate
-    steps:
-        - name: Checkout
-          uses: actions/checkout@v4
-    
-        - name: Set up Terraform
-          uses: hashicorp/setup-terraform@v3
-          with:
-            terraform_version: "~1.10.0" 
-    
-        - name: terraform init station module
-          run: terraform init
-    
-        - name: terraform validate station
-          run: terraform validate
+  # Terraform Validate does not support runs inside configurations that are intended to be called as a module with configuration_aliases on providers.
+  # This is a known issue: https://discuss.hashicorp.com/t/validating-modules-which-have-configuration-aliases/46056/15
+  #validate:
+  #  if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/trunk')
+  #  runs-on: ubuntu-latest
+  #  name: 🔍 Terraform Validate
+  #  steps:
+  #      - name: Checkout
+  #        uses: actions/checkout@v4
+  #  
+  #      - name: Set up Terraform
+  #        uses: hashicorp/setup-terraform@v3
+  #        with:
+  #          terraform_version: "~1.10.0" 
+  #  
+  #      - name: terraform init station module
+  #        run: terraform init
+  #  
+  #      - name: terraform validate station
+  #        run: terraform validate
      
 
   terraform_test:
