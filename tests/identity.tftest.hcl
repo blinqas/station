@@ -4,17 +4,33 @@ provider "azurerm" {
   features {}
 }
 
+provider "azurerm" {
+  alias = "connectivity"
+  features {}
+}
+
 provider "azuread" {}
 
 
 run "bootstrap_create_tfc_test_project" {
   variables {
     tfc_project_name = "Station Tests for identity"
-    create_ad_group  = true
   }
 
   module {
     source = "./tests/setup-tfe-project"
+  }
+}
+
+run "setup_entraid" {
+  module {
+    source = "./tests/setup-entraid"
+  }
+
+  variables {
+    groups = {
+      "test" = "station-test"
+    }
   }
 }
 
@@ -73,7 +89,7 @@ run "identity" {
       }
 
       group_memberships = {
-        "Station Test Group" = run.bootstrap_create_tfc_test_project.azuread_group["test"].object_id
+        "Station Test Group" = run.setup_entraid.groups["test"].object_id
       }
 
       app_role_assignments = {
