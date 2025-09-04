@@ -1,3 +1,13 @@
+resource "null_resource" "fork_template_repo" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      which gh >/dev/null 2>&1 || exit 1
+      gh repo view ${var.config.github.owner}/gh-template-station-workload >/dev/null 2>&1 || \
+      gh repo fork https://github.com/blinqas/gh-template-station-workload.git --org ${var.config.github.owner} --clone=false
+    EOT
+    when    = create
+  }
+}
 resource "github_repository" "this" {
   name        = var.config.github.repository
   description = var.config.github.description
@@ -32,7 +42,10 @@ resource "github_repository_file" "bootstrap" {
 resource "github_repository_file" "alz_applications" {
   for_each = toset([
     "providers.tf",
-    "variables.tf"
+    "variables.tf",
+    "github_repositories.tf",
+    "data.tf",
+    "locals.tf"
   ])
   file                = each.value
   content             = file("${path.root}/files/${each.value}")

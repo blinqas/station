@@ -14,6 +14,23 @@ data "tfe_variables" "workload" {
   depends_on   = [tfe_variable.workload]
 }
 
+resource "tfe_variable_set" "global" {
+  name         = "Global Environment Variables"
+  description  = "Common environment variables for all workspaces"
+  organization = var.organization_name
+  global       = true
+}
+
+resource "tfe_variable" "global" {
+  for_each        = var.global_vars
+  key             = each.key
+  value           = each.value.value
+  description     = each.value.description
+  category        = each.value.category
+  variable_set_id = tfe_variable_set.global.id
+  hcl             = try(each.value.hcl, false)
+  sensitive       = try(each.value.sensitive, false)
+}
 
 locals {
   #Restructure the output so it's possible to create terraform tests
