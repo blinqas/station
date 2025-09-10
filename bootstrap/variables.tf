@@ -7,5 +7,5 @@ variable "tfe_token" {
   description = "(Required) HCP Terraform User API token for \"Service Account\" user. Must be member of the `owners` team."
   sensitive   = true
   type        = string
-  default = "value"
+  default     = "value"
 }

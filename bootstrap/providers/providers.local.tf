@@ -31,7 +31,7 @@ provider "azurerm" {
 provider "azurerm" {
   features {}
   subscription_id = var.config.subscription_id
-  alias = "connectivity"
+  alias           = "connectivity"
 }
 
 provider "local" {
