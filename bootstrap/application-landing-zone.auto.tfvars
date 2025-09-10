@@ -9,7 +9,7 @@ config = {
   identity_name = "mi-alz-applications"
 
   terraform_cloud = { # Terraform Cloud Configuration
-    organization_name               = ""
+    organization_name               = "" # TFC Organization
     workspace_name                  = "alz-applications"
     workspace_description           = "Application Landing Zone definitions"
     bootstrap_workspace_name        = "alz-applications-bootstrap"
@@ -22,7 +22,7 @@ config = {
   }
 
   github = {
-    owner       = "" # Organization
+    owner       = "" # Github Organization
     repository  = "alz-applications"
     description = "Terraform Configuration for Application Landing Zones"
     branch      = "main"
@@ -36,12 +36,13 @@ config = {
       id              = "" #1234567
       installation_id = "" #12345678
     }
-    pem_file_path = "./station-landing-zones.pem" # Path to private key used to create the 
+    pem_file_path = "./station-landing-zones.pem" # Path to private key used to create new GitHub repositories
   }
 
   tags = {
     owner      = "Platform Engineering"
     deployedBy = "terraform"
+    description = "Used to deploy Application Landing Zones"
   }
 }
 
