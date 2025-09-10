@@ -8,7 +8,7 @@ config = {
   # The name of the Managed Identity which will deploy further Landing Zones
   identity_name = "mi-alz-applications"
 
-  terraform_cloud = { # Terraform Cloud Configuration
+  terraform_cloud = {                    # Terraform Cloud Configuration
     organization_name               = "" # TFC Organization
     workspace_name                  = "alz-applications"
     workspace_description           = "Application Landing Zone definitions"
@@ -40,8 +40,8 @@ config = {
   }
 
   tags = {
-    owner      = "Platform Engineering"
-    deployedBy = "terraform"
+    owner       = "Platform Engineering"
+    deployedBy  = "terraform"
     description = "Used to deploy Application Landing Zones"
   }
 }
