@@ -50,18 +50,18 @@ module "station" {
       vcs_repo       = local.vcs_repo
   })
 
-identity = {
-  name = var.config.identity_name
-  role_assignments = {
-    owner_lz = {
-      scope                = "/subscriptions/${var.config.subscription_id}"
-      role_definition_name = "Owner"
+  identity = {
+    name = var.config.identity_name
+    role_assignments = {
+      owner_lz = {
+        scope                = "/subscriptions/${var.config.subscription_id}"
+        role_definition_name = "Owner"
+      }
     }
-  }
-  directory_role_assignments = {
-    "Global Administrator" = {
-      role_name = "Global Administrator" 
-      /*
+    directory_role_assignments = {
+      "Global Administrator" = {
+        role_name = "Global Administrator"
+        /*
         ⚠️ IMPORTANT: Granting the "Global Administrator" directory role means that 
         ANYONE with access to the provisioned landing zone repository will indirectly have GA-level 
         permissions.
@@ -77,9 +77,9 @@ identity = {
           • The bootstrap process is not designed to be rerun. You should not expect to 
             be able to add additional roles later without manual intervention.
       */
+      }
     }
   }
-}
   providers = {
     azurerm              = azurerm
     azurerm.connectivity = azurerm.connectivity
