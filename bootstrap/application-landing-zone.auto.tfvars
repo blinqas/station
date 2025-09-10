@@ -32,8 +32,8 @@ config = {
     bootstrap_description = "Terraform Configuration for Bootstrap of Azure Application Landing Zones"
     bootstrap_branch      = "main"
 
-    provider = {                   # Station Landing Zones GitHub App (Not VCS App)
-      id              = ""  #1234567
+    provider = {           # Station Landing Zones GitHub App (Not VCS App)
+      id              = "" #1234567
       installation_id = "" #12345678
     }
     pem_file_path = "./station-landing-zones.pem" # Path to private key used to create the 
