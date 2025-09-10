@@ -24,6 +24,11 @@ provider "azurerm" {
   features {}
 }
 
+provider "azurerm" {
+  features {}
+  alias = "connectivity"
+}
+
 provider "azuread" {}
 
 provider "github" {
