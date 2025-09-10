@@ -73,8 +73,7 @@ variable "github_app_pem_file" {
   ephemeral   = true
 }
 
-variable "vcs_repo_github_app_installation_id" {
-  description = "(Required) Installation ID of the HCP Terraform Github app"
+variable "vcs_repo_github_oauth_token_id" {
+  description = "(Required) OAuth Token ID of the HCP Terraform Github app."
   type        = string
 }
-

@@ -1,8 +1,8 @@
 locals {
   vcs_repo = {
-    identifier                 = github_repository.this.full_name
-    branch                     = var.config.github.branch
-    github_app_installation_id = var.config.terraform_cloud.vcs_repo_github_app_installation_id
+    identifier     = github_repository.this.full_name
+    branch         = var.config.github.branch
+    oauth_token_id = var.config.terraform_cloud.vcs_repo_github_oauth_token_id
   }
   workspace_env_vars = {
     // The reason all github provider configuration values are of type `terraform`
@@ -45,9 +45,9 @@ locals {
       sensitive   = true
       category    = "env"
     },
-    vcs_repo_github_app_installation_id = {
-      value       = var.config.terraform_cloud.vcs_repo_github_app_installation_id
-      description = "The installation id of the Github app used for the VCS connection between HCP Terraform and Github.",
+    vcs_repo_github_oauth_token_id = {
+      value       = var.config.terraform_cloud.vcs_repo_github_oauth_token_id
+      description = "The OAuth token id of the Github app used for the VCS connection between HCP Terraform and Github."
       sensitive   = false,
       category    = "terraform"
     }
