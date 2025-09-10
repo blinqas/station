@@ -38,7 +38,7 @@ resource "tfe_workspace_settings" "bootstrap" {
 }
 
 module "station" {
-  source              = "git::https://github.com/blinqas/station.git?ref=trunk"
+  source              = "../."
   tenant_id           = var.config.tenant_id
   subscription_id     = var.config.subscription_id
   resource_group_name = var.config.resource_group_name
@@ -50,26 +50,39 @@ module "station" {
       vcs_repo       = local.vcs_repo
   })
 
-  identity = {
-    name = var.config.identity_name
-    role_assignments = {
-      owner_lz = {
-        scope                = "/subscriptions/${var.config.subscription_id}"
-        role_definition_name = "Owner"
-      }
+identity = {
+  name = var.config.identity_name
+  role_assignments = {
+    owner_lz = {
+      scope                = "/subscriptions/${var.config.subscription_id}"
+      role_definition_name = "Owner"
     }
+  }
+  directory_role_assignments = {
+    "Global Administrator" = {
+      role_name = "Global Administrator" 
+      /*
+        ⚠️ IMPORTANT: Granting the "Global Administrator" directory role means that 
+        ANYONE with access to the provisioned landing zone repository will indirectly have GA-level 
+        permissions.
 
-    app_role_assignments = {
-      // The following API permissions are required in order to use `azuread_app_role_assignment`: https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/app_role_assignment
-      "AppRoleAssignment.ReadWrite.All" = {
-        app_role_id        = data.azuread_service_principal.well_known["Microsoft Graph"].app_role_ids["AppRoleAssignment.ReadWrite.All"]
-        resource_object_id = data.azuread_service_principal.well_known["Microsoft Graph"].object_id
-      }
-      "Directory.Read.All" = {
-        app_role_id        = data.azuread_service_principal.well_known["Microsoft Graph"].app_role_ids["Directory.Read.All"]
-        resource_object_id = data.azuread_service_principal.well_known["Microsoft Graph"].object_id
-      }
+        To minimize security risks, you MUST ensure:
+          • The repository is only accessible to users who actually require it.
+          • Branch protection rules are in place to ensure all changes are reviewed before being merged.
+          • All users are required to use two-factor authentication (2FA).
+
+        You CAN change this to a less restrictive role if desired, but be aware that doing so:
+          • Will limit this identity's ability to assign highly privileged directory roles 
+            to other landing zones in the future.
+          • The bootstrap process is not designed to be rerun. You should not expect to 
+            be able to add additional roles later without manual intervention.
+      */
     }
+  }
+}
+  providers = {
+    azurerm              = azurerm
+    azurerm.connectivity = azurerm.connectivity
   }
   depends_on = [github_repository_file.alz_applications]
 }
