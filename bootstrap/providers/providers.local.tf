@@ -28,6 +28,12 @@ provider "azurerm" {
   subscription_id = var.config.subscription_id
 }
 
+provider "azurerm" {
+  features {}
+  subscription_id = var.config.subscription_id
+  alias = "connectivity"
+}
+
 provider "local" {
   # Configuration options
 }
@@ -37,7 +43,7 @@ provider "github" {
   app_auth {
     id              = var.config.github.provider.id
     installation_id = var.config.github.provider.installation_id
-    pem_file        = base64decode(var.github_app_pem_file)
+    pem_file        = base64decode(var.config.github.pem_file_path)
   }
 }
 
