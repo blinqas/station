@@ -36,7 +36,7 @@ config = {
       id              = "" #1234567
       installation_id = "" #12345678
     }
-    pem_file_path = "./station-landing-zones.pem" # Path to private key used to create new GitHub repositories
+    pem_file_path = filebase64("./station-landing-zones.pem") # Path to private key used to create new GitHub repositories
   }
 
   tags = {
