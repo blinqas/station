@@ -397,10 +397,10 @@ run "virtual_hub_connection" {
   command = plan
 
   variables {
-    // Override the project ID from bootstrap_create_tfc_test_project
+    // Override the project ID from setup_create_tfc_test_project
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
-        id = run.bootstrap_create_tfc_test_project.id
+        id = run.setup_create_tfc_test_project.id
       })
     })
 
