@@ -54,7 +54,20 @@ jobs:
   #  
   #      - name: terraform validate station
   #        run: terraform validate
+  list_test_files:
+    name: 🔍 List test files
+    runs-on: ubuntu-latest
+    outputs:
+      test_files: ${{ steps.set-matrix.outputs.test_files }}
+    steps:
+      - uses: actions/checkout@v4
 
+      - id: set-matrix
+        run: |
+          files=$(find tests -name '*.tftest.hcl' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "Found test files: $files"
+          printf 'test_files=%s\n' "$files" >> "$GITHUB_OUTPUT"
+          
   terraform_test:
     environment: E2E_testing
     needs: ["list_test_files"]
