@@ -43,3 +43,16 @@ resource "github_repository_file" "alz_applications" {
     ignore_changes = [content] # allow end user to make changes to their LZ
   }
 }
+
+resource "github_branch_protection_v3" "alz_applications" {
+  repository = github_repository.this.node_id
+  branch     = "main"
+
+  enforce_admins                  = true
+  require_conversation_resolution = true
+
+  required_pull_request_reviews {
+    required_approving_review_count = 1
+    dismiss_stale_reviews           = true
+  }
+}
