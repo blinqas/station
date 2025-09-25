@@ -1,7 +1,14 @@
 provider "tfe" {}
+
 provider "azurerm" {
   features {}
 }
+
+provider "azurerm" {
+  alias = "connectivity"
+  features {}
+}
+
 provider "azuread" {}
 
 test {

@@ -207,11 +207,12 @@ variable "role_assignments" {
 
 variable "connectivity" {
   description = <<EOF
-    Use this block to configure connectivity of this Landing Zone. Connectivity can be virtual networks, subnets, and even peerings to other virtual networks.
+    Use this block to configure connectivity of this Landing Zone. Connectivity can be virtual networks, subnets, peerings to other virtual networks and VWAN hub connections.
 
     Limitations:
     - Connecting Virtual Networks in different resource groups managed by this landing zone is currently unavailable. Configure this manually in the landing zone configuration.
-    - The key used for a peering object must be unique across all connectivity objects
+    - The key used for a peering object must be unique across all connectivity objects.
+    - The VWAN Virtual Hub peering option can only peer to VWAN Hubs that are in the configured `azurerm.connectivity` subscription.
   EOF
   default     = {}
   type = map(object({
@@ -221,6 +222,7 @@ variable "connectivity" {
     resource_group_name  = optional(string)
     location             = optional(string)
     bgp_community        = optional(string)
+    security_group_name  = optional(string)
     ddos_protection_plan = optional(object({
       id     = string
       enable = string
@@ -235,7 +237,6 @@ variable "connectivity" {
     subnets = map(object({
       name             = string
       address_prefixes = list(string)
-      security_group   = optional(string)
       delegation = optional(map(object({
         name = string
         service_delegation = object({
@@ -265,7 +266,49 @@ variable "connectivity" {
         remote_address_space = string
       }))
     })), {})
+    virtual_hub_connection = optional(object({
+      name                      = string
+      id                        = string
+      internet_security_enabled = optional(bool, false)
+      routing = optional(object({
+        associated_route_table_id = optional(string)
+        inbound_route_map_id      = optional(string)
+        outbound_route_map_id     = optional(string)
+        propagated_route_table = optional(object({
+          labels          = optional(list(string))
+          route_table_ids = optional(list(string))
+        }))
+        static_vnet_local_route_override_criteria   = optional(string, "Contains")
+        static_vnet_propagate_static_routes_enabled = optional(bool, true)
+        static_vnet_route = optional(object({
+          name                = optional(string)
+          address_prefixes    = optional(list(string))
+          next_hop_ip_address = optional(string)
+        }))
+      }))
+    }))
     })
   )
+
+  validation {
+    condition = length(
+      distinct(
+        flatten([
+          for vnet_key, vnet in var.connectivity : [
+            for peering_key, peering in lookup(vnet, "peerings", {}) :
+            "${vnet_key}:${peering_key}"
+          ]
+        ])
+      )
+      ) == length(
+      flatten([
+        for vnet_key, vnet in var.connectivity : [
+          for peering_key, peering in lookup(vnet, "peerings", {}) :
+          "${vnet_key}:${peering_key}"
+        ]
+      ])
+    )
+    error_message = "The key used for a peering object must be unique across all connectivity objects."
+  }
 }
 

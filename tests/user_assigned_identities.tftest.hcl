@@ -10,6 +10,11 @@ test {
   parallel = true
 }
 
+provider "azurerm" {
+  alias = "connectivity"
+  features {}
+}
+
 run "bootstrap_create_tfc_test_project" {
   variables {
     tfc_project_name = "tests_station_uai"
