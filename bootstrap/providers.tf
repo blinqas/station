@@ -43,7 +43,7 @@ provider "github" {
   app_auth {
     id              = var.config.github.provider.id
     installation_id = var.config.github.provider.installation_id
-    pem_file        = base64decode(var.config.github.pem_file_path)
+    pem_file        = base64decode(filebase64(var.config.github.pem_file_path))
   }
 }
 
