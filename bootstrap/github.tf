@@ -46,7 +46,7 @@ resource "github_repository_file" "alz_applications" {
 
 resource "github_branch_protection_v3" "alz_applications" {
   repository = github_repository.this.node_id
-  branch     = config.github.pem_file_path
+  branch     = config.github.branch
 
   enforce_admins                  = true
   require_conversation_resolution = true
