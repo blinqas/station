@@ -70,11 +70,11 @@ module "station-tfe" {
     try(length(module.applications) > 0) ? {
       applications = {
         value = replace(jsonencode({ for k, v in module.applications : k => {
-          id           = v.application.id
-          display_name = v.application.display_name
-          client_id    = v.application.client_id
+          id             = v.application.id
+          display_name   = v.application.display_name
+          client_id      = v.application.client_id
           application_id = "/applications/${v.application.client_id}"
-          object_id    = v.application.object_id
+          object_id      = v.application.object_id
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "User Assigned Identities provisioned by Station"
