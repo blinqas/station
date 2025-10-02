@@ -73,6 +73,7 @@ module "station-tfe" {
           id           = v.application.id
           display_name = v.application.display_name
           client_id    = v.application.client_id
+          application_id = "/applications/${v.application.client_id}"
           object_id    = v.application.object_id
         } }), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"

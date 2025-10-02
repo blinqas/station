@@ -266,6 +266,18 @@ run "tfe_outputs_to_workspace_variables" {
   }
 
   assert {
+    # We have to parse the hcl string to get the variable as a terraform object 
+    condition     = jsondecode(replace(module.station-tfe.workspace_variables.applications.value, "/(\\\"[^\"]+\\\") =/", "$1:"))["minimum_tfe_test"].application_id != null
+    error_message = "The application application_id is null"
+  }
+
+  assert {
+    # Verify that application_id has the /applications/ prefix
+    condition     = startswith(jsondecode(replace(module.station-tfe.workspace_variables.applications.value, "/(\\\"[^\"]+\\\") =/", "$1:"))["minimum_tfe_test"].application_id, "/applications/")
+    error_message = "The application application_id does not start with /applications/"
+  }
+
+  assert {
     condition     = module.station-tfe.workspace_variables.applications.hcl == true
     error_message = "The application workspace variable is not of type hcl"
   }
