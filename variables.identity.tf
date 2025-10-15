@@ -68,5 +68,21 @@ variable "identity" {
     condition     = alltrue([for k, v in var.identity.directory_role_assignments : !(v.role_name != null && v.role_id != null)])
     error_message = "directory_role_assignments: `role_name` cannot be used with `role_id`."
   }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.identity.role_assignments :
+      !(v.role_definition_id != null && v.role_definition_name != null)
+    ])
+    error_message = "role_assignments: Cannot specify both 'role_definition_id' and 'role_definition_name'. Use one or the other."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.identity.app_role_assignments :
+      can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", v.app_role_id))
+    ])
+    error_message = "app_role_assignments: 'app_role_id' must be a valid UUID in the format: 00000000-0000-0000-0000-000000000000"
+  }
 }
 
