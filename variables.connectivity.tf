@@ -17,10 +17,10 @@ variable "connectivity" {
       tags                = optional(map(string))
     })), {})
     subnets = optional(map(object({
-      name                 = string
-      virtual_network_key  = string
-      address_prefixes     = list(string)
-      service_endpoints    = optional(list(string))
+      name                = string
+      virtual_network_key = string
+      address_prefixes    = list(string)
+      service_endpoints   = optional(list(string))
       delegation = optional(object({
         name = string
         service_delegation = object({
@@ -39,7 +39,7 @@ variable "connectivity" {
       use_remote_gateways          = optional(bool, false)
     })), {})
     virtual_hub_connection = optional(object({
-      virtual_hub_id = string
+      virtual_hub_id            = string
       internet_security_enabled = optional(bool)
       routing = optional(object({
         associated_route_table_id = optional(string)
