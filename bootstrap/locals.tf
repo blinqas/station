@@ -28,7 +28,7 @@ locals {
       category    = "terraform"
     },
     github_app_pem_file = {
-      value       = var.config.github.pem_file_path
+      value       = filebase64(var.config.github.pem_file_path)
       description = "Base64 encoded private key for the Station Landing Zones Github app."
       sensitive   = true
       category    = "terraform"

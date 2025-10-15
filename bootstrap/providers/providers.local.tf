@@ -25,13 +25,15 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id = var.config.subscription_id
+  subscription_id                 = var.config.subscription_id
+  resource_provider_registrations = "none"
 }
 
 provider "azurerm" {
   features {}
-  subscription_id = var.config.subscription_id
-  alias           = "connectivity"
+  subscription_id                 = var.config.subscription_id
+  alias                           = "connectivity"
+  resource_provider_registrations = "none"
 }
 
 provider "local" {
@@ -43,7 +45,7 @@ provider "github" {
   app_auth {
     id              = var.config.github.provider.id
     installation_id = var.config.github.provider.installation_id
-    pem_file        = base64decode(var.config.github.pem_file_path)
+    pem_file        = base64decode(filebase64(var.config.github.pem_file_path))
   }
 }
 

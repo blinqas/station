@@ -26,13 +26,15 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id = var.config.subscription_id
+  subscription_id                 = var.config.subscription_id
+  resource_provider_registrations = "none"
 }
 
 provider "azurerm" {
   features {}
-  subscription_id = var.config.subscription_id
-  alias           = "connectivity"
+  subscription_id                 = var.config.subscription_id
+  alias                           = "connectivity"
+  resource_provider_registrations = "none"
 }
 
 provider "local" {
