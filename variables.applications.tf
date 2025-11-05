@@ -166,5 +166,54 @@ variable "applications" {
       }))
     }))
   }))
+
+  validation {
+    condition = alltrue(flatten([
+      for k, v in var.applications : v.identifier_uris == null ? [true] : [
+        for uri in v.identifier_uris : !can(regex("/$", uri))
+      ]
+    ]))
+    error_message = "Application identifier_uris must not end with a '/' character."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for k, v in var.applications : v.api == null ? [true] : (
+        v.api.oauth2_permission_scope == null ? [true] : [
+          for scope in v.api.oauth2_permission_scope : can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", scope.id))
+        ]
+      )
+    ]))
+    error_message = "All oauth2_permission_scope 'id' values must be valid UUIDs (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)."
+  }
+
+  validation { # only validate 'groups' claim, as per MS docs. Others can have any additional_properties
+    condition = alltrue(flatten([
+      for k, v in var.applications : v.optional_claims == null ? [true] : flatten([
+        v.optional_claims.access_token == null ? [true] : [
+          for claim in v.optional_claims.access_token : claim.name == "groups" && claim.additional_properties != null ? (
+            length([
+              for prop in claim.additional_properties : prop if contains(["sam_account_name", "dns_domain_and_sam_account_name", "netbios_domain_and_sam_account_name"], prop)
+            ]) <= 1
+          ) : true
+        ],
+        v.optional_claims.id_token == null ? [true] : [
+          for claim in v.optional_claims.id_token : claim.name == "groups" && claim.additional_properties != null ? (
+            length([
+              for prop in claim.additional_properties : prop if contains(["sam_account_name", "dns_domain_and_sam_account_name", "netbios_domain_and_sam_account_name"], prop)
+            ]) <= 1
+          ) : true
+        ],
+        v.optional_claims.saml2_token == null ? [true] : [
+          for claim in v.optional_claims.saml2_token : claim.name == "groups" && claim.additional_properties != null ? (
+            length([
+              for prop in claim.additional_properties : prop if contains(["sam_account_name", "dns_domain_and_sam_account_name", "netbios_domain_and_sam_account_name"], prop)
+            ]) <= 1
+          ) : true
+        ]
+      ])
+    ]))
+    error_message = "For 'groups' optional claims, only one of 'sam_account_name', 'dns_domain_and_sam_account_name', or 'netbios_domain_and_sam_account_name' can be specified in additional_properties."
+  }
 }
 
