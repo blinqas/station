@@ -25,9 +25,9 @@ variable "user_assigned_identities" {
       app_role_id        = string
     })), {})
     directory_role_assignments = optional(map(object({
-      role_id           = optional(string)
-      role_name         = optional(string)
-      app_scope_id      = optional(string)
+      role_id            = optional(string)
+      role_name          = optional(string)
+      app_scope_id       = optional(string)
       directory_scope_id = optional(string)
     })), {})
   }))
