@@ -1,22 +1,36 @@
 variable "groups" {
   description = <<-EOT
-    A map of groups to create. The key is a custom identifier for the group.
+    (Optional) Map of Entra ID (Azure AD) groups to create.
 
-    - `display_name` - (Required) The display name of the group.
-    - `description` - (Optional) The description of the group.
-    - `mail_enabled` - (Optional) Whether the group is mail-enabled. Defaults to `false`. At least one of `mail_enabled` or `security_enabled` must be specified. A group can be mail enabled and security enabled.
-    - `mail_nickname` - (Optional) The mail alias for the group, unique in the organisation. Required for mail-enabled groups. Changing this forces a new resource to be created.
-    - `security_enabled` - (Optional) Whether the group is a security group for controlling access to in-app resources. Defaults to `true`. At least one of `mail_enabled` or `security_enabled` must be specified. A group can be mail enabled and security enabled.
-    - `types` - (Optional) A set of group types to configure for the group. Supported values are `DynamicMembership` and `Unified`. If `Unified` is included, the group will be a Microsoft 365 group. Changing this forces a new resource to be created.
-    - `assignable_to_role` - (Optional) Indicates whether this group can be assigned to an Azure Active Directory role. Defaults to `false`. Changing this forces a new resource to be created.
-    - `behaviors` - (Optional) A set of behaviors for a Microsoft 365 group. Possible values are `AllowOnlyMembersToPost`, `HideGroupInOutlook`, `SkipExchangeInstallCheck`, `SubscribeMembersToCalendarEventsDisabled`, `SubscribeNewGroupMembers` and `WelcomeEmailDisabled`. See [official documentation](https://learn.microsoft.com/en-us/graph/group-set-options) for more details. Changing this forces a new resource to be created.
-    - `external_senders_allowed` - (Optional) Indicates whether people external to the organization can send messages to the group. Defaults to `false`. Only valid for Unified groups (Microsoft 365 groups).
-    - `hide_from_address_lists` - (Optional) Indicates whether the group is displayed in certain parts of the Outlook user interface: in the Address Book, in address lists for selecting message recipients, and in the Browse Groups dialog for searching groups. Defaults to `true`. Only valid for Unified groups (Microsoft 365 groups).
-    - `hide_from_outlook_clients` - (Optional) Indicates whether the group is displayed in Outlook clients, such as Outlook for Windows and Outlook on the web. Defaults to `true`. Only valid for Unified groups (Microsoft 365 groups).
-    - `owners` - (Optional) A set of object IDs of principals that will be granted ownership of the group.
-    - `members` - (Optional) A set of object IDs of principals that will be granted membership of the group.
-    - `dynamic_membership` - (Optional) An optional block to configure dynamic membership for the group. Cannot be used with `members`. For additional information on `dynamic_membership`, see [dynamic_membership block](#dynamic_membership-block).
-    - `role_assignments` - (Optional) A map of role assignments to create for the group. For additional information on `role_assignments`, see [role_assignments block](#role_assignments-block).
+    Note: The workload identity is automatically assigned the App Role "User.ReadBasic.All" and "Group.Read.All"
+          because being "Owner" of the group is not sufficient to add principals and then list them after an add or delete operation.
+
+    Example:
+    groups = {
+      developers = {
+        display_name     = "Application Developers"
+        description      = "Group for application developers"
+        security_enabled = true
+        owners           = [data.azuread_client_config.current.object_id]
+        members          = [azuread_user.dev1.object_id]
+        role_assignments = {
+          contributor = {
+            scope                = azurerm_resource_group.example.id
+            role_definition_name = "Contributor"
+          }
+        }
+      }
+      admins = {
+        display_name       = "Kubernetes Administrators"
+        description        = "Group for cluster administrators"
+        security_enabled   = true
+        assignable_to_role = true
+        dynamic_membership = {
+          enabled = true
+          rule    = "user.department -eq \"IT\""
+        }
+      }
+    }
   EOT
   type = map(object({
     display_name               = string
