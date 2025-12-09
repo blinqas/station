@@ -76,7 +76,23 @@ variable "groups" {
       description                      = optional(string)
       skip_service_principal_aad_check = optional(bool)
     })))
+    directory_role_assignments = optional(map(object({
+      role_name          = optional(string)
+      role_id            = optional(string)
+      app_scope_id       = optional(string)
+      directory_scope_id = optional(string)
+    })), {})
   }))
+
+  validation {
+    condition     = alltrue(flatten([for k, v in var.groups : [for dk, dv in v.directory_role_assignments == null ? {} : v.directory_role_assignments : !(dv.app_scope_id != null && dv.directory_scope_id != null)]]))
+    error_message = "groups[*].directory_role_assignments: `app_scope_id` cannot be used with `directory_scope_id`."
+  }
+
+  validation {
+    condition     = alltrue(flatten([for k, v in var.groups : [for dk, dv in v.directory_role_assignments == null ? {} : v.directory_role_assignments : !(dv.role_name != null && dv.role_id != null)]]))
+    error_message = "groups[*].directory_role_assignments: `role_name` cannot be used with `role_id`."
+  }
 }
 
 variable "user_assigned_identities" {
