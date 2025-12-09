@@ -139,19 +139,6 @@ variable "user_assigned_identities" {
       delegated_managed_identity_resource_id = optional(string)
       description                            = optional(string)
       skip_service_principal_aad_check       = optional(bool)
-
-      pim = optional(object({
-        member_type     = optional(string, "Eligible")
-        start_date_time = optional(string)
-        expiration = optional(object({
-          duration_days  = optional(number)
-          duration_hours = optional(number)
-          end_date_time  = optional(string)
-        }))
-        justification = optional(string)
-        ticket_number = optional(string)
-        ticket_system = optional(string)
-      }))
     })), {})
     group_memberships = optional(map(string), {})
     directory_role_assignments = optional(map(object({
