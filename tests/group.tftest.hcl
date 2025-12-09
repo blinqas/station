@@ -285,6 +285,11 @@ run "groups-directory_role_assignments" {
 
   # Ensure Directory Readers role is assigned
   assert {
+    condition     = length(module.ad_groups.with_directory_role_assignments.directory_role_assignments) > 0
+    error_message = "No directory role assignments were created for the group"
+  }
+
+  assert {
     condition     = alltrue([for k, v in var.groups.with_directory_role_assignments.directory_role_assignments : module.ad_groups.with_directory_role_assignments.directory_role_assignments[k].principal_object_id == module.ad_groups.with_directory_role_assignments.group.object_id])
     error_message = "The group was not assigned all Directory Role Assignments from var.groups.with_directory_role_assignments.directory_role_assignments"
   }

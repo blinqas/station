@@ -32,7 +32,12 @@ variable "subscription_id" {
 }
 
 variable "directory_role_assignments" {
-  type        = map(any)
+  type = map(object({
+    role_name          = optional(string)
+    role_id            = optional(string)
+    app_scope_id       = optional(string)
+    directory_scope_id = optional(string)
+  }))
   default     = {}
   description = <<EOF
     (Optional) A map of directory role assignments to create for the group.
