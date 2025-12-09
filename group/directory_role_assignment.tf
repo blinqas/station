@@ -7,6 +7,6 @@ resource "azuread_directory_role_assignment" "this" {
 }
 
 resource "azuread_directory_role" "existing" {
-  for_each     = var.directory_role_assignments
+  for_each     = { for k, v in var.directory_role_assignments : k => v if v.role_name != null }
   display_name = each.value.role_name
 }
