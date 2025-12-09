@@ -16,8 +16,8 @@ else
   if git rev-parse HEAD^ >/dev/null 2>&1; then
     CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
   else
-    # First commit - compare against empty tree
-    CHANGED_FILES=$(git diff --name-only --diff-filter=A HEAD)
+    # First commit - compare against empty tree (git's special empty tree hash)
+    CHANGED_FILES=$(git diff --name-only 4b825dc642cb6eb9a060e54bf8d69288fbee4904 HEAD)
   fi
 fi
 

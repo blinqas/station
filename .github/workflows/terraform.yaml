@@ -112,7 +112,14 @@ jobs:
         if: github.event_name == 'issue_comment'
         run: |
           gh pr checkout ${{ github.event.issue.number }}
-          git fetch origin ${{ github.event.issue.pull_request.base.ref }} --depth=1
+        env:
+          GH_TOKEN: ${{ github.token }}
+      
+      - name: Fetch base branch for comment trigger
+        if: github.event_name == 'issue_comment'
+        run: |
+          BASE_REF=$(gh pr view ${{ github.event.issue.number }} --json baseRefName --jq '.baseRefName')
+          git fetch origin "$BASE_REF" --depth=1
         env:
           GH_TOKEN: ${{ github.token }}
 
