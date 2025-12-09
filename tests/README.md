@@ -18,6 +18,8 @@ This folder contains all tests for the Terraform Station module. The aim is to s
 
 ## How to Run Tests
 
+### Running Tests Locally
+
 1. **Login to Azure and Terraform**:
     ```bash
     az login --tenant YourTenantIdHere
@@ -45,6 +47,39 @@ This folder contains all tests for the Terraform Station module. The aim is to s
     terraform test #This will run all the tests
     terraform test -filter=tests/tfe.tftest.hcl #This will only run the tests for the tfe block
     ```
+
+### Automated Test Execution in CI/CD
+
+The repository uses **selective test execution** to optimize CI/CD performance and reduce GitHub Actions minutes. Tests are automatically selected based on which files you've changed:
+
+#### How It Works
+
+When you create a pull request, the CI/CD pipeline analyzes your changes and runs only the tests affected by those changes:
+
+- **Application module changes** (`application/**`, `variables.applications.tf`, `applications.tf`) → Runs `application.tftest.hcl`
+- **Group module changes** (`group/**`, `groups.tf`) → Runs `group.tftest.hcl`
+- **TFE module changes** (`hashicorp/tfe/**`, `tfe.tf`) → Runs `tfe.tftest.hcl`
+- **Connectivity changes** (`connectivity.tf`) → Runs `connectivity.tftest.hcl`
+- **Identity module changes** (`user_assigned_identity/**`, `variables.identity.tf`) → Runs `identity.tftest.hcl` and `user_assigned_identities.tftest.hcl`
+- **Core infrastructure changes** (`variables.tf`, `providers.tf`, `resource_group.tf`, etc.) → Runs **all tests**
+
+For full details on the mapping rules, see [`.github/scripts/README.md`](../.github/scripts/README.md).
+
+#### Manual Full Test Execution
+
+If you need to run all tests on a PR (for example, to verify everything works together), comment on the PR:
+
+```
+/test-all
+```
+
+or
+
+```
+/test all
+```
+
+The workflow will acknowledge your request with a 🚀 emoji and run all tests.
 
 ## Testing Approach for New Features in the Station Module
 
