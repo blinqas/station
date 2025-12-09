@@ -195,3 +195,72 @@ run "group_memberships" {
     error_message = "The user-assigned identity was not added to the correct static group."
   }
 }
+
+run "pim_role_assignments" {
+  variables {
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    user_assigned_identities = merge(var.user_assigned_identities, {
+      maximum = merge(var.user_assigned_identities.maximum, {
+        role_assignments = {
+          pim_eligible_keyvault = {
+            scope                = run.bootstrap_uai.current_subscription.id
+            role_definition_name = "Key Vault Reader"
+            description          = "PIM Eligible Key Vault Reader"
+            pim = {
+              member_type = "Eligible"
+              expiration = {
+                duration_days = 45
+              }
+              justification = "Test UAI PIM eligible assignment"
+            }
+          }
+          pim_active_secrets = {
+            scope                = run.bootstrap_uai.current_subscription.id
+            role_definition_name = "Key Vault Secrets User"
+            description          = "PIM Active Key Vault Secrets User"
+            pim = {
+              member_type = "Active"
+              expiration = {
+                duration_hours = 24
+              }
+              justification = "Test UAI PIM active assignment"
+            }
+          }
+          non_pim_reader = {
+            scope                = run.bootstrap_uai.current_subscription.id
+            role_definition_name = "Reader"
+            description          = "Regular non-PIM role"
+          }
+        }
+      })
+    })
+  }
+
+  module {
+    source = "./"
+  }
+
+  # Assert PIM eligible role assignment exists for UAI
+  assert {
+    condition     = can(module.user_assigned_identities["maximum"].role_assignments["pim_eligible_keyvault"])
+    error_message = "PIM eligible role assignment for user assigned identity was not created"
+  }
+
+  # Assert PIM active role assignment exists for UAI
+  assert {
+    condition     = can(module.user_assigned_identities["maximum"].role_assignments["pim_active_secrets"])
+    error_message = "PIM active role assignment for user assigned identity was not created"
+  }
+
+  # Assert non-PIM role assignment exists for UAI
+  assert {
+    condition     = can(module.user_assigned_identities["maximum"].role_assignments["non_pim_reader"])
+    error_message = "Non-PIM role assignment for user assigned identity was not created"
+  }
+}
+

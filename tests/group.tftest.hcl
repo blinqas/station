@@ -250,3 +250,83 @@ run "groups-role_assignments" {
     error_message = "Unassigned role found for the minimal group with role assignments"
   }
 }
+
+run "groups-pim_role_assignments" {
+  variables {
+    // Override project ID from `bootstrap_create_tfc_test_project`
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    // Add a new group with PIM role assignments
+    groups = merge(var.groups, {
+      static = merge(var.groups.static, {
+        owners  = toset([run.bootstrap_groups.current.object_id]),
+        members = toset([run.bootstrap_groups.current.object_id, run.bootstrap_groups.test_user_object_id])
+      })
+      pim_group = {
+        display_name     = "Station test: PIM Group"
+        security_enabled = true
+        description      = "Group with PIM role assignments"
+
+        role_assignments = {
+          pim_eligible_storage = {
+            scope                = null # Will default to subscription
+            role_definition_name = "Storage Blob Data Reader"
+            description          = "PIM Eligible Storage access"
+            pim = {
+              member_type = "Eligible"
+              expiration = {
+                duration_days = 30
+              }
+              justification = "Test group PIM eligible assignment"
+              ticket_number = "TICKET-123"
+              ticket_system = "ServiceNow"
+            }
+          }
+          pim_active_reader = {
+            scope                = null
+            role_definition_name = "Reader"
+            description          = "PIM Active Reader role"
+            pim = {
+              member_type = "Active"
+              expiration = {
+                duration_days = 60
+              }
+              justification = "Test group PIM active assignment"
+            }
+          }
+          non_pim_contributor = {
+            scope                = null
+            role_definition_name = "Contributor"
+            description          = "Regular non-PIM role"
+          }
+        }
+      }
+    })
+  }
+
+  module {
+    source = "./"
+  }
+
+  # Assert PIM eligible role assignment exists for group
+  assert {
+    condition     = can(module.ad_groups.pim_group.role_assignments["pim_eligible_storage"])
+    error_message = "PIM eligible role assignment for group was not created"
+  }
+
+  # Assert PIM active role assignment exists for group
+  assert {
+    condition     = can(module.ad_groups.pim_group.role_assignments["pim_active_reader"])
+    error_message = "PIM active role assignment for group was not created"
+  }
+
+  # Assert non-PIM role assignment exists for group
+  assert {
+    condition     = can(module.ad_groups.pim_group.role_assignments["non_pim_contributor"])
+    error_message = "Non-PIM role assignment for group was not created"
+  }
+}
