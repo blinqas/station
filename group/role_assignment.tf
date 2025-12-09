@@ -16,7 +16,7 @@ resource "azurerm_role_assignment" "roles" {
 resource "azurerm_pim_eligible_role_assignment" "roles" {
   for_each           = local.pim_eligible_role_assignments
   scope              = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
-  role_definition_id = each.value.role_definition_id != null ? each.value.role_definition_id : "/providers/Microsoft.Authorization/roleDefinitions/${data.azurerm_role_definition.pim_eligible[each.key].id}"
+  role_definition_id = each.value.role_definition_id != null ? each.value.role_definition_id : data.azurerm_role_definition.pim_eligible[each.key].id
   principal_id       = azuread_group.group.object_id
 
   dynamic "schedule" {
@@ -50,7 +50,7 @@ resource "azurerm_pim_eligible_role_assignment" "roles" {
 resource "azurerm_pim_active_role_assignment" "roles" {
   for_each           = local.pim_active_role_assignments
   scope              = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
-  role_definition_id = each.value.role_definition_id != null ? each.value.role_definition_id : "/providers/Microsoft.Authorization/roleDefinitions/${data.azurerm_role_definition.pim_active[each.key].id}"
+  role_definition_id = each.value.role_definition_id != null ? each.value.role_definition_id : data.azurerm_role_definition.pim_active[each.key].id
   principal_id       = azuread_group.group.object_id
 
   dynamic "schedule" {
