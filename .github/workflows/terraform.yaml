@@ -23,6 +23,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  pull-requests: write  # Needed for comment reactions
 
 env:
   TF_VAR_subscription_id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
@@ -54,18 +55,85 @@ jobs:
   #  
   #      - name: terraform validate station
   #        run: terraform validate
+  
+  # Check if this is a comment trigger for full test run
+  check_comment:
+    name: 🔍 Check for test trigger comment
+    if: github.event_name == 'issue_comment'
+    runs-on: ubuntu-latest
+    outputs:
+      run_full_tests: ${{ steps.check.outputs.run_full_tests }}
+    steps:
+      - name: Check comment for test trigger
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = context.payload.comment.body.toLowerCase().trim();
+            const isFullTestTrigger = comment === '/test-all' || comment === '/test all';
+            
+            if (isFullTestTrigger) {
+              // React to the comment to acknowledge
+              await github.rest.reactions.createForIssueComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: context.payload.comment.id,
+                content: 'rocket'
+              });
+              
+              core.setOutput('run_full_tests', 'true');
+              core.info('Full test run triggered by comment');
+            } else {
+              core.setOutput('run_full_tests', 'false');
+              core.info('Comment does not trigger tests');
+            }
+  
   list_test_files:
-    name: 🔍 List test files
+    name: 🔍 Determine tests to run
+    # Run for all events except issue_comment, or when issue_comment triggers full tests
+    if: |
+      always() && 
+      (needs.check_comment.result == 'skipped' || needs.check_comment.outputs.run_full_tests == 'true')
+    needs: [check_comment]
     runs-on: ubuntu-latest
     outputs:
       test_files: ${{ steps.set-matrix.outputs.test_files }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for accurate diff
+      
+      - name: Fetch base branch for PR
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+      
+      - name: Checkout PR HEAD for comment trigger
+        if: github.event_name == 'issue_comment'
+        run: |
+          gh pr checkout ${{ github.event.issue.number }}
+          git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - id: set-matrix
         run: |
-          files=$(find tests -name '*.tftest.hcl' | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          echo "Found test files: $files"
+          # Check if we should run all tests (manual trigger or release)
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]] || \
+             [[ "${{ github.event_name }}" == "release" ]] || \
+             [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+            echo "Manual trigger or release detected - running all tests"
+            files=$(find tests -name '*.tftest.hcl' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          else
+            # Use the script to determine which tests to run
+            chmod +x .github/scripts/determine-tests.sh
+            test_output=$(.github/scripts/determine-tests.sh)
+            echo "$test_output"
+            # Extract just the JSON array from the last line
+            files=$(echo "$test_output" | tail -n 1)
+          fi
+          
+          echo "Test files to run: $files"
           printf 'test_files=%s\n' "$files" >> "$GITHUB_OUTPUT"
           
   terraform_test:
