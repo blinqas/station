@@ -73,7 +73,30 @@ jobs:
             const isFullTestTrigger = comment === '/test-all' || comment === '/test all';
             
             if (isFullTestTrigger) {
-              // React to the comment to acknowledge
+              // Check if the comment author has write permission or is a collaborator
+              const permission = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: context.payload.comment.user.login
+              });
+              
+              const hasPermission = ['admin', 'write', 'maintain'].includes(permission.data.permission);
+              
+              if (!hasPermission) {
+                core.setOutput('run_full_tests', 'false');
+                core.warning(`User ${context.payload.comment.user.login} does not have permission to trigger tests`);
+                
+                // React with thumbs down to indicate no permission
+                await github.rest.reactions.createForIssueComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: context.payload.comment.id,
+                  content: '-1'
+                });
+                return;
+              }
+              
+              // User has permission, acknowledge and trigger tests
               await github.rest.reactions.createForIssueComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -91,6 +114,8 @@ jobs:
   list_test_files:
     name: 🔍 Determine tests to run
     # Run for all events except issue_comment, or when issue_comment triggers full tests
+    # Note: This job checks out PR code but does NOT have access to secrets
+    # Actual test execution with secrets happens in the E2E_testing environment
     if: |
       always() && 
       (needs.check_comment.result == 'skipped' || needs.check_comment.outputs.run_full_tests == 'true')
@@ -108,6 +133,10 @@ jobs:
         run: |
           git fetch origin ${{ github.base_ref }} --depth=1
       
+      # SECURITY NOTE: Checking out PR code on comment trigger
+      # This is intentional - we want to test the PR code when /test-all is commented
+      # Permission check is performed in check_comment job (only users with write/admin access)
+      # This job does NOT have access to secrets - actual test execution happens in E2E_testing environment
       - name: Checkout PR HEAD for comment trigger
         if: github.event_name == 'issue_comment'
         run: |

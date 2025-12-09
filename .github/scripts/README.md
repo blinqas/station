@@ -54,7 +54,9 @@ or
 /test all
 ```
 
-The workflow will react with a 🚀 emoji to acknowledge the trigger.
+The workflow will acknowledge your request with a 🚀 emoji and run all tests.
+
+**Security Note:** Only users with write, maintain, or admin permissions on the repository can trigger tests via comments. Users without sufficient permissions will receive a 👎 reaction.
 
 ## Automatic Triggers
 
