@@ -17,11 +17,17 @@ elif [ "${GITHUB_EVENT_NAME:-}" = "issue_comment" ]; then
   # Issue comment on PR - need to fetch base branch
   PR_NUMBER="${GITHUB_EVENT_ISSUE_NUMBER:-}"
   if [ -n "$PR_NUMBER" ]; then
-    BASE_REF=$(gh pr view "$PR_NUMBER" --json baseRefName --jq '.baseRefName' 2>/dev/null || echo "")
-    if [ -n "$BASE_REF" ]; then
-      git fetch origin "$BASE_REF" --depth=1
-      CHANGED_FILES=$(git diff --name-only "origin/$BASE_REF"...HEAD)
+    if command -v gh >/dev/null 2>&1; then
+      BASE_REF=$(gh pr view "$PR_NUMBER" --json baseRefName --jq '.baseRefName' 2>&1)
+      if [ $? -eq 0 ] && [ -n "$BASE_REF" ]; then
+        git fetch origin "$BASE_REF" --depth=1
+        CHANGED_FILES=$(git diff --name-only "origin/$BASE_REF"...HEAD)
+      else
+        echo "Warning: Could not get PR base ref via gh CLI: $BASE_REF" >&2
+        CHANGED_FILES=""
+      fi
     else
+      echo "Warning: gh CLI not available for issue_comment event" >&2
       CHANGED_FILES=""
     fi
   else
@@ -40,6 +46,15 @@ fi
 echo "Changed files:"
 echo "$CHANGED_FILES"
 echo ""
+
+# Check if there are any changes
+if [ -z "$CHANGED_FILES" ]; then
+  echo "No changes detected. Defaulting to all tests."
+  # Output all test files
+  files=$(find tests -name '*.tftest.hcl' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+  echo "$files"
+  exit 0
+fi
 
 # Initialize arrays for test categories
 run_application=false

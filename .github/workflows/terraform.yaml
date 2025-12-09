@@ -80,25 +80,39 @@ jobs:
             const isFullTestTrigger = comment === '/test-all' || comment === '/test all';
             
             if (isFullTestTrigger) {
-              // Check if the comment author has write permission or is a collaborator
-              const permission = await github.rest.repos.getCollaboratorPermissionLevel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                username: context.payload.comment.user.login
-              });
-              
-              const hasPermission = ['admin', 'write', 'maintain'].includes(permission.data.permission);
-              
-              if (!hasPermission) {
-                core.setOutput('run_full_tests', 'false');
-                core.warning(`User ${context.payload.comment.user.login} does not have permission to trigger tests`);
+              // Check if the comment author has write permission
+              // This works for both direct collaborators and organization members
+              try {
+                const { data: permissionData } = await github.rest.repos.getCollaboratorPermissionLevel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  username: context.payload.comment.user.login
+                });
                 
-                // React with thumbs down to indicate no permission
+                const hasPermission = ['admin', 'write', 'maintain'].includes(permissionData.permission);
+                
+                if (!hasPermission) {
+                  core.setOutput('run_full_tests', 'false');
+                  core.warning(`User ${context.payload.comment.user.login} does not have permission to trigger tests (permission: ${permissionData.permission})`);
+                  
+                  // React with thumbs down to indicate no permission
+                  await github.rest.reactions.createForIssueComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    comment_id: context.payload.comment.id,
+                    content: '-1'
+                  });
+                  return;
+                }
+              } catch (error) {
+                core.setOutput('run_full_tests', 'false');
+                core.error(`Failed to check permissions: ${error.message}`);
+                
                 await github.rest.reactions.createForIssueComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   comment_id: context.payload.comment.id,
-                  content: '-1'
+                  content: 'confused'
                 });
                 return;
               }
