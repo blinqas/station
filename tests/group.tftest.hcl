@@ -92,6 +92,16 @@ variables {
           description          = "Storage Blob Data Contributor on the storage account"
         }
       }
+    },
+    with_directory_role_assignments = {
+      display_name     = "Station test: groups with directory roles"
+      security_enabled = true
+
+      directory_role_assignments = {
+        directory_reader = {
+          role_name = "Directory Readers"
+        }
+      }
     }
   }
 }
@@ -248,5 +258,40 @@ run "groups-role_assignments" {
   assert {
     condition     = !contains([for role_assignment in values(module.ad_groups.minimal_with_role_assignments.role_assignments) : role_assignment.role_definition_name], "Owner")
     error_message = "Unassigned role found for the minimal group with role assignments"
+  }
+}
+
+run "groups-directory_role_assignments" {
+  variables {
+    // Override project ID from `bootstrap_create_tfc_test_project`
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    // Override `owners` and `members` in `groups.static`
+    groups = merge(var.groups, {
+      static = merge(var.groups.static, {
+        owners  = toset([run.bootstrap_groups.current.object_id]),
+        members = toset([run.bootstrap_groups.current.object_id, run.bootstrap_groups.test_user_object_id])
+      })
+    })
+  }
+
+  module {
+    source = "./"
+  }
+
+  # Ensure Directory Readers role is assigned
+  assert {
+    condition     = alltrue([for k, v in var.groups.with_directory_role_assignments.directory_role_assignments : module.ad_groups.with_directory_role_assignments.directory_role_assignments[k].principal_object_id == module.ad_groups.with_directory_role_assignments.group.object_id])
+    error_message = "The group was not assigned all Directory Role Assignments from var.groups.with_directory_role_assignments.directory_role_assignments"
+  }
+
+  # Ensure the group object_id matches expected value
+  assert {
+    condition     = module.ad_groups.with_directory_role_assignments.group.object_id != null && module.ad_groups.with_directory_role_assignments.group.object_id != ""
+    error_message = "The group object_id is not set correctly"
   }
 }
