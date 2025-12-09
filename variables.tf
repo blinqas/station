@@ -75,6 +75,19 @@ variable "groups" {
       condition_version                = optional(string)
       description                      = optional(string)
       skip_service_principal_aad_check = optional(bool)
+
+      pim = optional(object({
+        member_type     = optional(string, "Eligible")
+        start_date_time = optional(string)
+        expiration = optional(object({
+          duration_days  = optional(number)
+          duration_hours = optional(number)
+          end_date_time  = optional(string)
+        }))
+        justification = optional(string)
+        ticket_number = optional(string)
+        ticket_system = optional(string)
+      }))
     })))
   }))
 }
@@ -126,6 +139,19 @@ variable "user_assigned_identities" {
       delegated_managed_identity_resource_id = optional(string)
       description                            = optional(string)
       skip_service_principal_aad_check       = optional(bool)
+
+      pim = optional(object({
+        member_type     = optional(string, "Eligible")
+        start_date_time = optional(string)
+        expiration = optional(object({
+          duration_days  = optional(number)
+          duration_hours = optional(number)
+          end_date_time  = optional(string)
+        }))
+        justification = optional(string)
+        ticket_number = optional(string)
+        ticket_system = optional(string)
+      }))
     })), {})
     group_memberships = optional(map(string), {})
     directory_role_assignments = optional(map(object({
@@ -189,6 +215,19 @@ variable "role_assignments" {
   description = <<EOF
     Map of role_assignments to create. Be careful of who is allowed to provision role_assignments, you might want to 
     consider Sentinel policies in TFC.
+
+    PIM Support (optional 'pim' block):
+    - member_type: "Eligible" or "Active" (default: "Eligible" if pim block is provided).
+    - start_date_time: Optional start date/time in RFC3339 format (e.g., "2024-01-15T00:00:00Z").
+    - expiration:
+        - duration_days: Number of days until expiration (e.g., 90).
+        - duration_hours: Number of hours until expiration (alternative to duration_days).
+        - end_date_time: Specific end date/time in RFC3339 format (alternative to duration_days/duration_hours).
+    - justification: Optional justification text for the assignment.
+    - ticket_number: Optional ticket number for the assignment.
+    - ticket_system: Optional ticket system identifier.
+
+    Note: When 'pim' block is specified, a PIM role assignment will be created instead of a regular role assignment.
   EOF
   default     = {}
   type = map(object({
@@ -202,6 +241,19 @@ variable "role_assignments" {
     delegated_managed_identity_resource_id = optional(string)
     description                            = optional(string)
     skip_service_principal_aad_check       = optional(bool, false)
+
+    pim = optional(object({
+      member_type     = optional(string, "Eligible") # Valid values: "Eligible", "Active"
+      start_date_time = optional(string)
+      expiration = optional(object({
+        duration_days  = optional(number)
+        duration_hours = optional(number)
+        end_date_time  = optional(string)
+      }))
+      justification = optional(string)
+      ticket_number = optional(string)
+      ticket_system = optional(string)
+    }))
   }))
 }
 

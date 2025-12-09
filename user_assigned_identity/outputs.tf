@@ -31,7 +31,11 @@ output "location" {
 }
 
 output "role_assignments" {
-  value = azurerm_role_assignment.this
+  value = merge(
+    azurerm_role_assignment.this,
+    azurerm_pim_eligible_role_assignment.this,
+    azurerm_pim_active_role_assignment.this
+  )
 }
 
 output "app_role_assignments" {
