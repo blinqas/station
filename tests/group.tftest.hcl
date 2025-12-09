@@ -94,8 +94,9 @@ variables {
       }
     },
     with_directory_role_assignments = {
-      display_name     = "Station test: groups with directory roles"
-      security_enabled = true
+      display_name       = "Station test: groups with directory roles"
+      security_enabled   = true
+      assignable_to_role = true
 
       directory_role_assignments = {
         directory_reader = {
