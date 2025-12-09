@@ -103,17 +103,6 @@ variables {
           role_name = "Directory Readers"
         }
       }
-    },
-    with_directory_role_id = {
-      display_name       = "Station test: groups with directory role ID"
-      security_enabled   = true
-      assignable_to_role = true
-
-      directory_role_assignments = {
-        directory_reader_by_id = {
-          role_id = "overridden" # Will be overridden in the test run block
-        }
-      }
     }
   }
 }
@@ -322,19 +311,23 @@ run "groups-directory_role_assignments_with_role_id" {
       })
     })
 
-    // Override `owners` and `members` in `groups.static` and set role_id for directory role test group
+    // Override `owners` and `members` in `groups.static` and add group with role_id for directory role test
     groups = merge(var.groups, {
       static = merge(var.groups.static, {
         owners  = toset([run.bootstrap_groups.current.object_id]),
         members = toset([run.bootstrap_groups.current.object_id, run.bootstrap_groups.test_user_object_id])
       }),
-      with_directory_role_id = merge(var.groups.with_directory_role_id, {
+      with_directory_role_id = {
+        display_name       = "Station test: groups with directory role ID"
+        security_enabled   = true
+        assignable_to_role = true
+
         directory_role_assignments = {
           directory_reader_by_id = {
             role_id = run.setup.azuread_directory_role.directory_readers.template_id
           }
         }
-      })
+      }
     })
   }
 
