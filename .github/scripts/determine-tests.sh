@@ -12,8 +12,13 @@ if [ -n "${GITHUB_BASE_REF:-}" ]; then
   git fetch origin "$GITHUB_BASE_REF" --depth=1
   CHANGED_FILES=$(git diff --name-only "origin/$GITHUB_BASE_REF"...HEAD)
 else
-  # Push event
-  CHANGED_FILES=$(git diff --name-only HEAD^ HEAD 2>/dev/null || git ls-files)
+  # Push event - compare against previous commit if it exists
+  if git rev-parse HEAD^ >/dev/null 2>&1; then
+    CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+  else
+    # First commit - compare against empty tree
+    CHANGED_FILES=$(git diff --name-only --diff-filter=A HEAD)
+  fi
 fi
 
 echo "Changed files:"
@@ -48,6 +53,9 @@ while IFS= read -r file; do
   
   echo "Analyzing: $file"
   
+  # Track if this file was categorized
+  file_categorized=false
+  
   # Check for core files that trigger all tests
   for core_file in "${CORE_FILES[@]}"; do
     if [[ "$file" == "$core_file" ]]; then
@@ -58,7 +66,7 @@ while IFS= read -r file; do
   done
   
   # Check for test files themselves
-  if [[ "$file" == tests/*.tftest.hcl ]] || [[ "$file" == tests/setup-* ]]; then
+  if [[ "$file" == tests/*.tftest.hcl ]] || [[ "$file" == tests/setup-*/* ]]; then
     echo "  -> Test infrastructure changed, running all tests"
     run_all=true
     break
@@ -78,24 +86,28 @@ while IFS= read -r file; do
      [[ "$file" == "application_federated_identity_credential.tf" ]]; then
     echo "  -> Application file detected"
     run_application=true
+    file_categorized=true
   fi
   
   # Group-related files
   if [[ "$file" == group/* ]] || [[ "$file" == "groups.tf" ]]; then
     echo "  -> Group file detected"
     run_group=true
+    file_categorized=true
   fi
   
   # TFE-related files
   if [[ "$file" == hashicorp/tfe/* ]] || [[ "$file" == "tfe.tf" ]]; then
     echo "  -> TFE file detected"
     run_tfe=true
+    file_categorized=true
   fi
   
   # Connectivity-related files
   if [[ "$file" == "connectivity.tf" ]]; then
     echo "  -> Connectivity file detected"
     run_connectivity=true
+    file_categorized=true
   fi
   
   # Identity-related files (affects both identity and user_assigned_identities tests)
@@ -105,6 +117,7 @@ while IFS= read -r file; do
     echo "  -> Identity file detected"
     run_identity=true
     run_user_assigned_identities=true
+    file_categorized=true
   fi
   
   # Bootstrap files - run all tests as it's foundational
@@ -116,8 +129,7 @@ while IFS= read -r file; do
   
   # Any other .tf file not yet categorized should trigger all tests (safety)
   if [[ "$file" == *.tf ]] && [[ "$file" != tests/* ]]; then
-    # Check if we already categorized this file
-    if ! $run_application && ! $run_group && ! $run_tfe && ! $run_connectivity && ! $run_identity; then
+    if ! $file_categorized; then
       echo "  -> Uncategorized .tf file, running all tests for safety"
       run_all=true
       break

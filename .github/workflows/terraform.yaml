@@ -112,7 +112,7 @@ jobs:
         if: github.event_name == 'issue_comment'
         run: |
           gh pr checkout ${{ github.event.issue.number }}
-          git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+          git fetch origin ${{ github.event.issue.pull_request.base.ref }} --depth=1
         env:
           GH_TOKEN: ${{ github.token }}
 
