@@ -15,6 +15,12 @@ The `determine-tests.sh` script analyzes changed files and maps them to the rele
 | `hashicorp/tfe/**`, `tfe.tf` | `tests/tfe.tftest.hcl` |
 | `connectivity.tf` | `tests/connectivity.tftest.hcl` |
 | `user_assigned_identity/**`, `user_assigned_identities.tf`, `variables.identity.tf` | `tests/identity.tftest.hcl`, `tests/user_assigned_identities.tftest.hcl` |
+| `tests/application.tftest.hcl` | `tests/application.tftest.hcl` |
+| `tests/group.tftest.hcl` | `tests/group.tftest.hcl` |
+| `tests/tfe.tftest.hcl` | `tests/tfe.tftest.hcl` |
+| `tests/connectivity.tftest.hcl` | `tests/connectivity.tftest.hcl` |
+| `tests/identity.tftest.hcl` | `tests/identity.tftest.hcl` |
+| `tests/user_assigned_identities.tftest.hcl` | `tests/user_assigned_identities.tftest.hcl` |
 | **Core files** (see below) | **All tests** |
 
 ### Core Files (Trigger All Tests)
@@ -29,8 +35,8 @@ Changes to these files affect all modules and trigger all tests:
 - `outputs.tf` - Module outputs
 - `role_assignment.tf` - Role assignments (can affect multiple modules)
 - `bootstrap/**` - Bootstrap module (foundational)
-- `tests/**/*.tftest.hcl` - Test files themselves
 - `tests/setup-*/**` - Test setup modules
+- `tests/README.md` - Test documentation
 - `.github/workflows/terraform.yaml` - Workflow configuration
 - `.github/scripts/determine-tests.sh` - This script
 
@@ -104,6 +110,26 @@ user_assigned_identity/user_assigned_identity.tf
 - `tests/user_assigned_identities.tftest.hcl`
 
 (Both tests run because they both test identity-related functionality)
+
+### Example 5: Test File Change
+**Changed files:**
+```
+tests/group.tftest.hcl
+```
+**Tests run:**
+- `tests/group.tftest.hcl`
+
+(Only the changed test file runs)
+
+### Example 6: Test Setup Change
+**Changed files:**
+```
+tests/setup-common/main.tf
+```
+**Tests run:**
+- All tests (application, group, tfe, connectivity, identity, user_assigned_identities)
+
+(Setup files affect all tests, so all must run)
 
 ## Benefits
 

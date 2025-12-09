@@ -96,8 +96,32 @@ while IFS= read -r file; do
     fi
   done
   
-  # Check for test files themselves
-  if [[ "$file" == tests/*.tftest.hcl ]] || [[ "$file" == tests/setup-* ]]; then
+  # Check for test files themselves - map to corresponding test
+  if [[ "$file" == tests/application.tftest.hcl ]]; then
+    echo "  -> Application test file detected"
+    run_application=true
+    file_categorized=true
+  elif [[ "$file" == tests/group.tftest.hcl ]]; then
+    echo "  -> Group test file detected"
+    run_group=true
+    file_categorized=true
+  elif [[ "$file" == tests/tfe.tftest.hcl ]]; then
+    echo "  -> TFE test file detected"
+    run_tfe=true
+    file_categorized=true
+  elif [[ "$file" == tests/connectivity.tftest.hcl ]]; then
+    echo "  -> Connectivity test file detected"
+    run_connectivity=true
+    file_categorized=true
+  elif [[ "$file" == tests/identity.tftest.hcl ]]; then
+    echo "  -> Identity test file detected"
+    run_identity=true
+    file_categorized=true
+  elif [[ "$file" == tests/user_assigned_identities.tftest.hcl ]]; then
+    echo "  -> User assigned identities test file detected"
+    run_user_assigned_identities=true
+    file_categorized=true
+  elif [[ "$file" == tests/setup-* ]] || [[ "$file" == tests/README.md ]]; then
     echo "  -> Test infrastructure changed, running all tests"
     run_all=true
     break
