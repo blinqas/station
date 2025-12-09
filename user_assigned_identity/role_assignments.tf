@@ -3,6 +3,42 @@ moved {
   to   = azurerm_role_assignment.this
 }
 
+locals {
+  non_pim_role_assignments = {
+    for k, v in var.role_assignments : k => v
+    if v.pim == null
+  }
+
+  pim_eligible_role_assignments = {
+    for k, v in var.role_assignments : k => v
+    if v.pim != null && lower(v.pim.member_type) == "eligible"
+  }
+
+  pim_active_role_assignments = {
+    for k, v in var.role_assignments : k => v
+    if v.pim != null && lower(v.pim.member_type) == "active"
+  }
+}
+
+// Data sources for role definitions when using role_definition_name with PIM
+data "azurerm_role_definition" "pim_eligible" {
+  for_each = {
+    for k, v in local.pim_eligible_role_assignments : k => v
+    if v.role_definition_id == null && v.role_definition_name != null
+  }
+  name  = each.value.role_definition_name
+  scope = each.value.scope
+}
+
+data "azurerm_role_definition" "pim_active" {
+  for_each = {
+    for k, v in local.pim_active_role_assignments : k => v
+    if v.role_definition_id == null && v.role_definition_name != null
+  }
+  name  = each.value.role_definition_name
+  scope = each.value.scope
+}
+
 // Standard role assignments (non-PIM)
 resource "azurerm_role_assignment" "this" {
   for_each                               = local.non_pim_role_assignments
@@ -85,41 +121,5 @@ resource "azurerm_pim_active_role_assignment" "this" {
       system = each.value.pim.ticket_system
     }
   }
-}
-
-locals {
-  non_pim_role_assignments = {
-    for k, v in var.role_assignments : k => v
-    if v.pim == null
-  }
-
-  pim_eligible_role_assignments = {
-    for k, v in var.role_assignments : k => v
-    if v.pim != null && lower(v.pim.member_type) == "eligible"
-  }
-
-  pim_active_role_assignments = {
-    for k, v in var.role_assignments : k => v
-    if v.pim != null && lower(v.pim.member_type) == "active"
-  }
-}
-
-// Data sources for role definitions when using role_definition_name with PIM
-data "azurerm_role_definition" "pim_eligible" {
-  for_each = {
-    for k, v in local.pim_eligible_role_assignments : k => v
-    if v.role_definition_id == null && v.role_definition_name != null
-  }
-  name  = each.value.role_definition_name
-  scope = each.value.scope
-}
-
-data "azurerm_role_definition" "pim_active" {
-  for_each = {
-    for k, v in local.pim_active_role_assignments : k => v
-    if v.role_definition_id == null && v.role_definition_name != null
-  }
-  name  = each.value.role_definition_name
-  scope = each.value.scope
 }
 

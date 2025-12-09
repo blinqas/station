@@ -1,3 +1,41 @@
+locals {
+  role_assignments = var.role_assignments == null ? {} : var.role_assignments
+
+  non_pim_role_assignments = {
+    for k, v in local.role_assignments : k => v
+    if v.pim == null
+  }
+
+  pim_eligible_role_assignments = {
+    for k, v in local.role_assignments : k => v
+    if v.pim != null && lower(v.pim.member_type) == "eligible"
+  }
+
+  pim_active_role_assignments = {
+    for k, v in local.role_assignments : k => v
+    if v.pim != null && lower(v.pim.member_type) == "active"
+  }
+}
+
+// Data sources for role definitions when using role_definition_name with PIM
+data "azurerm_role_definition" "pim_eligible" {
+  for_each = {
+    for k, v in local.pim_eligible_role_assignments : k => v
+    if v.role_definition_id == null && v.role_definition_name != null
+  }
+  name  = each.value.role_definition_name
+  scope = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
+}
+
+data "azurerm_role_definition" "pim_active" {
+  for_each = {
+    for k, v in local.pim_active_role_assignments : k => v
+    if v.role_definition_id == null && v.role_definition_name != null
+  }
+  name  = each.value.role_definition_name
+  scope = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
+}
+
 // Standard role assignments (non-PIM)
 resource "azurerm_role_assignment" "roles" {
   for_each                         = local.non_pim_role_assignments
@@ -78,42 +116,4 @@ resource "azurerm_pim_active_role_assignment" "roles" {
       system = each.value.pim.ticket_system
     }
   }
-}
-
-locals {
-  role_assignments = var.role_assignments == null ? {} : var.role_assignments
-
-  non_pim_role_assignments = {
-    for k, v in local.role_assignments : k => v
-    if v.pim == null
-  }
-
-  pim_eligible_role_assignments = {
-    for k, v in local.role_assignments : k => v
-    if v.pim != null && lower(v.pim.member_type) == "eligible"
-  }
-
-  pim_active_role_assignments = {
-    for k, v in local.role_assignments : k => v
-    if v.pim != null && lower(v.pim.member_type) == "active"
-  }
-}
-
-// Data sources for role definitions when using role_definition_name with PIM
-data "azurerm_role_definition" "pim_eligible" {
-  for_each = {
-    for k, v in local.pim_eligible_role_assignments : k => v
-    if v.role_definition_id == null && v.role_definition_name != null
-  }
-  name  = each.value.role_definition_name
-  scope = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
-}
-
-data "azurerm_role_definition" "pim_active" {
-  for_each = {
-    for k, v in local.pim_active_role_assignments : k => v
-    if v.role_definition_id == null && v.role_definition_name != null
-  }
-  name  = each.value.role_definition_name
-  scope = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
 }
