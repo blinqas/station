@@ -6,7 +6,7 @@ data "azuread_service_principal" "msgraph" {
   client_id = data.azuread_application_published_app_ids.well_known.result.MicrosoftGraph
 }
 
-data "azuread_directory_role" "directory_readers" {
+resource "azuread_directory_role" "directory_readers" {
   display_name = "Directory Readers"
 }
 
@@ -30,7 +30,7 @@ output "azuread_service_principal" {
 
 output "azuread_directory_role" {
   value = {
-    directory_readers = data.azuread_directory_role.directory_readers
+    directory_readers = azuread_directory_role.directory_readers
   }
 }
 
