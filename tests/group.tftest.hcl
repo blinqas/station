@@ -103,6 +103,17 @@ variables {
           role_name = "Directory Readers"
         }
       }
+    },
+    with_directory_role_id = {
+      display_name       = "Station test: groups with directory role ID"
+      security_enabled   = true
+      assignable_to_role = true
+
+      directory_role_assignments = {
+        directory_reader_by_id = {
+          role_id = "overridden" # Will be overridden in the test run block
+        }
+      }
     }
   }
 }
@@ -300,4 +311,141 @@ run "groups-directory_role_assignments" {
     condition     = module.ad_groups.with_directory_role_assignments.group.object_id != null && module.ad_groups.with_directory_role_assignments.group.object_id != ""
     error_message = "The group object_id is not set correctly"
   }
+}
+
+run "groups-directory_role_assignments_with_role_id" {
+  variables {
+    // Override project ID from `bootstrap_create_tfc_test_project`
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    // Override `owners` and `members` in `groups.static` and set role_id for directory role test group
+    groups = merge(var.groups, {
+      static = merge(var.groups.static, {
+        owners  = toset([run.bootstrap_groups.current.object_id]),
+        members = toset([run.bootstrap_groups.current.object_id, run.bootstrap_groups.test_user_object_id])
+      }),
+      with_directory_role_id = merge(var.groups.with_directory_role_id, {
+        directory_role_assignments = {
+          directory_reader_by_id = {
+            role_id = run.setup.azuread_directory_role.directory_readers.template_id
+          }
+        }
+      })
+    })
+  }
+
+  module {
+    source = "./"
+  }
+
+  # Ensure directory role assignment was created using role_id
+  assert {
+    condition     = length(module.ad_groups.with_directory_role_id.directory_role_assignments) > 0
+    error_message = "No directory role assignments were created for the group using role_id"
+  }
+
+  assert {
+    condition     = alltrue([for k, v in module.ad_groups.with_directory_role_id.directory_role_assignments : v.principal_object_id == module.ad_groups.with_directory_role_id.group.object_id])
+    error_message = "The group was not assigned directory role using role_id"
+  }
+
+  assert {
+    condition     = alltrue([for k, v in module.ad_groups.with_directory_role_id.directory_role_assignments : v.role_id == run.setup.azuread_directory_role.directory_readers.template_id])
+    error_message = "The directory role assignment does not have the expected role_id"
+  }
+}
+
+run "groups-validation_assignable_to_role_required" {
+  command = plan
+
+  variables {
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    groups = {
+      invalid_group = {
+        display_name       = "Invalid group without assignable_to_role"
+        security_enabled   = true
+        assignable_to_role = false
+
+        directory_role_assignments = {
+          directory_reader = {
+            role_name = "Directory Readers"
+          }
+        }
+      }
+    }
+  }
+
+  expect_failures = [
+    var.groups
+  ]
+}
+
+run "groups-validation_role_name_and_role_id_mutually_exclusive" {
+  command = plan
+
+  variables {
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    groups = {
+      invalid_group = {
+        display_name       = "Invalid group with both role_name and role_id"
+        security_enabled   = true
+        assignable_to_role = true
+
+        directory_role_assignments = {
+          directory_reader = {
+            role_name = "Directory Readers"
+            role_id   = run.setup.azuread_directory_role.directory_readers.template_id
+          }
+        }
+      }
+    }
+  }
+
+  expect_failures = [
+    var.groups
+  ]
+}
+
+run "groups-validation_role_name_or_role_id_required" {
+  command = plan
+
+  variables {
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    groups = {
+      invalid_group = {
+        display_name       = "Invalid group without role_name or role_id"
+        security_enabled   = true
+        assignable_to_role = true
+
+        directory_role_assignments = {
+          directory_reader = {
+            # Neither role_name nor role_id provided
+          }
+        }
+      }
+    }
+  }
+
+  expect_failures = [
+    var.groups
+  ]
 }
