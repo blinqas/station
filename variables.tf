@@ -93,6 +93,11 @@ variable "groups" {
     condition     = alltrue(flatten([for k, v in var.groups : [for dk, dv in v.directory_role_assignments == null ? {} : v.directory_role_assignments : !(dv.role_name != null && dv.role_id != null)]]))
     error_message = "groups[*].directory_role_assignments: `role_name` cannot be used with `role_id`."
   }
+
+  validation {
+    condition     = alltrue(flatten([for k, v in var.groups : [for dk, dv in v.directory_role_assignments == null ? {} : v.directory_role_assignments : (dv.role_name != null || dv.role_id != null)]]))
+    error_message = "groups[*].directory_role_assignments: Either `role_name` or `role_id` must be provided."
+  }
 }
 
 variable "user_assigned_identities" {
