@@ -8,9 +8,25 @@ set -euo pipefail
 # For PRs, compare against the base branch
 # For pushes, compare against the previous commit
 if [ -n "${GITHUB_BASE_REF:-}" ]; then
-  # Pull request
-  git fetch origin "$GITHUB_BASE_REF" --depth=1
+  # Pull request - fetch base branch if not already available
+  if ! git rev-parse "origin/$GITHUB_BASE_REF" >/dev/null 2>&1; then
+    git fetch origin "$GITHUB_BASE_REF" --depth=1
+  fi
   CHANGED_FILES=$(git diff --name-only "origin/$GITHUB_BASE_REF"...HEAD)
+elif [ "${GITHUB_EVENT_NAME:-}" = "issue_comment" ]; then
+  # Issue comment on PR - need to fetch base branch
+  PR_NUMBER="${GITHUB_EVENT_ISSUE_NUMBER:-}"
+  if [ -n "$PR_NUMBER" ]; then
+    BASE_REF=$(gh pr view "$PR_NUMBER" --json baseRefName --jq '.baseRefName' 2>/dev/null || echo "")
+    if [ -n "$BASE_REF" ]; then
+      git fetch origin "$BASE_REF" --depth=1
+      CHANGED_FILES=$(git diff --name-only "origin/$BASE_REF"...HEAD)
+    else
+      CHANGED_FILES=""
+    fi
+  else
+    CHANGED_FILES=""
+  fi
 else
   # Push event - compare against previous commit if it exists
   if git rev-parse HEAD^ >/dev/null 2>&1; then
@@ -66,7 +82,7 @@ while IFS= read -r file; do
   done
   
   # Check for test files themselves
-  if [[ "$file" == tests/*.tftest.hcl ]] || [[ "$file" == tests/setup-*/* ]]; then
+  if [[ "$file" == tests/*.tftest.hcl ]] || [[ "$file" == tests/setup-* ]]; then
     echo "  -> Test infrastructure changed, running all tests"
     run_all=true
     break
@@ -207,5 +223,9 @@ echo "Test files to run:"
 printf '%s\n' "${TEST_FILES[@]}"
 
 # Output as JSON array
-printf -v joined '"%s",' "${TEST_FILES[@]}"
-echo "[${joined%,}]"
+if [ ${#TEST_FILES[@]} -eq 0 ]; then
+  echo "[]"
+else
+  printf -v joined '"%s",' "${TEST_FILES[@]}"
+  echo "[${joined%,}]"
+fi
