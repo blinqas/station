@@ -11,10 +11,13 @@ provider "azurerm" {
 
 provider "azuread" {}
 
+test {
+  parallel = true
+}
 
 run "bootstrap_create_tfc_test_project" {
   variables {
-    tfc_project_name = "tests_group"
+    tfc_project_name = "tests_tfe"
   }
   module {
     source = "./tests/setup-tfe-project"
@@ -30,7 +33,7 @@ variables {
     }
     organization_name     = "blinq-west-lab"
     workspace_name        = "tfe_test"
-    workspace_description = "Workspace description"
+    workspace_description = "Workspace description for var.tfe"
     workspace_settings = {
       execution_mode = "remote"
       agent_pool_id  = null # Not adding this as it will require us to setup a private runner
@@ -98,7 +101,7 @@ run "tfe_create_workspace" {
   }
 
   assert {
-    condition     = module.station-tfe.workspace.description == "Workspace description"
+    condition     = module.station-tfe.workspace.description == "Workspace description for var.tfe"
     error_message = "The workspace description does NOT match the input"
   }
 
