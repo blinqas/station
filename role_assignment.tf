@@ -56,10 +56,13 @@ resource "azurerm_role_assignment" "others" {
 
 // PIM Eligible Role Assignments for user specified principals
 resource "azurerm_pim_eligible_role_assignment" "others" {
-  for_each           = local.role_assignments_others_pim_eligible
-  scope              = each.value.scope
-  role_definition_id = each.value.role_definition_id != null ? each.value.role_definition_id : data.azurerm_role_definition.pim_others_eligible[each.key].id
-  principal_id       = each.value.principal_id
+  for_each = local.role_assignments_others_pim_eligible
+  scope    = each.value.scope
+  role_definition_id = (
+    each.value.role_definition_name != null ? data.azurerm_role_definition.pim_others_eligible[each.key].id :
+    data.azurerm_role_definition.pim_others_eligible_by_id[each.key].id
+  )
+  principal_id = each.value.principal_id
 
   dynamic "schedule" {
     for_each = each.value.pim.start_date_time != null || each.value.pim.expiration != null ? [1] : []
@@ -90,10 +93,13 @@ resource "azurerm_pim_eligible_role_assignment" "others" {
 
 // PIM Active Role Assignments for user specified principals
 resource "azurerm_pim_active_role_assignment" "others" {
-  for_each           = local.role_assignments_others_pim_active
-  scope              = each.value.scope
-  role_definition_id = each.value.role_definition_id != null ? each.value.role_definition_id : data.azurerm_role_definition.pim_others_active[each.key].id
-  principal_id       = each.value.principal_id
+  for_each = local.role_assignments_others_pim_active
+  scope    = each.value.scope
+  role_definition_id = (
+    each.value.role_definition_name != null ? data.azurerm_role_definition.pim_others_active[each.key].id :
+    data.azurerm_role_definition.pim_others_active_by_id[each.key].id
+  )
+  principal_id = each.value.principal_id
 
   dynamic "schedule" {
     for_each = each.value.pim.start_date_time != null || each.value.pim.expiration != null ? [1] : []
@@ -175,18 +181,36 @@ locals {
 data "azurerm_role_definition" "pim_others_eligible" {
   for_each = {
     for k, v in local.role_assignments_others_pim_eligible : k => v
-    if v.role_definition_id == null && v.role_definition_name != null
+    if v.role_definition_name != null
   }
   name  = each.value.role_definition_name
   scope = each.value.scope
 }
 
+data "azurerm_role_definition" "pim_others_eligible_by_id" {
+  for_each = {
+    for k, v in local.role_assignments_others_pim_eligible : k => v
+    if v.role_definition_id != null
+  }
+  role_definition_id = each.value.role_definition_id
+  scope              = each.value.scope
+}
+
 data "azurerm_role_definition" "pim_others_active" {
   for_each = {
     for k, v in local.role_assignments_others_pim_active : k => v
-    if v.role_definition_id == null && v.role_definition_name != null
+    if v.role_definition_name != null
   }
   name  = each.value.role_definition_name
   scope = each.value.scope
+}
+
+data "azurerm_role_definition" "pim_others_active_by_id" {
+  for_each = {
+    for k, v in local.role_assignments_others_pim_active : k => v
+    if v.role_definition_id != null
+  }
+  role_definition_id = each.value.role_definition_id
+  scope              = each.value.scope
 }
 

@@ -21,19 +21,37 @@ locals {
 data "azurerm_role_definition" "pim_eligible" {
   for_each = {
     for k, v in local.pim_eligible_role_assignments : k => v
-    if v.role_definition_id == null && v.role_definition_name != null
+    if v.role_definition_name != null
   }
   name  = each.value.role_definition_name
   scope = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
 }
 
+data "azurerm_role_definition" "pim_eligible_by_id" {
+  for_each = {
+    for k, v in local.pim_eligible_role_assignments : k => v
+    if v.role_definition_id != null
+  }
+  role_definition_id = each.value.role_definition_id
+  scope              = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
+}
+
 data "azurerm_role_definition" "pim_active" {
   for_each = {
     for k, v in local.pim_active_role_assignments : k => v
-    if v.role_definition_id == null && v.role_definition_name != null
+    if v.role_definition_name != null
   }
   name  = each.value.role_definition_name
   scope = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
+}
+
+data "azurerm_role_definition" "pim_active_by_id" {
+  for_each = {
+    for k, v in local.pim_active_role_assignments : k => v
+    if v.role_definition_id != null
+  }
+  role_definition_id = each.value.role_definition_id
+  scope              = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
 }
 
 // Standard role assignments (non-PIM)
@@ -52,10 +70,13 @@ resource "azurerm_role_assignment" "roles" {
 
 // PIM Eligible role assignments
 resource "azurerm_pim_eligible_role_assignment" "roles" {
-  for_each           = local.pim_eligible_role_assignments
-  scope              = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
-  role_definition_id = each.value.role_definition_id != null ? each.value.role_definition_id : data.azurerm_role_definition.pim_eligible[each.key].id
-  principal_id       = azuread_group.group.object_id
+  for_each = local.pim_eligible_role_assignments
+  scope    = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
+  role_definition_id = (
+    each.value.role_definition_name != null ? data.azurerm_role_definition.pim_eligible[each.key].id :
+    data.azurerm_role_definition.pim_eligible_by_id[each.key].id
+  )
+  principal_id = azuread_group.group.object_id
 
   dynamic "schedule" {
     for_each = each.value.pim.start_date_time != null || each.value.pim.expiration != null ? [1] : []
@@ -86,10 +107,13 @@ resource "azurerm_pim_eligible_role_assignment" "roles" {
 
 // PIM Active role assignments
 resource "azurerm_pim_active_role_assignment" "roles" {
-  for_each           = local.pim_active_role_assignments
-  scope              = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
-  role_definition_id = each.value.role_definition_id != null ? each.value.role_definition_id : data.azurerm_role_definition.pim_active[each.key].id
-  principal_id       = azuread_group.group.object_id
+  for_each = local.pim_active_role_assignments
+  scope    = each.value.scope == null ? "/subscriptions/${var.subscription_id}" : each.value.scope
+  role_definition_id = (
+    each.value.role_definition_name != null ? data.azurerm_role_definition.pim_active[each.key].id :
+    data.azurerm_role_definition.pim_active_by_id[each.key].id
+  )
+  principal_id = azuread_group.group.object_id
 
   dynamic "schedule" {
     for_each = each.value.pim.start_date_time != null || each.value.pim.expiration != null ? [1] : []
