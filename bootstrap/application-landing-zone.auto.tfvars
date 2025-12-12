@@ -8,13 +8,13 @@ config = {
   # The name of the Managed Identity which will deploy further Landing Zones
   identity_name = "mi-alz-applications"
 
-  terraform_cloud = {                    # Terraform Cloud Configuration
-    organization_name               = "" # TFC Organization
-    workspace_name                  = "alz-applications"
-    workspace_description           = "Application Landing Zone definitions"
-    bootstrap_workspace_name        = "alz-applications-bootstrap"
-    bootstrap_workspace_description = "Bootstrap for Application Landing Zones"
-    vcs_repo_github_oauth_token_id  = "" # OAuth App ID (https://github.com/organizations/<org_name>/settings/applications/<app_id_here>)
+  terraform_cloud = { # Terraform Cloud Configuration
+    organization_name                   = ""
+    workspace_name                      = "alz-applications"
+    workspace_description               = "Application Landing Zone definitions"
+    bootstrap_workspace_name            = "alz-applications-bootstrap"
+    bootstrap_workspace_description     = "Bootstrap for Application Landing Zones"
+    vcs_repo_github_app_installation_id = ""
     project = {
       name        = "Azure Application Landing Zones"
       description = "Azure Application Landing Zones"
@@ -22,7 +22,7 @@ config = {
   }
 
   github = {
-    owner       = "" # Github Organization
+    owner       = "" # Organization
     repository  = "alz-applications"
     description = "Terraform Configuration for Application Landing Zones"
     branch      = "main"
@@ -32,17 +32,15 @@ config = {
     bootstrap_description = "Terraform Configuration for Bootstrap of Azure Application Landing Zones"
     bootstrap_branch      = "main"
 
-    provider = {           # Station Landing Zones GitHub App (Not VCS App)
-      id              = "" #1234567
-      installation_id = "" #12345678
+    provider = { # Station Landing Zones GitHub App
+      id              = "1265646"
+      installation_id = "66578814"
     }
-    pem_file_path = "./station-landing-zones.pem" # Path to private key used to create new GitHub repositories
   }
 
   tags = {
-    owner       = "Platform Engineering"
-    deployedBy  = "terraform"
-    description = "Used to deploy Application Landing Zones"
+    owner      = "Platform Engineering"
+    deployedBy = "terraform"
   }
 }
 

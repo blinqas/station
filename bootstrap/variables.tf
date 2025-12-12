@@ -7,7 +7,6 @@ variable "tfe_token" {
   description = "(Required) HCP Terraform User API token for \"Service Account\" user. Must be member of the `owners` team."
   sensitive   = true
   type        = string
-  default     = "value"
 }
 
 variable "enable_privileged_role_administrator" {
@@ -34,3 +33,10 @@ variable "enable_privileged_role_administrator" {
   type        = bool
   default     = false
 }
+
+variable "github_app_pem_file" {
+  description = "(Required) Base64 encoded private key for the Station Landing Zones Github app."
+  sensitive   = true
+  type        = string
+}
+
