@@ -12,18 +12,6 @@ variable "identity" {
         role_definition_name = "Key Vault Administrator"
         description = "Needed to manage key vaults"
       }
-      pim_contributor = {
-        scope = "/subscriptions/00000000-0000-0000-0000-000000000000"
-        role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
-        description = "PIM-based contributor access"
-        pim = {
-          member_type = "Eligible"
-          expiration = {
-            duration_days = 90
-          }
-          justification = "Temporary elevated access"
-        }
-      }
     }
 
     app_role_assignments = {
@@ -57,19 +45,6 @@ variable "identity" {
       delegated_managed_identity_resource_id = optional(string)
       description                            = optional(string)
       skip_service_principal_aad_check       = optional(bool)
-
-      pim = optional(object({
-        member_type     = optional(string, "Eligible")
-        start_date_time = optional(string)
-        expiration = optional(object({
-          duration_days  = optional(number)
-          duration_hours = optional(number)
-          end_date_time  = optional(string)
-        }))
-        justification = optional(string)
-        ticket_number = optional(string)
-        ticket_system = optional(string)
-      }))
     })), {})
     group_memberships = optional(map(string), {})
     app_role_assignments = optional(map(object({
@@ -92,38 +67,6 @@ variable "identity" {
   validation {
     condition     = alltrue([for k, v in var.identity.directory_role_assignments : !(v.role_name != null && v.role_id != null)])
     error_message = "directory_role_assignments: `role_name` cannot be used with `role_id`."
-  }
-
-  validation {
-    condition = alltrue([
-      for k, v in var.identity.role_assignments : v.pim == null || (
-        v.pim != null && contains(["Eligible", "Active"], v.pim.member_type)
-      )
-    ])
-    error_message = "PIM member_type must be either 'Eligible' or 'Active'."
-  }
-
-  validation {
-    condition = alltrue([
-      for k, v in var.identity.role_assignments : v.pim == null || v.pim.expiration == null || (
-        v.pim.expiration != null && (
-          (v.pim.expiration.duration_days != null && v.pim.expiration.duration_hours == null && v.pim.expiration.end_date_time == null) ||
-          (v.pim.expiration.duration_days == null && v.pim.expiration.duration_hours != null && v.pim.expiration.end_date_time == null) ||
-          (v.pim.expiration.duration_days == null && v.pim.expiration.duration_hours == null && v.pim.expiration.end_date_time != null)
-        )
-      )
-    ])
-    error_message = "PIM expiration must specify only one of: duration_days, duration_hours, or end_date_time."
-  }
-
-  validation {
-    condition = alltrue([
-      for k, v in var.identity.role_assignments : v.pim == null || (
-        (v.pim.ticket_number == null && v.pim.ticket_system == null) ||
-        (v.pim.ticket_number != null && v.pim.ticket_system != null)
-      )
-    ])
-    error_message = "PIM ticket_number and ticket_system must both be specified or both be null."
   }
 }
 
