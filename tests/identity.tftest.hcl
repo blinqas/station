@@ -152,3 +152,104 @@ run "identity" {
   }
 }
 
+run "var_role_assignments_pim" {
+  module {
+    source = "./"
+  }
+
+  variables {
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    # Role assignments for a specific principal (e.g., a group)
+    role_assignments = {
+      pim_eligible_for_group = {
+        scope                = "/subscriptions/${var.subscription_id}"
+        role_definition_name = "Reader"
+        principal_id         = run.setup_entraid.groups["test"].object_id
+        description          = "PIM Eligible Reader for test group"
+        pim = {
+          member_type = "Eligible"
+          expiration = {
+            duration_days = 120
+          }
+          justification = "Test PIM on var.role_assignments"
+        }
+      }
+      pim_active_for_group = {
+        scope                = "/subscriptions/${var.subscription_id}"
+        role_definition_name = "Contributor"
+        principal_id         = run.setup_entraid.groups["test"].object_id
+        description          = "PIM Active Contributor for test group"
+        pim = {
+          member_type = "Active"
+          expiration = {
+            duration_days = 180
+          }
+          justification = "Test PIM active on var.role_assignments"
+          ticket_number = "TICKET-456"
+          ticket_system = "JIRA"
+        }
+      }
+      pim_eligible_with_role_id = {
+        scope              = "/subscriptions/${var.subscription_id}"
+        role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c" # Contributor role
+        principal_id       = run.setup_entraid.groups["test"].object_id
+        description        = "PIM Eligible using role_definition_id"
+        pim = {
+          member_type = "Eligible"
+          expiration = {
+            duration_hours = 48
+          }
+          justification = "Test PIM with role_definition_id"
+        }
+      }
+      non_pim_for_group = {
+        scope                = "/subscriptions/${var.subscription_id}"
+        role_definition_name = "Reader"
+        principal_id         = run.setup_entraid.groups["test"].object_id
+        description          = "Non-PIM Reader for test group"
+      }
+    }
+  }
+
+  # Assert PIM eligible role assignment exists for var.role_assignments
+  assert {
+    condition     = can(azurerm_pim_eligible_role_assignment.others["pim_eligible_for_group"])
+    error_message = "PIM eligible role assignment for var.role_assignments was not created"
+  }
+
+  # Assert PIM active role assignment exists for var.role_assignments
+  assert {
+    condition     = can(azurerm_pim_active_role_assignment.others["pim_active_for_group"])
+    error_message = "PIM active role assignment for var.role_assignments was not created"
+  }
+
+  # Assert non-PIM role assignment exists for var.role_assignments
+  assert {
+    condition     = can(azurerm_role_assignment.others["non_pim_for_group"])
+    error_message = "Non-PIM role assignment for var.role_assignments was not created"
+  }
+
+  # Assert PIM eligible assignment has correct principal
+  assert {
+    condition     = azurerm_pim_eligible_role_assignment.others["pim_eligible_for_group"].principal_id == run.setup_entraid.groups["test"].object_id
+    error_message = "PIM eligible role assignment has incorrect principal_id"
+  }
+
+  # Assert PIM active assignment has correct principal
+  assert {
+    condition     = azurerm_pim_active_role_assignment.others["pim_active_for_group"].principal_id == run.setup_entraid.groups["test"].object_id
+    error_message = "PIM active role assignment has incorrect principal_id"
+  }
+
+  # Assert PIM eligible with role_definition_id works
+  assert {
+    condition     = can(azurerm_pim_eligible_role_assignment.others["pim_eligible_with_role_id"])
+    error_message = "PIM eligible role assignment using role_definition_id was not created"
+  }
+}
+

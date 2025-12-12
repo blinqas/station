@@ -195,3 +195,4 @@ run "group_memberships" {
     error_message = "The user-assigned identity was not added to the correct static group."
   }
 }
+

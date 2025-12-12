@@ -8,7 +8,11 @@ output "display_name" {
 
 
 output "role_assignments" {
-  value = azurerm_role_assignment.roles
+  value = merge(
+    azurerm_role_assignment.roles,
+    azurerm_pim_eligible_role_assignment.roles,
+    azurerm_pim_active_role_assignment.roles
+  )
 }
 
 output "object_id" {
