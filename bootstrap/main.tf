@@ -52,33 +52,59 @@ module "station" {
 
   identity = {
     name = var.config.identity_name
+
+    # Azure RBAC: Owner on subscription for managing Azure resources
     role_assignments = {
       owner_lz = {
         scope                = "/subscriptions/${var.config.subscription_id}"
         role_definition_name = "Owner"
       }
     }
-    directory_role_assignments = {
-      "Global Administrator" = {
-        role_name = "Global Administrator"
-        /*
-        ⚠️ IMPORTANT: Granting the "Global Administrator" directory role means that 
-        ANYONE with access to the provisioned landing zone repository will indirectly have GA-level 
-        permissions.
 
-        To minimize security risks, you MUST ensure:
-          • The repository is only accessible to users who actually require it.
-          • Branch protection rules are in place to ensure all changes are reviewed before being merged.
-          • All users are required to use two-factor authentication (2FA).
-
-        You CAN change this to a less restrictive role if desired, but be aware that doing so:
-          • Will limit this identity's ability to assign highly privileged directory roles 
-            to other landing zones in the future.
-          • The bootstrap process is not designed to be rerun. You should not expect to 
-            be able to add additional roles later without manual intervention.
-      */
+    # Microsoft Graph API Permissions (Application)
+    # These replace Global Administrator with least-privilege permissions
+    # See: https://learn.microsoft.com/en-us/graph/permissions-reference
+    app_role_assignments = {
+      # Manage applications where this identity is an owner
+      # https://learn.microsoft.com/en-us/graph/permissions-reference#applicationreadwriteownedby
+      "Application.ReadWrite.OwnedBy" = {
+        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["Application.ReadWrite.OwnedBy"]
+        resource_object_id = data.azuread_service_principal.msgraph.object_id
+      }
+      # Create and manage security groups
+      # https://learn.microsoft.com/en-us/graph/permissions-reference#groupreadwriteall
+      "Group.ReadWrite.All" = {
+        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["Group.ReadWrite.All"]
+        resource_object_id = data.azuread_service_principal.msgraph.object_id
+      }
+      # Add/remove members from groups
+      # https://learn.microsoft.com/en-us/graph/permissions-reference#groupmemberreadwriteall
+      "GroupMember.ReadWrite.All" = {
+        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["GroupMember.ReadWrite.All"]
+        resource_object_id = data.azuread_service_principal.msgraph.object_id
+      }
+      # Read user profiles (required for group member validation)
+      # https://learn.microsoft.com/en-us/graph/permissions-reference#userreadall
+      "User.Read.All" = {
+        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["User.Read.All"]
+        resource_object_id = data.azuread_service_principal.msgraph.object_id
+      }
+      # Grant API permissions (app roles) to service principals
+      # https://learn.microsoft.com/en-us/graph/permissions-reference#approleassignmentreadwriteall
+      "AppRoleAssignment.ReadWrite.All" = {
+        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["AppRoleAssignment.ReadWrite.All"]
+        resource_object_id = data.azuread_service_principal.msgraph.object_id
       }
     }
+
+    # Entra ID Directory Role (Optional)
+    # Only granted if var.enable_privileged_role_administrator is true
+    # https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/permissions-reference#privileged-role-administrator
+    directory_role_assignments = var.enable_privileged_role_administrator ? {
+      "Privileged Role Administrator" = {
+        role_name = "Privileged Role Administrator"
+      }
+    } : {}
   }
   providers = {
     azurerm              = azurerm
@@ -87,8 +113,11 @@ module "station" {
   depends_on = [github_repository_file.alz_applications]
 }
 
-data "azuread_service_principal" "well_known" {
-  for_each     = toset(["Microsoft Graph"])
-  display_name = each.value
+# Microsoft Graph service principal - used to reference app role IDs
+# https://learn.microsoft.com/en-us/graph/permissions-reference
+data "azuread_application_published_app_ids" "well_known" {}
+
+data "azuread_service_principal" "msgraph" {
+  client_id = data.azuread_application_published_app_ids.well_known.result.MicrosoftGraph
 }
 
