@@ -190,6 +190,18 @@ run "identity_pim_role_assignments" {
             justification = "Test PIM active assignment"
           }
         }
+        pim_eligible_with_role_id = {
+          scope              = "/subscriptions/${var.subscription_id}"
+          role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7" # Reader role
+          description        = "PIM Eligible using role_definition_id"
+          pim = {
+            member_type = "Eligible"
+            expiration = {
+              duration_days = 60
+            }
+            justification = "Test PIM with role_definition_id"
+          }
+        }
         non_pim_reader = {
           scope                = "/subscriptions/${var.subscription_id}"
           role_definition_name = "Reader"
@@ -227,6 +239,12 @@ run "identity_pim_role_assignments" {
   assert {
     condition     = azurerm_pim_active_role_assignment.lz_identity["pim_active_contributor"].principal_id == module.user_assigned_identity.principal_id
     error_message = "PIM active role assignment has incorrect principal_id"
+  }
+
+  # Assert PIM eligible with role_definition_id works
+  assert {
+    condition     = can(azurerm_pim_eligible_role_assignment.lz_identity["pim_eligible_with_role_id"])
+    error_message = "PIM eligible role assignment using role_definition_id was not created"
   }
 }
 
@@ -272,6 +290,19 @@ run "var_role_assignments_pim" {
           ticket_system = "JIRA"
         }
       }
+      pim_eligible_with_role_id = {
+        scope              = "/subscriptions/${var.subscription_id}"
+        role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c" # Contributor role
+        principal_id       = run.setup_entraid.groups["test"].object_id
+        description        = "PIM Eligible using role_definition_id"
+        pim = {
+          member_type = "Eligible"
+          expiration = {
+            duration_hours = 48
+          }
+          justification = "Test PIM with role_definition_id"
+        }
+      }
       non_pim_for_group = {
         scope                = "/subscriptions/${var.subscription_id}"
         role_definition_name = "Reader"
@@ -309,6 +340,12 @@ run "var_role_assignments_pim" {
   assert {
     condition     = azurerm_pim_active_role_assignment.others["pim_active_for_group"].principal_id == run.setup_entraid.groups["test"].object_id
     error_message = "PIM active role assignment has incorrect principal_id"
+  }
+
+  # Assert PIM eligible with role_definition_id works
+  assert {
+    condition     = can(azurerm_pim_eligible_role_assignment.others["pim_eligible_with_role_id"])
+    error_message = "PIM eligible role assignment using role_definition_id was not created"
   }
 }
 

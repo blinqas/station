@@ -52,6 +52,31 @@ variable "groups" {
     (Optional) Map of Entra ID (Azure AD) groups to create
     Note: The workload identity is automatically assigned the App Role "User.ReadBasic.All" and "Group.Read.All"
           because being "Owner" of the group is not sufficient to add principals and then list them after an add or delete operation.
+    
+    Example:
+    groups = {
+      developers = {
+        display_name     = "Project Developers"
+        security_enabled = true
+        role_assignments = {
+          pim_contributor = {
+            scope                = "/subscriptions/00000000-0000-0000-0000-000000000000"
+            role_definition_name = "Contributor"
+            pim = {
+              member_type = "Eligible"
+              expiration = {
+                duration_days = 30
+              }
+              justification = "Project access"
+            }
+          }
+          standard_reader = {
+            scope                = null  # Defaults to subscription
+            role_definition_id   = "/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7"
+          }
+        }
+      }
+    }
   EOF
   default     = {}
   type = map(object({
@@ -90,7 +115,47 @@ variable "groups" {
       }))
     })))
   }))
+
+  validation {
+    condition = alltrue(flatten([
+      for group_key, group in var.groups : [
+        for ra_key, ra in coalesce(group.role_assignments, {}) :
+        ra.pim == null || contains(["Eligible", "Active"], ra.pim.member_type)
+      ]
+    ]))
+    error_message = "PIM member_type must be either 'Eligible' or 'Active'."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for group_key, group in var.groups : [
+        for ra_key, ra in coalesce(group.role_assignments, {}) :
+        ra.pim == null || ra.pim.expiration == null || (
+          ra.pim.expiration != null && (
+            (ra.pim.expiration.duration_days != null && ra.pim.expiration.duration_hours == null && ra.pim.expiration.end_date_time == null) ||
+            (ra.pim.expiration.duration_days == null && ra.pim.expiration.duration_hours != null && ra.pim.expiration.end_date_time == null) ||
+            (ra.pim.expiration.duration_days == null && ra.pim.expiration.duration_hours == null && ra.pim.expiration.end_date_time != null)
+          )
+        )
+      ]
+    ]))
+    error_message = "PIM expiration must specify only one of: duration_days, duration_hours, or end_date_time."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for group_key, group in var.groups : [
+        for ra_key, ra in coalesce(group.role_assignments, {}) :
+        ra.pim == null || (
+          (ra.pim.ticket_number == null && ra.pim.ticket_system == null) ||
+          (ra.pim.ticket_number != null && ra.pim.ticket_system != null)
+        )
+      ]
+    ]))
+    error_message = "PIM ticket_number and ticket_system must both be specified or both be null."
+  }
 }
+
 
 variable "user_assigned_identities" {
   description = <<EOF
@@ -215,6 +280,27 @@ variable "role_assignments" {
     - ticket_system: Optional ticket system identifier.
 
     Note: When 'pim' block is specified, a PIM role assignment will be created instead of a regular role assignment.
+    
+    Example:
+    role_assignments = {
+      pim_contributor = {
+        scope                = "/subscriptions/00000000-0000-0000-0000-000000000000"
+        role_definition_name = "Contributor"
+        principal_id         = "00000000-0000-0000-0000-000000000000"
+        pim = {
+          member_type = "Eligible"
+          expiration = {
+            duration_days = 90
+          }
+          justification = "Quarterly access for project work"
+        }
+      }
+      standard_reader = {
+        scope                = "/subscriptions/00000000-0000-0000-0000-000000000000"
+        role_definition_id   = "/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7"
+        principal_id         = "00000000-0000-0000-0000-000000000000"
+      }
+    }
   EOF
   default     = {}
   type = map(object({
@@ -242,6 +328,38 @@ variable "role_assignments" {
       ticket_system = optional(string)
     }))
   }))
+
+  validation {
+    condition = alltrue([
+      for k, v in var.role_assignments : v.pim == null || (
+        v.pim != null && contains(["Eligible", "Active"], v.pim.member_type)
+      )
+    ])
+    error_message = "PIM member_type must be either 'Eligible' or 'Active'."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.role_assignments : v.pim == null || v.pim.expiration == null || (
+        v.pim.expiration != null && (
+          (v.pim.expiration.duration_days != null && v.pim.expiration.duration_hours == null && v.pim.expiration.end_date_time == null) ||
+          (v.pim.expiration.duration_days == null && v.pim.expiration.duration_hours != null && v.pim.expiration.end_date_time == null) ||
+          (v.pim.expiration.duration_days == null && v.pim.expiration.duration_hours == null && v.pim.expiration.end_date_time != null)
+        )
+      )
+    ])
+    error_message = "PIM expiration must specify only one of: duration_days, duration_hours, or end_date_time."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.role_assignments : v.pim == null || (
+        (v.pim.ticket_number == null && v.pim.ticket_system == null) ||
+        (v.pim.ticket_number != null && v.pim.ticket_system != null)
+      )
+    ])
+    error_message = "PIM ticket_number and ticket_system must both be specified or both be null."
+  }
 }
 
 variable "connectivity" {

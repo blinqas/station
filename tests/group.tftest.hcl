@@ -298,6 +298,18 @@ run "groups-pim_role_assignments" {
               justification = "Test group PIM active assignment"
             }
           }
+          pim_eligible_with_role_id = {
+            scope              = null
+            role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c" # Contributor role
+            description        = "PIM Eligible using role_definition_id"
+            pim = {
+              member_type = "Eligible"
+              expiration = {
+                duration_hours = 24
+              }
+              justification = "Test group PIM with role_definition_id"
+            }
+          }
           non_pim_contributor = {
             scope                = null
             role_definition_name = "Contributor"
@@ -328,5 +340,11 @@ run "groups-pim_role_assignments" {
   assert {
     condition     = can(module.ad_groups.pim_group.role_assignments["non_pim_contributor"])
     error_message = "Non-PIM role assignment for group was not created"
+  }
+
+  # Assert PIM eligible with role_definition_id works
+  assert {
+    condition     = can(module.ad_groups.pim_group.role_assignments["pim_eligible_with_role_id"])
+    error_message = "PIM eligible role assignment using role_definition_id was not created for group"
   }
 }
