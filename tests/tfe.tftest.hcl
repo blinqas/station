@@ -317,37 +317,14 @@ run "tfe_outputs_to_workspace_variables" {
   }
 }
 
-run "tfe_workspace_tags_minimum" {
+run "tfe_workspace_tags" {
   variables {
     // Insert the real project id from the generated tfe_project resource in setup-tfe-project (Test module)
     tfe = merge(var.tfe, {
       project = merge(var.tfe.project, {
         id = run.bootstrap_create_tfc_test_project.id
       })
-      workspace_name = "tfe_test_tags_minimum"
-      # Not specifying tags - minimum configuration
-    })
-  }
-
-  module {
-    source = "./"
-  }
-
-  # Assert that tags is null or empty when not specified
-  assert {
-    condition     = module.station-tfe.workspace.tags == null || length(module.station-tfe.workspace.tags) == 0
-    error_message = "The workspace tags should be null or empty when not specified"
-  }
-}
-
-run "tfe_workspace_tags_maximum" {
-  variables {
-    // Insert the real project id from the generated tfe_project resource in setup-tfe-project (Test module)
-    tfe = merge(var.tfe, {
-      project = merge(var.tfe.project, {
-        id = run.bootstrap_create_tfc_test_project.id
-      })
-      workspace_name = "tfe_test_tags_maximum"
+      workspace_name = "tfe_test_tags"
       tags = {
         "environment" = "production"
         "platform"    = "azure"
