@@ -202,7 +202,7 @@ run "var_role_assignments_pim" {
         pim = {
           member_type = "Eligible"
           expiration = {
-            duration_hours = 48
+            duration_days = 30
           }
           justification = "Test PIM with role_definition_id"
         }

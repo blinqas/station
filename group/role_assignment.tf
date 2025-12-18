@@ -103,6 +103,12 @@ resource "azurerm_pim_eligible_role_assignment" "roles" {
       system = each.value.pim.ticket_system
     }
   }
+
+  timeouts {
+    create = "15m"
+    delete = "15m"
+    read   = "5m"
+  }
 }
 
 // PIM Active role assignments
@@ -139,5 +145,11 @@ resource "azurerm_pim_active_role_assignment" "roles" {
       number = each.value.pim.ticket_number
       system = each.value.pim.ticket_system
     }
+  }
+
+  timeouts {
+    create = "15m"
+    delete = "15m"
+    read   = "5m"
   }
 }

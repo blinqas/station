@@ -305,7 +305,7 @@ run "groups-pim_role_assignments" {
             pim = {
               member_type = "Eligible"
               expiration = {
-                duration_hours = 24
+                duration_days = 30
               }
               justification = "Test group PIM with role_definition_id"
             }
