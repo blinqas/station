@@ -1,6 +1,6 @@
 variable "role_assignments" {
   description = <<-EOT
-    A map of role assignments to create at the subscription or management group level.
+    A map of role assignments to create at the given scopes.
 
     - `scope` - (Required) The scope at which the role assignment applies. This can be a subscription ID, resource group ID, or resource ID.
     - `role_definition_id` - (Optional) The ID of the role definition to assign. Cannot be used together with `role_definition_name`.
