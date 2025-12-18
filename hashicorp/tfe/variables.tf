@@ -57,8 +57,8 @@ variable "file_triggers_enabled" {
   default     = true
 }
 
-variable "tag_names" {
-  description = "(Optional) A set of tag names to apply to the workspace. Tags can be used to group and filter workspaces."
-  type        = set(string)
+variable "tags" {
+  description = "(Optional) A map of tags to apply to the workspace. Tags are key-value pairs that can be used to group and filter workspaces."
+  type        = map(string)
   default     = null
 }

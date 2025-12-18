@@ -8,7 +8,7 @@ module "station-tfe" {
   workspace_settings    = try(var.tfe.workspace_settings, null)
   vcs_repo              = try(var.tfe.vcs_repo, null)
   file_triggers_enabled = try(var.tfe.vcs_repo.tags_regex, null) == null ? true : false # if tags_regex is supplied, set to false, this removes an unnecessary step
-  tag_names             = try(var.tfe.tag_names, null)
+  tags                  = try(var.tfe.tags, null)
   workspace_vars = merge(try(var.tfe.workspace_vars, {}), {
     # Terraform variables are prefixed with TF_VAR_ to suppress TFC Runner warning of unused variables.
     station_id = {

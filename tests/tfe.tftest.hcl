@@ -325,7 +325,7 @@ run "tfe_workspace_tags_minimum" {
         id = run.bootstrap_create_tfc_test_project.id
       })
       workspace_name = "tfe_test_tags_minimum"
-      # Not specifying tag_names - minimum configuration
+      # Not specifying tags - minimum configuration
     })
   }
 
@@ -333,10 +333,10 @@ run "tfe_workspace_tags_minimum" {
     source = "./"
   }
 
-  # Assert that tag_names is null or empty when not specified
+  # Assert that tags is null or empty when not specified
   assert {
-    condition     = module.station-tfe.workspace.tag_names == null || length(module.station-tfe.workspace.tag_names) == 0
-    error_message = "The workspace tag_names should be null or empty when not specified"
+    condition     = module.station-tfe.workspace.tags == null || length(module.station-tfe.workspace.tags) == 0
+    error_message = "The workspace tags should be null or empty when not specified"
   }
 }
 
@@ -348,7 +348,12 @@ run "tfe_workspace_tags_maximum" {
         id = run.bootstrap_create_tfc_test_project.id
       })
       workspace_name = "tfe_test_tags_maximum"
-      tag_names      = toset(["azure", "kubernetes", "production", "team-platform"])
+      tags = {
+        "environment" = "production"
+        "platform"    = "azure"
+        "service"     = "kubernetes"
+        "team"        = "platform-engineering"
+      }
     })
   }
 
@@ -356,29 +361,29 @@ run "tfe_workspace_tags_maximum" {
     source = "./"
   }
 
-  # Assert that tag_names contains the expected tags
+  # Assert that tags contains the expected key-value pairs
   assert {
-    condition     = contains(module.station-tfe.workspace.tag_names, "azure")
-    error_message = "The workspace tag_names should contain 'azure'"
+    condition     = module.station-tfe.workspace.tags["environment"] == "production"
+    error_message = "The workspace tags should contain environment=production"
   }
 
   assert {
-    condition     = contains(module.station-tfe.workspace.tag_names, "kubernetes")
-    error_message = "The workspace tag_names should contain 'kubernetes'"
+    condition     = module.station-tfe.workspace.tags["platform"] == "azure"
+    error_message = "The workspace tags should contain platform=azure"
   }
 
   assert {
-    condition     = contains(module.station-tfe.workspace.tag_names, "production")
-    error_message = "The workspace tag_names should contain 'production'"
+    condition     = module.station-tfe.workspace.tags["service"] == "kubernetes"
+    error_message = "The workspace tags should contain service=kubernetes"
   }
 
   assert {
-    condition     = contains(module.station-tfe.workspace.tag_names, "team-platform")
-    error_message = "The workspace tag_names should contain 'team-platform'"
+    condition     = module.station-tfe.workspace.tags["team"] == "platform-engineering"
+    error_message = "The workspace tags should contain team=platform-engineering"
   }
 
   assert {
-    condition     = length(module.station-tfe.workspace.tag_names) == 4
+    condition     = length(module.station-tfe.workspace.tags) == 4
     error_message = "The workspace should have exactly 4 tags"
   }
 }
