@@ -189,9 +189,9 @@ variable "applications" {
 
   validation { # only validate 'groups' claim, as per MS docs. Others can have any additional_properties
     condition = alltrue(flatten([
-      for k, v in var.applications : v.optional_claims == null ? [true] : flatten([ 
+      for k, v in var.applications : v.optional_claims == null ? [true] : flatten([
         v.optional_claims.access_token == null ? [true] : [
-          for claim in v.optional_claims.access_token : claim.name == "groups" && claim.additional_properties != null ? ( 
+          for claim in v.optional_claims.access_token : claim.name == "groups" && claim.additional_properties != null ? (
             length([
               for prop in claim.additional_properties : prop if contains(["sam_account_name", "dns_domain_and_sam_account_name", "netbios_domain_and_sam_account_name"], prop)
             ]) <= 1
