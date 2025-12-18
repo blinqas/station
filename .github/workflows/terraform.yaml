@@ -23,6 +23,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  pull-requests: write  # Needed for comment reactions
 
 env:
   TF_VAR_subscription_id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
@@ -54,12 +55,142 @@ jobs:
   #  
   #      - name: terraform validate station
   #        run: terraform validate
+  
+  # Check if this is a comment trigger for full test run
+  check_comment:
+    name: 🔍 Check for test trigger comment
+    if: github.event_name == 'issue_comment'
+    runs-on: ubuntu-latest
+    outputs:
+      run_full_tests: ${{ steps.check.outputs.run_full_tests }}
+    steps:
+      - name: Check comment for test trigger
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Ensure this is a PR comment, not an issue comment
+            if (!context.payload.issue.pull_request) {
+              core.setOutput('run_full_tests', 'false');
+              core.info('Comment is not on a pull request');
+              return;
+            }
+            
+            const comment = context.payload.comment.body.toLowerCase().trim();
+            const isFullTestTrigger = comment === '/test-all' || comment === '/test all';
+            
+            if (isFullTestTrigger) {
+              // Check if the comment author has write permission
+              // This works for both direct collaborators and organization members
+              try {
+                const { data: permissionData } = await github.rest.repos.getCollaboratorPermissionLevel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  username: context.payload.comment.user.login
+                });
+                
+                const hasPermission = ['admin', 'write', 'maintain'].includes(permissionData.permission);
+                
+                if (!hasPermission) {
+                  core.setOutput('run_full_tests', 'false');
+                  core.warning(`User ${context.payload.comment.user.login} does not have permission to trigger tests (permission: ${permissionData.permission})`);
+                  
+                  // React with thumbs down to indicate no permission
+                  await github.rest.reactions.createForIssueComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    comment_id: context.payload.comment.id,
+                    content: '-1'
+                  });
+                  return;
+                }
+              } catch (error) {
+                core.setOutput('run_full_tests', 'false');
+                core.error(`Failed to check permissions: ${error.message}`);
+                
+                await github.rest.reactions.createForIssueComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: context.payload.comment.id,
+                  content: 'confused'
+                });
+                return;
+              }
+              
+              // User has permission, acknowledge and trigger tests
+              await github.rest.reactions.createForIssueComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: context.payload.comment.id,
+                content: 'rocket'
+              });
+              
+              core.setOutput('run_full_tests', 'true');
+              core.info('Full test run triggered by comment');
+            } else {
+              core.setOutput('run_full_tests', 'false');
+              core.info('Comment does not trigger tests');
+            }
+  
+  list_test_files:
+    name: 🔍 Determine tests to run
+    # Run for all events except issue_comment, or when issue_comment triggers full tests
+    # Note: This job checks out PR code but does NOT have access to secrets
+    # Actual test execution with secrets happens in the E2E_testing environment
+    if: |
+      always() && 
+      (needs.check_comment.result == 'skipped' || needs.check_comment.outputs.run_full_tests == 'true')
+    needs: [check_comment]
+    runs-on: ubuntu-latest
+    outputs:
+      test_files: ${{ steps.set-matrix.outputs.test_files }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for accurate diff
+      
+      # SECURITY NOTE: Checking out PR code on comment trigger
+      # This is intentional - we want to test the PR code when /test-all is commented
+      # Permission check is performed in check_comment job (only users with write/admin access)
+      # This job does NOT have access to secrets - actual test execution happens in E2E_testing environment
+      - name: Checkout PR HEAD for comment trigger
+        if: github.event_name == 'issue_comment'
+        run: |
+          gh pr checkout ${{ github.event.issue.number }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
+      - id: set-matrix
+        run: |
+          # Check if we should run all tests (manual trigger or release)
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]] || \
+             [[ "${{ github.event_name }}" == "release" ]] || \
+             [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+            echo "Manual trigger or release detected - running all tests"
+            files=$(find tests -name '*.tftest.hcl' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          else
+            # Use the script to determine which tests to run
+            chmod +x .github/scripts/determine-tests.sh
+            test_output=$(.github/scripts/determine-tests.sh)
+            echo "$test_output"
+            # Extract just the JSON array from the last line
+            files=$(echo "$test_output" | tail -n 1)
+          fi
+          
+          echo "Test files to run: $files"
+          printf 'test_files=%s\n' "$files" >> "$GITHUB_OUTPUT"
+          
   terraform_test:
     environment: E2E_testing
-    concurrency: terraform-test-group
+    needs: ["list_test_files"]
     runs-on: ubuntu-latest
     name: 🥼 Terraform tests
+    strategy:
+      matrix:
+        test_file: ${{ fromJson(needs.list_test_files.outputs.test_files) }}
+      max-parallel: 10
+    continue-on-error: true # Ensures that the other tests continue even if one fails.
+
     env:
         TFE_ORGANIZATION: ${{ secrets.TFE_ORGANIZATION }}
         TF_VAR_tfc_organization_name: ${{ secrets.TF_VAR_TFC_ORGANIZATION_NAME }}
@@ -81,11 +212,11 @@ jobs:
         - name: Set up Terraform
           uses: hashicorp/setup-terraform@v3
           with:
-            terraform_version: "~1.10.0"
+            terraform_version: "~1.12.0"
             cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
         
         - name: Terraform init
           run: terraform init
           
-        - name: Terraform test
-          run: terraform test
+        - name: Run test file ${{ matrix.test_file }}
+          run: terraform test -filter=${{ matrix.test_file }}

@@ -6,6 +6,10 @@ provider "azurerm" {
   features {}
 }
 
+test {
+  parallel = true
+}
+
 provider "azurerm" {
   alias = "connectivity"
   features {}
