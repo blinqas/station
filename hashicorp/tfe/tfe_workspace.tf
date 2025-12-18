@@ -3,6 +3,7 @@ resource "tfe_workspace" "workload" {
   description           = var.workspace_description
   project_id            = var.project.id
   file_triggers_enabled = var.file_triggers_enabled
+  tag_names             = var.tag_names
 
   dynamic "vcs_repo" {
     for_each = var.vcs_repo == null ? [] : [var.vcs_repo]

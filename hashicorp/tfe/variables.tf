@@ -56,3 +56,9 @@ variable "file_triggers_enabled" {
   description = "(Optional) Whether to filter runs based on the changed files in a VCS push. Defaults to true. If enabled, the working directory and trigger prefixes describe a set of paths which must contain changes for a VCS push to trigger a run. If disabled, any push will trigger a run."
   default     = true
 }
+
+variable "tag_names" {
+  description = "(Optional) A set of tag names to apply to the workspace. Tags can be used to group and filter workspaces."
+  type        = set(string)
+  default     = null
+}
