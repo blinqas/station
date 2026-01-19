@@ -89,7 +89,8 @@ Used by HCP Terraform to watch GitHub commits and trigger runs.
    - Follow the flow to register the GitHub App
 
 2. After installation, note:
-   - GitHub App Installation ID: `ghain-xxxxxxxxxxxx`
+   - GitHub App Installation ID: `ghain-xxxxxxxxxxxx` (Find this at the bottom of **Settings > Tokens:** https://app.terraform.io/app/settings/tokens)
+   - 
 
 ---
 
