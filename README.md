@@ -76,6 +76,38 @@ This file would provision the following:
     - Configured to authenticate to VCS with token already in Terraform Cloud
 - TFC Environment Variables for OIDC authentication with Managed Identity
 
+### Policy Exemptions
+
+When using Station with [Azure Platform Landing Zones](https://azure.github.io/Azure-Landing-Zones/), you may need to exempt specific resource groups from Azure Policy assignments. Station supports creating policy exemptions at the resource group level:
+
+```terraform
+module "scepman" {
+  source = "git::https://github.com/blinqas/station.git?ref=v1.13.0"
+  # ... other configuration ...
+
+  policy_exemptions = {
+    subnet_nsg = {
+      name                 = "subnet-nsg-exemption"
+      policy_assignment_id = "/providers/Microsoft.Management/managementGroups/mg-landingzones/providers/Microsoft.Authorization/policyAssignments/Deny-Subnet-Without-Nsg"
+      exemption_category   = "Waiver"
+      display_name         = "Subnet NSG Exemption"
+      description          = "Terraform module configures subnet and NSG association as separate resources. Azure Policy evaluates during subnet creation before the NSG attachment completes, causing deployment failure."
+      expires_on           = "2028-01-11T00:00:00Z"
+    }
+    appservice_https = {
+      name                 = "appservice-https-exemption"
+      policy_assignment_id = "/providers/Microsoft.Management/managementGroups/mg-landingzones/providers/Microsoft.Authorization/policyAssignments/Enforce-TLS-SSL"
+      exemption_category   = "Waiver"
+      display_name         = "App Service HTTPS Exemption"
+      description          = "Not all SCEP clients support HTTPS and the SCEP protocol has built-in encryption. This exemption allows App Services to be accessible over HTTP."
+      # Optional: resource_group_name defaults to the main resource group if not specified
+    }
+  }
+}
+```
+
+**Note:** Station requires the `description` field to be populated for all policy exemptions to ensure proper documentation of why exemptions are needed.
+
 ---
 
 ## Contact
