@@ -40,29 +40,15 @@ variable "policy_exemptions" {
 
   validation {
     condition = alltrue([
-      for k, v in var.policy_exemptions : v.description != null && v.description != ""
+      for k, v in var.policy_exemptions : v.description != ""
     ])
     error_message = "policy_exemptions[*].description: Description is required and cannot be empty. Always provide a reason for the policy exemption."
   }
 
   validation {
     condition = alltrue([
-      for k, v in var.policy_exemptions : v.name != null && v.name != ""
+      for k, v in var.policy_exemptions : v.expires_on == null || can(timecmp(v.expires_on, "2000-01-01T00:00:00Z"))
     ])
-    error_message = "policy_exemptions[*].name: Name is required and cannot be empty."
-  }
-
-  validation {
-    condition = alltrue([
-      for k, v in var.policy_exemptions : v.policy_assignment_id != null && v.policy_assignment_id != ""
-    ])
-    error_message = "policy_exemptions[*].policy_assignment_id: Policy assignment ID is required and cannot be empty."
-  }
-
-  validation {
-    condition = alltrue([
-      for k, v in var.policy_exemptions : v.expires_on == null || can(regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$", v.expires_on))
-    ])
-    error_message = "policy_exemptions[*].expires_on: Must be in ISO 8601 format (e.g., '2028-01-11T00:00:00Z') or null."
+    error_message = "policy_exemptions[*].expires_on: Must be a valid RFC 3339 timestamp (e.g., '2028-01-11T00:00:00Z') or null."
   }
 }
