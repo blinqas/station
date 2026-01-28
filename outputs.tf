@@ -81,3 +81,8 @@ output "role_assignments" {
   EOT
 }
 
+output "policy_exemptions" {
+  value       = azurerm_resource_group_policy_exemption.this
+  description = "Map of Azure Policy exemptions created at the resource group level."
+}
+
