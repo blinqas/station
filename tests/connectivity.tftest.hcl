@@ -312,10 +312,10 @@ run "station-connectivity" {
             matches  = azurerm_virtual_network_peering.to["max_hub"].allow_gateway_transit == var.connectivity["max"].peerings["max_hub"].allow_gateway_transit
           }
         },
-        max_hub_connectivity_subscription_id = {
-          actual   = azurerm_virtual_network_peering.from["max_hub_connectivity_subscription"].remote_virtual_network_id,
-          expected = var.connectivity["max"].peerings["max_hub"].allow_gateway_transit,
-          matches  = azurerm_virtual_network_peering.from["max_hub_connectivity_subscription"].remote_virtual_network_id == var.connectivity["max"].peerings["max_hub"].allow_gateway_transit
+        max_hub_connectivity = {
+          actual   = azurerm_virtual_network_peering.from_connectivity["max_hub_connectivity_subscription"].remote_virtual_network_id,
+          expected =  azurerm_virtual_network.this["max"].id
+          matches  = azurerm_virtual_network_peering.from_connectivity["max_hub_connectivity_subscription"].remote_virtual_network_id == azurerm_virtual_network.this["max"].id
         }
       })
     ])
