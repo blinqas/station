@@ -50,7 +50,7 @@ run "setup_connectivity_hub_vnet" {
   }
 
   module {
-    source = "./tests/setup-peering-networks"
+    source = "./tests/setup-hub"
   }
 }
 
