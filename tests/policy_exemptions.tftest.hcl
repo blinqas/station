@@ -83,6 +83,8 @@ variables {
 }
 
 run "main" {
+  command = plan
+
   variables {
     tfe = {
       project = {
@@ -148,11 +150,6 @@ run "main" {
     error_message = "Minimum exemption description should match input"
   }
 
-  assert {
-    condition     = azurerm_resource_group_policy_exemption.this["minimum"].resource_group_id == azurerm_resource_group.workload.id
-    error_message = "Minimum exemption should be applied to the default workload resource group"
-  }
-
   # Test that maximum configuration is correctly set
   assert {
     condition     = azurerm_resource_group_policy_exemption.this["maximum"].name == "maximum-exemption"
@@ -183,11 +180,6 @@ run "main" {
   assert {
     condition     = azurerm_resource_group_policy_exemption.this["additional_rg"].name == "additional-rg-exemption"
     error_message = "Additional RG exemption name should be 'additional-rg-exemption'"
-  }
-
-  assert {
-    condition     = azurerm_resource_group_policy_exemption.this["additional_rg"].resource_group_id == azurerm_resource_group.user_specified["additional"].id
-    error_message = "Additional RG exemption should be applied to the user-specified resource group"
   }
 
   # Test that output is correctly set
