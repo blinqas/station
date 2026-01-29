@@ -10,8 +10,6 @@ resource "azurerm_resource_group" "this" {
   location = var.location
 }
 
-
 output "virtual_network_id" {
   value = azurerm_virtual_network.this.id
-
 }

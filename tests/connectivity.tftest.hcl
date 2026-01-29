@@ -5,7 +5,8 @@ provider "azurerm" {
 }
 
 provider "azurerm" {
-  alias = "connectivity"
+  alias           = "connectivity"
+  subscription_id = run.overrides.connectivity_subscription_id
   features {}
 }
 
@@ -15,11 +16,33 @@ test {
   parallel = true
 }
 
+run "overrides" {
+  module {
+    source = "./overrides"
+  }
+}
+
 run "setup_create_hub_vnet" {
   variables {
     remote_vnet_name          = "remote_hub_network" # Update the remote_virtual_network_id if this is changed
     remote_vnet_address_space = "10.0.58.0/23"
     resource_group_name       = "rg-stationtest-peering-hub" # Update the remote_virtual_network_id if this is changed
+  }
+
+  module {
+    source = "./tests/setup-peering-networks"
+  }
+}
+
+run "setup_connectivity_hub_vnet" {
+  providers = {
+    azurerm = azurerm.connectivity
+  }
+
+  variables {
+    remote_vnet_name          = "vnet-stationtest-hub"
+    remote_vnet_address_space = "10.66.66.0/23"
+    resource_group_name       = "rg-stationtest-connectivity-hub"
   }
 
   module {
@@ -68,6 +91,7 @@ variables {
         min_hub = {
           name                      = "peer-lz-min"
           remote_virtual_network_id = "This has to be overrided by the output from the setup_create_hub_vnet module"
+          use_connectivity_subscription = false // Test peering between networks in the same Subscription
         }
       }
     }
@@ -106,20 +130,35 @@ variables {
       }
       peerings = {
         max_hub = {
-          name                         = "peer-lz-max"
-          resource_group_name          = "rg-stationtest-peering-hub"
-          remote_virtual_network_id    = "This has to be overrided by the output from the setup_create_hub_vnet module"
-          allow_forwarded_traffic      = true
-          allow_virtual_network_access = true
-          allow_gateway_transit        = true
+          name                          = "peer-lz-max"
+          resource_group_name           = "rg-stationtest-peering-hub"
+          remote_virtual_network_id     = "This has to be overrided by the output from the setup_create_hub_vnet module"
+          allow_forwarded_traffic       = true
+          allow_virtual_network_access  = true
+          allow_gateway_transit         = true
+          use_connectivity_subscription = false
+        }
+
+        max_hub_connectivity_subscription = {
+          name                          = "peer-lz-connectivity-hub"
+          resource_group_name           = "<N/A>"
+          remote_virtual_network_id     = "<overridden>" // Overridden in run.station-connectivity from output by setup_connectivity_hub_vnet
+          allow_forwarded_traffic       = true
+          allow_virtual_network_access  = true
+          allow_gateway_transit         = true
+          use_connectivity_subscription = true // Peer to hub vnet in azurerm.connectivity
         }
       }
     }
   }
-
 }
 
 run "station-connectivity" {
+  providers = {
+    azurerm              = azurerm
+    azurerm.connectivity = azurerm.connectivity
+  }
+
   variables {
     // Overide the min network to use the outputed vnet ID from the setup_create_hub_vnet module
     connectivity = merge(var.connectivity, {
@@ -135,6 +174,9 @@ run "station-connectivity" {
         peerings = merge(var.connectivity.max.peerings, {
           max_hub = merge(var.connectivity.max.peerings.max_hub, {
             remote_virtual_network_id = run.setup_create_hub_vnet.virtual_network_id
+          })
+          max_hub_connectivity_subscription = merge(var.connectivity.max.peerings.max_hub_connectivity_subscription, {
+            remote_virtual_network_id = run.setup_connectivity_hub_vnet.virtual_network_id
           })
         })
       })
@@ -225,6 +267,9 @@ run "station-connectivity" {
       // Validate allow_gateway_transit
       azurerm_virtual_network_peering.to["min_hub"].allow_gateway_transit == try(var.connectivity["min"].peerings["min_hub"].allow_gateway_transit, false),
       azurerm_virtual_network_peering.to["max_hub"].allow_gateway_transit == var.connectivity["max"].peerings["max_hub"].allow_gateway_transit,
+
+      // Validate peering configuration from spoke to azurerm.connectivity hub
+      azurerm_virtual_network_peering.from["max_hub_connectivity_subscription"].remote_virtual_network_id == azurerm_virtual_network.this["max"].id,
     ])
     error_message = join("\n", [
       "Peering configuration mismatch. Details:",
@@ -262,6 +307,11 @@ run "station-connectivity" {
             expected = var.connectivity["max"].peerings["max_hub"].allow_gateway_transit,
             matches  = azurerm_virtual_network_peering.to["max_hub"].allow_gateway_transit == var.connectivity["max"].peerings["max_hub"].allow_gateway_transit
           }
+        },
+        max_hub_connectivity_subscription_id = {
+          actual   = azurerm_virtual_network_peering.from["max_hub_connectivity_subscription"].remote_virtual_network_id,
+          expected = var.connectivity["max"].peerings["max_hub"].allow_gateway_transit,
+          matches  = azurerm_virtual_network_peering.from["max_hub_connectivity_subscription"].remote_virtual_network_id == var.connectivity["max"].peerings["max_hub"].allow_gateway_transit
         }
       })
     ])
