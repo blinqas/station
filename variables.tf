@@ -283,6 +283,7 @@ variable "connectivity" {
     peerings = optional(map(object({
       name                                   = string
       remote_virtual_network_id              = string
+      use_connectivity_subscription          = optional(bool, true)
       allow_virtual_network_access           = optional(bool, true)
       allow_forwarded_traffic                = optional(bool, false)
       allow_gateway_transit                  = optional(bool, false)
