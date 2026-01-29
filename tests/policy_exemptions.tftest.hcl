@@ -83,8 +83,6 @@ variables {
 }
 
 run "main" {
-  command = plan
-
   variables {
     tfe = {
       project = {
