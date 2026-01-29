@@ -129,7 +129,7 @@ resource "azurerm_virtual_network_peering" "from" {
   virtual_network_name                   = regex("([^//]+)$", each.value.remote_virtual_network_id)[0] // Extract Virtual Network name from Resource ID
 }
 
-resource "azurerm_virtual_network_peering" "from.connectivity" {
+resource "azurerm_virtual_network_peering" "from_connectivity" {
   provider                               = azurerm.connectivity
   for_each                               = { for k, v in local.peerings : k => v if v.use_connectivity_subscription }
   name                                   = each.value.name
