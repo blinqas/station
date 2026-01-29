@@ -89,8 +89,8 @@ variables {
 
       peerings = {
         min_hub = {
-          name                      = "peer-lz-min"
-          remote_virtual_network_id = "This has to be overrided by the output from the setup_create_hub_vnet module"
+          name                          = "peer-lz-min"
+          remote_virtual_network_id     = "This has to be overrided by the output from the setup_create_hub_vnet module"
           use_connectivity_subscription = false // Test peering between networks in the same Subscription
         }
       }
