@@ -88,7 +88,7 @@ run "main" {
   variables {
     tfe = {
       project = {
-        id   = run.bootstrap_create_tfc_test_project.project.id
+        id   = run.bootstrap_create_tfc_test_project.id
         name = "tests_policy_exemptions"
       }
       organization_name     = "blinq-west-lab"
