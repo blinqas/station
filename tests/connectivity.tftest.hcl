@@ -18,7 +18,7 @@ test {
 
 run "overrides" {
   module {
-    source = "./overrides"
+    source = "./tests/overrides"
   }
 }
 
