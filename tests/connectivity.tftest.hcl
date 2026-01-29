@@ -273,7 +273,7 @@ run "station-connectivity" {
       azurerm_virtual_network_peering.to["max_hub"].allow_gateway_transit == var.connectivity["max"].peerings["max_hub"].allow_gateway_transit,
 
       // Validate peering configuration from spoke to azurerm.connectivity hub
-      azurerm_virtual_network_peering.from["max_hub_connectivity_subscription"].remote_virtual_network_id == azurerm_virtual_network.this["max"].id,
+      azurerm_virtual_network_peering.from_connectivity["max_hub_connectivity_subscription"].remote_virtual_network_id == azurerm_virtual_network.this["max"].id,
     ])
     error_message = join("\n", [
       "Peering configuration mismatch. Details:",
