@@ -145,7 +145,7 @@ variables {
 
         max_hub_connectivity_subscription = {
           name                          = "peer-lz-connectivity-hub"
-          resource_group_name           = "<N/A>"
+          resource_group_name           = "rg-stationtest-connectivity-hub"
           remote_virtual_network_id     = "<overridden>" // Overridden in run.station-connectivity from output by setup_connectivity_hub_vnet
           allow_forwarded_traffic       = true
           allow_virtual_network_access  = true
