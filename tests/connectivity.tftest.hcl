@@ -23,6 +23,10 @@ run "overrides" {
 }
 
 run "setup_create_hub_vnet" {
+  providers = {
+    azurerm = azurerm
+  }
+
   variables {
     remote_vnet_name          = "remote_hub_network" # Update the remote_virtual_network_id if this is changed
     remote_vnet_address_space = "10.0.58.0/23"
