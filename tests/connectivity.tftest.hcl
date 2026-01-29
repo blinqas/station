@@ -472,6 +472,9 @@ run "virtual_hub_connection" {
           max_hub = merge(var.connectivity.max.peerings.max_hub, {
             remote_virtual_network_id = run.setup_create_hub_vnet.virtual_network_id
           })
+          max_hub_connectivity_subscription = merge(var.connectivity.max.peerings.max_hub_connectivity_subscription, {
+            remote_virtual_network_id = run.setup_connectivity_hub_vnet.virtual_network_id
+          })
         }),
         virtual_hub_connection = {
           name = "hub-connection-test"
