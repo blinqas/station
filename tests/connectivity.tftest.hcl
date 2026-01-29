@@ -13,7 +13,7 @@ provider "azurerm" {
 provider "azuread" {}
 
 test {
-  parallel = true
+  parallel = false
 }
 
 run "overrides" {
