@@ -183,6 +183,12 @@ jobs:
   terraform_test:
     environment: E2E_testing
     needs: ["list_test_files"]
+    # Run if list_test_files succeeded and produced test files
+    if: |
+      always() && 
+      needs.list_test_files.result == 'success' &&
+      needs.list_test_files.outputs.test_files != '[]' &&
+      needs.list_test_files.outputs.test_files != ''
     runs-on: ubuntu-latest
     name: 🥼 Terraform tests
     strategy:
