@@ -314,7 +314,7 @@ run "station-connectivity" {
         },
         max_hub_connectivity = {
           actual   = azurerm_virtual_network_peering.from_connectivity["max_hub_connectivity_subscription"].remote_virtual_network_id,
-          expected =  azurerm_virtual_network.this["max"].id
+          expected = azurerm_virtual_network.this["max"].id
           matches  = azurerm_virtual_network_peering.from_connectivity["max_hub_connectivity_subscription"].remote_virtual_network_id == azurerm_virtual_network.this["max"].id
         }
       })
