@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - trunk
-      - feat/**
+      - ci/**
     paths:
       #This should only run when terraform files have been changed.
       - '**/*.tf'
