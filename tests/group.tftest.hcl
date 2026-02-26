@@ -33,7 +33,7 @@ run "setup" {
 run "bootstrap_groups" {
   variables {
     user = {
-      user_principal_name = "stationtestuser@blinQVestLab.onmicrosoft.com"
+      user_principal_name = "stationtestuser"
       display_name        = "Test User"
       job_title           = "DevOps Engineer" # This has to match the rule in the dynamic group bellow
     }

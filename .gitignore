@@ -8,3 +8,5 @@ setup/go.sum
 setup/main.go
 setup/tfc.go
 tests/test.sh
+.agent.test.env
+.agent.test.env.local
