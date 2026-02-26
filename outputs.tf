@@ -26,6 +26,10 @@ output "resource_groups_user_specified" {
   value = azurerm_resource_group.user_specified
 }
 
+output "policy_exemptions" {
+  value = azurerm_resource_group_policy_exemption.this
+}
+
 output "applications" {
   value = module.applications
 }
