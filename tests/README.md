@@ -31,21 +31,32 @@ This folder contains all tests for the Terraform Station module. The aim is to s
     terraform init
     ```
 
-3. **Set Environment Variables**:
-   Replace empty strings with your TFC organization name.
+3. **Create `.agent.test.env` from template**:
+  ```bash
+  cp ./.agent.test.env.example ./.agent.test.env
+  ```
+
+4. **Set Environment Variables in `.agent.test.env`**:
+   Replace empty strings with your values.
     ```bash
-    export TFE_ORGANIZATION=""
-    export TF_VAR_tfc_organization_name=""
-    export TF_VAR_tfc_project_name=""
-    export TF_VAR_tenant_id=""
-    export TF_VAR_subscription_id=""
-    export ARM_SUBSCRIPTION_ID=""
+  export TFE_ORGANIZATION=""
+  export TFE_TOKEN=""
+  export TF_VAR_tfc_organization_name=""
+  export TF_VAR_tfc_project_name=""
+  export TF_VAR_tenant_id=""
+  export TF_VAR_subscription_id=""
+  export ARM_SUBSCRIPTION_ID=""
     ```
 
-4. **Starting the tests**:
+5. **Verify Azure context (without forcing re-login each run)**:
+  ```bash
+  sh ./.agents/skills/terraform-station-test/scripts/check-az-context.sh ./.agent.test.env
+  ```
+
+6. **Starting the tests**:
     ```bash
-    terraform test #This will run all the tests
-    terraform test -filter=tests/tfe.tftest.hcl #This will only run the tests for the tfe block
+  sh -c '. ./.agent.test.env; terraform test' #This will run all the tests
+  sh -c '. ./.agent.test.env; terraform test -filter=tests/tfe.tftest.hcl' #This will only run the tests for the tfe block
     ```
 
 ### Automated Test Execution in CI/CD
