@@ -72,6 +72,7 @@ When you create a pull request, the CI/CD pipeline analyzes your changes and run
 - **TFE module changes** (`hashicorp/tfe/**`, `tfe.tf`) → Runs `tfe.tftest.hcl`
 - **Connectivity changes** (`connectivity.tf`) → Runs `connectivity.tftest.hcl`
 - **Identity module changes** (`user_assigned_identity/**`, `variables.identity.tf`) → Runs `identity.tftest.hcl` and `user_assigned_identities.tftest.hcl`
+- **Policy exemption changes** (`policy_exemptions.tf`, `variables.policy.tf`) → Runs `policy_exemptions.tftest.hcl`
 - **Core infrastructure changes** (`variables.tf`, `providers.tf`, `resource_group.tf`, etc.) → Runs **all tests**
 
 For full details on the mapping rules, see [`.github/scripts/README.md`](../.github/scripts/README.md).

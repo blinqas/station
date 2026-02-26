@@ -63,6 +63,7 @@ run_tfe=false
 run_connectivity=false
 run_identity=false
 run_user_assigned_identities=false
+run_policy_exemptions=false
 run_all=false
 
 # Core files that affect all tests
@@ -121,6 +122,10 @@ while IFS= read -r file; do
     echo "  -> User assigned identities test file detected"
     run_user_assigned_identities=true
     file_categorized=true
+  elif [[ "$file" == tests/policy_exemptions.tftest.hcl ]]; then
+    echo "  -> Policy exemptions test file detected"
+    run_policy_exemptions=true
+    file_categorized=true
   elif [[ "$file" == tests/setup-* ]] || [[ "$file" == tests/README.md ]]; then
     echo "  -> Test infrastructure changed, running all tests"
     run_all=true
@@ -165,6 +170,14 @@ while IFS= read -r file; do
     run_connectivity=true
     file_categorized=true
   fi
+
+  # Policy exemptions-related files
+  if [[ "$file" == "policy_exemptions.tf" ]] || \
+     [[ "$file" == "variables.policy.tf" ]]; then
+    echo "  -> Policy exemptions file detected"
+    run_policy_exemptions=true
+    file_categorized=true
+  fi
   
   # Identity-related files (affects both identity and user_assigned_identities tests)
   if [[ "$file" == user_assigned_identity/* ]] || \
@@ -207,6 +220,7 @@ if $run_all; then
     "tests/connectivity.tftest.hcl"
     "tests/identity.tftest.hcl"
     "tests/user_assigned_identities.tftest.hcl"
+    "tests/policy_exemptions.tftest.hcl"
   )
 else
   echo ""
@@ -241,6 +255,11 @@ else
     echo "  - user_assigned_identities tests"
     TEST_FILES+=("tests/user_assigned_identities.tftest.hcl")
   fi
+
+  if $run_policy_exemptions; then
+    echo "  - policy_exemptions tests"
+    TEST_FILES+=("tests/policy_exemptions.tftest.hcl")
+  fi
   
   # If no tests were selected, default to running all (e.g., documentation-only changes)
   if [ ${#TEST_FILES[@]} -eq 0 ]; then
@@ -253,6 +272,7 @@ else
       "tests/connectivity.tftest.hcl"
       "tests/identity.tftest.hcl"
       "tests/user_assigned_identities.tftest.hcl"
+      "tests/policy_exemptions.tftest.hcl"
     )
   fi
 fi

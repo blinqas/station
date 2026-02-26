@@ -76,6 +76,52 @@ This file would provision the following:
     - Configured to authenticate to VCS with token already in Terraform Cloud
 - TFC Environment Variables for OIDC authentication with Managed Identity
 
+### Policy exemption usage example
+
+Use `policy_exemptions` to create Azure Policy exemptions at resource-group scope.
+If `resource_group_key` is omitted, the exemption is created on the default workload resource group.
+
+```terraform
+module "workload" {
+  source = "git::https://github.com/blinqas/station.git?ref=1.3.0"
+
+  tenant_id       = var.tenant_id
+  subscription_id = var.subscription_id
+
+  tfe = {
+    organization_name     = var.tfc_organization_name
+    project               = var.tfc_project
+    workspace_name        = "my-workload"
+    workspace_description = "My workload environment"
+  }
+
+  resource_groups = {
+    shared = {
+      name = "my-workload-shared"
+    }
+  }
+
+  policy_exemptions = {
+    subnet_nsg = {
+      name                 = "my-workload-subnet-nsg-exemption"
+      policy_assignment_id = var.policy_assignment_ids["landingzones/Deny-Subnet-Without-Nsg"]
+      exemption_category   = "Waiver"
+      description          = "Subnet and NSG association is handled in separate steps during deployment."
+      expires_on           = "2028-01-11T00:00:00Z"
+    }
+
+    app_tls = {
+      name                 = "my-workload-appservice-https-exemption"
+      policy_assignment_id = var.policy_assignment_ids["landingzones/Enforce-TLS-SSL-Q225"]
+      exemption_category   = "Mitigated"
+      description          = "Compensating controls and protocol-level constraints are documented for this workload."
+      display_name         = "App Service HTTPS/TLS Exemption"
+      resource_group_key   = "shared"
+    }
+  }
+}
+```
+
 ---
 
 ## Contact

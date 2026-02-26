@@ -15,12 +15,14 @@ The `determine-tests.sh` script analyzes changed files and maps them to the rele
 | `hashicorp/tfe/**`, `tfe.tf` | `tests/tfe.tftest.hcl` |
 | `connectivity.tf` | `tests/connectivity.tftest.hcl` |
 | `user_assigned_identity/**`, `user_assigned_identities.tf`, `variables.identity.tf` | `tests/identity.tftest.hcl`, `tests/user_assigned_identities.tftest.hcl` |
+| `policy_exemptions.tf`, `variables.policy.tf` | `tests/policy_exemptions.tftest.hcl` |
 | `tests/application.tftest.hcl` | `tests/application.tftest.hcl` |
 | `tests/group.tftest.hcl` | `tests/group.tftest.hcl` |
 | `tests/tfe.tftest.hcl` | `tests/tfe.tftest.hcl` |
 | `tests/connectivity.tftest.hcl` | `tests/connectivity.tftest.hcl` |
 | `tests/identity.tftest.hcl` | `tests/identity.tftest.hcl` |
 | `tests/user_assigned_identities.tftest.hcl` | `tests/user_assigned_identities.tftest.hcl` |
+| `tests/policy_exemptions.tftest.hcl` | `tests/policy_exemptions.tftest.hcl` |
 | **Core files** (see below) | **All tests** |
 
 ### Core Files (Trigger All Tests)
