@@ -159,7 +159,8 @@ while IFS= read -r file; do
   fi
   
   # Connectivity-related files
-  if [[ "$file" == "connectivity.tf" ]]; then
+  if [[ "$file" == "connectivity.tf" ]] || \
+     [[ "$file" == "variables.connectivity.tf" ]]; then
     echo "  -> Connectivity file detected"
     run_connectivity=true
     file_categorized=true
