@@ -4,6 +4,26 @@ variable "policy_exemptions" {
 
     Exemptions default to the workload resource group created by Station.
     Set `resource_group_key` to target one of the resource groups from `var.resource_groups`.
+
+    Example:
+    policy_exemptions = {
+      subnet_nsg = {
+        name                 = "my-workload-subnet-nsg-exemption"
+        policy_assignment_id = var.policy_assignment_ids["landingzones/Deny-Subnet-Without-Nsg"]
+        exemption_category   = "Waiver"
+        description          = "Subnet and NSG association is handled in separate steps during deployment."
+        expires_on           = "2028-01-11T00:00:00Z"
+      }
+
+      app_tls = {
+        name                 = "my-workload-appservice-https-exemption"
+        policy_assignment_id = var.policy_assignment_ids["landingzones/Enforce-TLS-SSL-Q225"]
+        exemption_category   = "Mitigated"
+        description          = "Compensating controls and protocol-level constraints are documented for this workload."
+        display_name         = "App Service HTTPS/TLS Exemption"
+        resource_group_key   = "shared"
+      }
+    }
   EOF
   default     = {}
   type = map(object({
