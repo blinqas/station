@@ -45,6 +45,22 @@ variable "identity" {
       delegated_managed_identity_resource_id = optional(string)
       description                            = optional(string)
       skip_service_principal_aad_check       = optional(bool)
+      pim = optional(object({
+        member_type   = optional(string, "Eligible")
+        justification = optional(string)
+        ticket = optional(object({
+          number = optional(string)
+          system = optional(string)
+        }))
+        schedule = optional(object({
+          start_date_time = optional(string)
+          expiration = optional(object({
+            duration_days  = optional(number)
+            duration_hours = optional(number)
+            end_date_time  = optional(string)
+          }))
+        }))
+      }))
     })), {})
     group_memberships = optional(map(string), {})
     app_role_assignments = optional(map(object({
@@ -67,6 +83,47 @@ variable "identity" {
   validation {
     condition     = alltrue([for k, v in var.identity.directory_role_assignments : !(v.role_name != null && v.role_id != null)])
     error_message = "directory_role_assignments: `role_name` cannot be used with `role_id`."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.identity.role_assignments : (
+        try(v.pim, null) == null || contains(["Eligible", "Active"], try(v.pim.member_type, "Eligible"))
+      )
+    ])
+    error_message = "identity.role_assignments[*].pim.member_type: Must be either `Eligible` or `Active` when configured."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.identity.role_assignments : (
+        try(v.pim, null) == null ||
+        length(compact([
+          try(v.pim.schedule.expiration.duration_days, null) == null ? "" : "duration_days",
+          try(v.pim.schedule.expiration.duration_hours, null) == null ? "" : "duration_hours",
+          try(v.pim.schedule.expiration.end_date_time, null) == null ? "" : "end_date_time"
+        ])) <= 1
+      )
+    ])
+    error_message = "identity.role_assignments[*].pim.schedule.expiration: Configure at most one of `duration_days`, `duration_hours`, or `end_date_time`."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.identity.role_assignments : (
+        try(v.pim, null) == null || v.role_definition_id != null || v.role_definition_name != null
+      )
+    ])
+    error_message = "identity.role_assignments[*]: `role_definition_id` or `role_definition_name` must be provided when `pim` is configured."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.identity.role_assignments : (
+        try(v.pim.member_type, "Eligible") != "Active" || (v.condition == null && v.condition_version == null)
+      )
+    ])
+    error_message = "identity.role_assignments[*]: `condition` and `condition_version` are not supported when `pim.member_type` is `Active`."
   }
 }
 

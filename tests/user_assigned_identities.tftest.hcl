@@ -195,3 +195,36 @@ run "group_memberships" {
     error_message = "The user-assigned identity was not added to the correct static group."
   }
 }
+
+run "user_assigned_identity_validation_pim_active_condition" {
+  command = plan
+
+  variables {
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    user_assigned_identities = {
+      invalid = {
+        name = "uai-invalid-pim"
+        role_assignments = {
+          invalid = {
+            scope                = run.bootstrap_uai.current_subscription.id
+            role_definition_name = "Reader"
+            condition            = "@Resource[Microsoft.Storage/storageAccounts:Name] StringEqualsIgnoreCase 'x'"
+            condition_version    = "2.0"
+            pim = {
+              member_type = "Active"
+            }
+          }
+        }
+      }
+    }
+  }
+
+  expect_failures = [
+    var.user_assigned_identities
+  ]
+}

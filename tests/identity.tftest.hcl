@@ -11,6 +11,10 @@ provider "azurerm" {
 
 provider "azuread" {}
 
+variable "subscription_id" {
+  type = string
+}
+
 test {
   parallel = true
 }
@@ -150,5 +154,74 @@ run "identity" {
     condition     = module.user_assigned_identity.name == "mi-${var.tfe.workspace_name}"
     error_message = "The Landing Zone identity is not given the correct default name of..."
   }
+}
+
+run "identity_validation_pim_expiration_mutually_exclusive" {
+  command = plan
+
+  module {
+    source = "./"
+  }
+
+  variables {
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    identity = {
+      role_assignments = {
+        invalid = {
+          scope                = "/subscriptions/${var.subscription_id}"
+          role_definition_name = "Reader"
+          pim = {
+            member_type = "Eligible"
+            schedule = {
+              expiration = {
+                duration_days = 7
+                end_date_time = "2030-01-01T00:00:00Z"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  expect_failures = [
+    var.identity
+  ]
+}
+
+run "role_assignments_validation_pim_member_type" {
+  command = plan
+
+  module {
+    source = "./"
+  }
+
+  variables {
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    role_assignments = {
+      invalid = {
+        scope                = "/subscriptions/${var.subscription_id}"
+        principal_id         = run.setup_entraid.groups["test"].object_id
+        role_definition_name = "Reader"
+        pim = {
+          member_type = "Temporary"
+        }
+      }
+    }
+  }
+
+  expect_failures = [
+    var.role_assignments
+  ]
 }
 

@@ -24,7 +24,7 @@ moved {
 
 // Role Assignments for the Landing Zone identity (via var.identity.role_assignments)
 resource "azurerm_role_assignment" "lz_identity" {
-  for_each                               = local.role_assignments_merged
+  for_each                               = local.lz_identity_role_assignments_standard
   name                                   = each.value.name
   scope                                  = each.value.scope
   role_definition_id                     = each.value.role_definition_id
@@ -38,9 +38,86 @@ resource "azurerm_role_assignment" "lz_identity" {
   principal_type                         = "ServicePrincipal"
 }
 
+data "azurerm_role_definition" "lz_identity_pim_by_name" {
+  for_each = merge(
+    { for k, v in local.lz_identity_role_assignments_pim_eligible : k => v if v.role_definition_id == null && v.role_definition_name != null },
+    { for k, v in local.lz_identity_role_assignments_pim_active : k => v if v.role_definition_id == null && v.role_definition_name != null }
+  )
+  name  = each.value.role_definition_name
+  scope = each.value.scope
+}
+
+resource "azurerm_pim_eligible_role_assignment" "lz_identity" {
+  for_each = local.lz_identity_role_assignments_pim_eligible
+
+  scope              = each.value.scope
+  role_definition_id = coalesce(each.value.role_definition_id, try(data.azurerm_role_definition.lz_identity_pim_by_name[each.key].id, null))
+  principal_id       = module.user_assigned_identity.principal_id
+  justification      = try(each.value.pim.justification, null)
+  condition          = each.value.condition
+  condition_version  = each.value.condition_version
+
+  dynamic "ticket" {
+    for_each = try(each.value.pim.ticket, null) == null ? [] : [each.value.pim.ticket]
+    content {
+      number = try(ticket.value.number, null)
+      system = try(ticket.value.system, null)
+    }
+  }
+
+  dynamic "schedule" {
+    for_each = try(each.value.pim.schedule, null) == null ? [] : [each.value.pim.schedule]
+    content {
+      start_date_time = try(schedule.value.start_date_time, null)
+
+      dynamic "expiration" {
+        for_each = try(schedule.value.expiration, null) == null ? [] : [schedule.value.expiration]
+        content {
+          duration_days  = try(expiration.value.duration_days, null)
+          duration_hours = try(expiration.value.duration_hours, null)
+          end_date_time  = try(expiration.value.end_date_time, null)
+        }
+      }
+    }
+  }
+}
+
+resource "azurerm_pim_active_role_assignment" "lz_identity" {
+  for_each = local.lz_identity_role_assignments_pim_active
+
+  scope              = each.value.scope
+  role_definition_id = coalesce(each.value.role_definition_id, try(data.azurerm_role_definition.lz_identity_pim_by_name[each.key].id, null))
+  principal_id       = module.user_assigned_identity.principal_id
+  justification      = try(each.value.pim.justification, null)
+
+  dynamic "ticket" {
+    for_each = try(each.value.pim.ticket, null) == null ? [] : [each.value.pim.ticket]
+    content {
+      number = try(ticket.value.number, null)
+      system = try(ticket.value.system, null)
+    }
+  }
+
+  dynamic "schedule" {
+    for_each = try(each.value.pim.schedule, null) == null ? [] : [each.value.pim.schedule]
+    content {
+      start_date_time = try(schedule.value.start_date_time, null)
+
+      dynamic "expiration" {
+        for_each = try(schedule.value.expiration, null) == null ? [] : [schedule.value.expiration]
+        content {
+          duration_days  = try(expiration.value.duration_days, null)
+          duration_hours = try(expiration.value.duration_hours, null)
+          end_date_time  = try(expiration.value.end_date_time, null)
+        }
+      }
+    }
+  }
+}
+
 // Role Assignments for user specified principal IDs (not the Landing Zone identity (var.identity) OR the var.user_assigned_identities)
 resource "azurerm_role_assignment" "others" {
-  for_each                               = var.role_assignments
+  for_each                               = local.other_role_assignments_standard
   name                                   = each.value.name
   scope                                  = each.value.scope
   role_definition_id                     = each.value.role_definition_id
@@ -52,6 +129,83 @@ resource "azurerm_role_assignment" "others" {
   description                            = each.value.description
   skip_service_principal_aad_check       = each.value.skip_service_principal_aad_check
   principal_type                         = "ServicePrincipal"
+}
+
+data "azurerm_role_definition" "others_pim_by_name" {
+  for_each = merge(
+    { for k, v in local.other_role_assignments_pim_eligible : k => v if v.role_definition_id == null && v.role_definition_name != null },
+    { for k, v in local.other_role_assignments_pim_active : k => v if v.role_definition_id == null && v.role_definition_name != null }
+  )
+  name  = each.value.role_definition_name
+  scope = each.value.scope
+}
+
+resource "azurerm_pim_eligible_role_assignment" "others" {
+  for_each = local.other_role_assignments_pim_eligible
+
+  scope              = each.value.scope
+  role_definition_id = coalesce(each.value.role_definition_id, try(data.azurerm_role_definition.others_pim_by_name[each.key].id, null))
+  principal_id       = each.value.principal_id
+  justification      = try(each.value.pim.justification, null)
+  condition          = each.value.condition
+  condition_version  = each.value.condition_version
+
+  dynamic "ticket" {
+    for_each = try(each.value.pim.ticket, null) == null ? [] : [each.value.pim.ticket]
+    content {
+      number = try(ticket.value.number, null)
+      system = try(ticket.value.system, null)
+    }
+  }
+
+  dynamic "schedule" {
+    for_each = try(each.value.pim.schedule, null) == null ? [] : [each.value.pim.schedule]
+    content {
+      start_date_time = try(schedule.value.start_date_time, null)
+
+      dynamic "expiration" {
+        for_each = try(schedule.value.expiration, null) == null ? [] : [schedule.value.expiration]
+        content {
+          duration_days  = try(expiration.value.duration_days, null)
+          duration_hours = try(expiration.value.duration_hours, null)
+          end_date_time  = try(expiration.value.end_date_time, null)
+        }
+      }
+    }
+  }
+}
+
+resource "azurerm_pim_active_role_assignment" "others" {
+  for_each = local.other_role_assignments_pim_active
+
+  scope              = each.value.scope
+  role_definition_id = coalesce(each.value.role_definition_id, try(data.azurerm_role_definition.others_pim_by_name[each.key].id, null))
+  principal_id       = each.value.principal_id
+  justification      = try(each.value.pim.justification, null)
+
+  dynamic "ticket" {
+    for_each = try(each.value.pim.ticket, null) == null ? [] : [each.value.pim.ticket]
+    content {
+      number = try(ticket.value.number, null)
+      system = try(ticket.value.system, null)
+    }
+  }
+
+  dynamic "schedule" {
+    for_each = try(each.value.pim.schedule, null) == null ? [] : [each.value.pim.schedule]
+    content {
+      start_date_time = try(schedule.value.start_date_time, null)
+
+      dynamic "expiration" {
+        for_each = try(schedule.value.expiration, null) == null ? [] : [schedule.value.expiration]
+        content {
+          duration_days  = try(expiration.value.duration_days, null)
+          duration_hours = try(expiration.value.duration_hours, null)
+          end_date_time  = try(expiration.value.end_date_time, null)
+        }
+      }
+    }
+  }
 }
 
 locals {
@@ -85,5 +239,29 @@ locals {
         for raKey, ra in rg : merge(ra, { composite_key = raKey })
       ]
   ]) : ra.composite_key => ra }))
+
+  lz_identity_role_assignments_standard = {
+    for k, v in local.role_assignments_merged : k => v if try(v.pim, null) == null
+  }
+
+  lz_identity_role_assignments_pim_eligible = {
+    for k, v in local.role_assignments_merged : k => v if try(v.pim, null) != null && try(v.pim.member_type, "Eligible") == "Eligible"
+  }
+
+  lz_identity_role_assignments_pim_active = {
+    for k, v in local.role_assignments_merged : k => v if try(v.pim, null) != null && try(v.pim.member_type, "Eligible") == "Active"
+  }
+
+  other_role_assignments_standard = {
+    for k, v in var.role_assignments : k => v if try(v.pim, null) == null
+  }
+
+  other_role_assignments_pim_eligible = {
+    for k, v in var.role_assignments : k => v if try(v.pim, null) != null && try(v.pim.member_type, "Eligible") == "Eligible"
+  }
+
+  other_role_assignments_pim_active = {
+    for k, v in var.role_assignments : k => v if try(v.pim, null) != null && try(v.pim.member_type, "Eligible") == "Active"
+  }
 }
 

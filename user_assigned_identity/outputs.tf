@@ -34,6 +34,13 @@ output "role_assignments" {
   value = azurerm_role_assignment.this
 }
 
+output "pim_role_assignments" {
+  value = {
+    eligible = azurerm_pim_eligible_role_assignment.this
+    active   = azurerm_pim_active_role_assignment.this
+  }
+}
+
 output "app_role_assignments" {
   value = azuread_app_role_assignment.this
 }
