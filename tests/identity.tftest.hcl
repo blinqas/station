@@ -11,10 +11,6 @@ provider "azurerm" {
 
 provider "azuread" {}
 
-variable "subscription_id" {
-  type = string
-}
-
 test {
   parallel = true
 }
@@ -44,6 +40,12 @@ run "setup_entraid" {
 run "setup" {
   module {
     source = "./tests/setup-common"
+  }
+}
+
+run "overrides" {
+  module {
+    source = "./tests/overrides"
   }
 }
 
@@ -85,7 +87,7 @@ run "identity" {
     identity = {
       role_assignments = {
         key_vault_reader = {
-          scope                = "/subscriptions/${var.subscription_id}"
+          scope                = "/subscriptions/${run.overrides.subscription_id}"
           role_definition_name = "Key Vault Reader"
           description          = "Needed to read key vaults"
         }
@@ -127,7 +129,7 @@ run "identity" {
 
   // Test for default scope being set on role assignments without scope
   assert {
-    condition     = azurerm_role_assignment.lz_identity["key_vault_admin-rg-${var.resource_groups.lz2.name}"].scope == "/subscriptions/${var.subscription_id}/resourceGroups/rg-${var.resource_groups.lz2.name}"
+    condition     = azurerm_role_assignment.lz_identity["key_vault_admin-rg-${var.resource_groups.lz2.name}"].scope == "/subscriptions/${run.overrides.subscription_id}/resourceGroups/rg-${var.resource_groups.lz2.name}"
     error_message = "The role assignments from var.identity.role_assignments without a scope was not created with default scope set to the resource groups created in this Landing Zone."
   }
 
@@ -173,7 +175,7 @@ run "identity_validation_pim_expiration_mutually_exclusive" {
     identity = {
       role_assignments = {
         invalid = {
-          scope                = "/subscriptions/${var.subscription_id}"
+          scope                = "/subscriptions/${run.overrides.subscription_id}"
           role_definition_name = "Reader"
           pim = {
             member_type = "Eligible"
@@ -210,7 +212,7 @@ run "role_assignments_validation_pim_member_type" {
 
     role_assignments = {
       invalid = {
-        scope                = "/subscriptions/${var.subscription_id}"
+        scope                = "/subscriptions/${run.overrides.subscription_id}"
         principal_id         = run.setup_entraid.groups["test"].object_id
         role_definition_name = "Reader"
         pim = {

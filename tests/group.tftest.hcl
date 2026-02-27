@@ -11,10 +11,6 @@ provider "azurerm" {
 
 provider "azuread" {}
 
-variable "subscription_id" {
-  type = string
-}
-
 test {
   parallel = true
 }
@@ -31,6 +27,12 @@ run "bootstrap_create_tfc_test_project" {
 run "setup" {
   module {
     source = "./tests/setup-common"
+  }
+}
+
+run "overrides" {
+  module {
+    source = "./tests/overrides"
   }
 }
 
@@ -464,7 +466,7 @@ run "groups-validation_pim_member_type" {
 
         role_assignments = {
           invalid = {
-            scope                = "/subscriptions/${var.subscription_id}"
+            scope                = "/subscriptions/${run.overrides.subscription_id}"
             role_definition_name = "Reader"
             pim = {
               member_type = "Temporary"

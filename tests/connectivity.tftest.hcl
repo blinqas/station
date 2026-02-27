@@ -12,19 +12,17 @@ provider "azurerm" {
 
 provider "azuread" {}
 
-variable "subscription_id" {
-  type = string
-}
-
 test {
   parallel = false
 }
 
-run "overrides" {
-  variables {
-    connectivity_subscription_id = var.subscription_id
+run "setup" {
+  module {
+    source = "./tests/setup-common"
   }
+}
 
+run "overrides" {
   module {
     source = "./tests/overrides"
   }

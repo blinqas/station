@@ -5,7 +5,7 @@ description: Write and maintain Terraform tests for the Station module. Use this
 
 # Terraform Station Test Skill
 
-Use this skill for testing this repository's root Terraform module (`Station`) with Terraform's built-in test framework.
+Use this skill for testing this repository's root Terraform module (`Station`) with Terraform's built-in test framework. Use `terraform-test` skill to understand the Terraform testing framework itself.
 
 Station is consumed as a module. Tests must validate behavior through module inputs and outputs, not by treating the root as a standalone deployment.
 
@@ -167,6 +167,71 @@ sh -c '. ./.agent.test.env; terraform <command>'
 ```
 
 This keeps the environment scoped to that command only.
+
+### Sourcing values from environment variables in test files
+
+Terraform test files in this repository must be compatible with CI Terraform versions. Follow these rules:
+
+1. **Never** use `variable "..." {}` blocks inside `tests/*.tftest.hcl`.
+2. Use only `variables { ... }` blocks (file-level or run-level) to pass test values.
+3. Let module inputs be sourced from `TF_VAR_*` through the command environment (`.agent.test.env`) when the test does not need to inspect that value directly.
+4. If assertions need tenant/subscription/runtime IDs, source them from `run.overrides` outputs instead of introducing `variable` blocks in `.tftest.hcl`.
+5. Use `tests/overrides` as the canonical place to bridge env-derived values into test runs.
+
+#### Do / Don't
+
+- ✅ Do: `sh -c '. ./.agent.test.env; terraform test -filter=tests/identity.tftest.hcl'`
+- ✅ Do: use `run.overrides.<output>` in assertions for env-derived IDs
+- ✅ Do: use `variables { ... }` blocks in test files
+- ❌ Don't: add `variable "subscription_id" { ... }` (or any `variable` block) to `.tftest.hcl`
+- ❌ Don't: assume local Terraform parser behavior equals GitHub Actions behavior
+
+#### Pattern A: Module gets value from `TF_VAR_*` (no explicit test assignment)
+
+When the module under test already consumes e.g. `var.subscription_id`, rely on env loading:
+
+```bash
+sh -c '. ./.agent.test.env; terraform test -filter=tests/<feature>.tftest.hcl'
+```
+
+No extra `variable` block is needed in `.tftest.hcl`.
+
+#### Pattern B: Assertion needs current subscription/tenant ID
+
+Use an `overrides` run and read values from `run.overrides`:
+
+```hcl
+run "overrides" {
+  module {
+    source = "./tests/overrides"
+  }
+}
+```
+
+```hcl
+assert {
+	condition = some_resource.scope == "/subscriptions/${run.overrides.connectivity_subscription_id}/..."
+	error_message = "Scope mismatch"
+}
+```
+
+#### Pattern C: Helper module input in a run block
+
+If `overrides` needs explicit values for a scenario, pass them via run `variables {}`:
+
+```hcl
+run "overrides" {
+	variables {
+		connectivity_subscription_id = "<test-subscription-id>"
+	}
+
+	module {
+		source = "./tests/overrides"
+	}
+}
+```
+
+Prefer keeping `tests/overrides` responsible for defaults/fallbacks so feature test files stay focused on behavior assertions.
 
 ### Typical workflow
 
