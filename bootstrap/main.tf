@@ -28,7 +28,7 @@ resource "tfe_workspace" "bootstrap" {
   description  = var.config.terraform_cloud.bootstrap_workspace_description
   organization = var.config.terraform_cloud.organization_name
   project_id   = tfe_project.this.id
-  force_delete = true # Enable successfull destroy operations
+  force_delete = true # Enable successful destroy operations
 }
 
 // We wish to only use HCP Terraform for state storage for the bootstrap config
