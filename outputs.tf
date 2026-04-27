@@ -74,14 +74,24 @@ output "role_assignments" {
     lz_owner    = azurerm_role_assignment.lz_owner
     lz_identity = azurerm_role_assignment.lz_identity
     others      = azurerm_role_assignment.others
+    lz_identity_pim = {
+      eligible = azurerm_pim_eligible_role_assignment.lz_identity
+      active   = azurerm_pim_active_role_assignment.lz_identity
+    }
+    others_pim = {
+      eligible = azurerm_pim_eligible_role_assignment.others
+      active   = azurerm_pim_active_role_assignment.others
+    }
   }
 
   description = <<EOT
     Map of role assignments.
 
     - lz_owner: Owner role assignment on the default landing zone resource group
-    - lz_identity: Role assignments created through `var.identity.role_assignment`
-    - others: Role assignments created through `var.role_assignments`
+    - lz_identity: Standard role assignments created through `var.identity.role_assignment`
+    - others: Standard role assignments created through `var.role_assignments`
+    - lz_identity_pim: PIM role assignments created through `var.identity.role_assignment[*].pim`
+    - others_pim: PIM role assignments created through `var.role_assignments[*].pim`
   EOT
 }
 

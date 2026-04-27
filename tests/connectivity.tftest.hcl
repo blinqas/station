@@ -16,6 +16,12 @@ test {
   parallel = false
 }
 
+run "setup" {
+  module {
+    source = "./tests/setup-common"
+  }
+}
+
 run "overrides" {
   module {
     source = "./tests/overrides"

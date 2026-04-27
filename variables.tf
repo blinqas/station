@@ -76,6 +76,22 @@ variable "groups" {
       condition_version                = optional(string)
       description                      = optional(string)
       skip_service_principal_aad_check = optional(bool)
+      pim = optional(object({
+        member_type   = optional(string, "Eligible")
+        justification = optional(string)
+        ticket = optional(object({
+          number = optional(string)
+          system = optional(string)
+        }))
+        schedule = optional(object({
+          start_date_time = optional(string)
+          expiration = optional(object({
+            duration_days  = optional(number)
+            duration_hours = optional(number)
+            end_date_time  = optional(string)
+          }))
+        }))
+      }))
     })))
     directory_role_assignments = optional(map(object({
       role_name          = optional(string)
@@ -103,6 +119,55 @@ variable "groups" {
   validation {
     condition     = alltrue([for k, v in var.groups : length(v.directory_role_assignments == null ? {} : v.directory_role_assignments) == 0 || v.assignable_to_role == true])
     error_message = "groups[*].assignable_to_role: Must be set to `true` when `directory_role_assignments` is configured. Groups without the assignable_to_role property set cannot be assigned to directory roles."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for k, v in var.groups : [
+        for rk, rv in(v.role_assignments == null ? {} : v.role_assignments) : (
+          try(rv.pim, null) == null || contains(["Eligible", "Active"], try(rv.pim.member_type, "Eligible"))
+        )
+      ]
+    ]))
+    error_message = "groups[*].role_assignments[*].pim.member_type: Must be either `Eligible` or `Active` when configured."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for k, v in var.groups : [
+        for rk, rv in(v.role_assignments == null ? {} : v.role_assignments) : (
+          try(rv.pim, null) == null ||
+          length(compact([
+            try(rv.pim.schedule.expiration.duration_days, null) == null ? "" : "duration_days",
+            try(rv.pim.schedule.expiration.duration_hours, null) == null ? "" : "duration_hours",
+            try(rv.pim.schedule.expiration.end_date_time, null) == null ? "" : "end_date_time"
+          ])) <= 1
+        )
+      ]
+    ]))
+    error_message = "groups[*].role_assignments[*].pim.schedule.expiration: Configure at most one of `duration_days`, `duration_hours`, or `end_date_time`."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for k, v in var.groups : [
+        for rk, rv in(v.role_assignments == null ? {} : v.role_assignments) : (
+          try(rv.pim, null) == null || rv.role_definition_id != null || rv.role_definition_name != null
+        )
+      ]
+    ]))
+    error_message = "groups[*].role_assignments[*]: `role_definition_id` or `role_definition_name` must be provided when `pim` is configured."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for k, v in var.groups : [
+        for rk, rv in(v.role_assignments == null ? {} : v.role_assignments) : (
+          try(rv.pim.member_type, "Eligible") != "Active" || (rv.condition == null && rv.condition_version == null)
+        )
+      ]
+    ]))
+    error_message = "groups[*].role_assignments[*]: `condition` and `condition_version` are not supported when `pim.member_type` is `Active`."
   }
 }
 
@@ -153,6 +218,22 @@ variable "user_assigned_identities" {
       delegated_managed_identity_resource_id = optional(string)
       description                            = optional(string)
       skip_service_principal_aad_check       = optional(bool)
+      pim = optional(object({
+        member_type   = optional(string, "Eligible")
+        justification = optional(string)
+        ticket = optional(object({
+          number = optional(string)
+          system = optional(string)
+        }))
+        schedule = optional(object({
+          start_date_time = optional(string)
+          expiration = optional(object({
+            duration_days  = optional(number)
+            duration_hours = optional(number)
+            end_date_time  = optional(string)
+          }))
+        }))
+      }))
     })), {})
     group_memberships = optional(map(string), {})
     directory_role_assignments = optional(map(object({
@@ -161,6 +242,55 @@ variable "user_assigned_identities" {
       directory_scope_id = optional(string)
     })), {})
   }))
+
+  validation {
+    condition = alltrue(flatten([
+      for k, v in var.user_assigned_identities : [
+        for rk, rv in(v.role_assignments == null ? {} : v.role_assignments) : (
+          try(rv.pim, null) == null || contains(["Eligible", "Active"], try(rv.pim.member_type, "Eligible"))
+        )
+      ]
+    ]))
+    error_message = "user_assigned_identities[*].role_assignments[*].pim.member_type: Must be either `Eligible` or `Active` when configured."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for k, v in var.user_assigned_identities : [
+        for rk, rv in(v.role_assignments == null ? {} : v.role_assignments) : (
+          try(rv.pim, null) == null ||
+          length(compact([
+            try(rv.pim.schedule.expiration.duration_days, null) == null ? "" : "duration_days",
+            try(rv.pim.schedule.expiration.duration_hours, null) == null ? "" : "duration_hours",
+            try(rv.pim.schedule.expiration.end_date_time, null) == null ? "" : "end_date_time"
+          ])) <= 1
+        )
+      ]
+    ]))
+    error_message = "user_assigned_identities[*].role_assignments[*].pim.schedule.expiration: Configure at most one of `duration_days`, `duration_hours`, or `end_date_time`."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for k, v in var.user_assigned_identities : [
+        for rk, rv in(v.role_assignments == null ? {} : v.role_assignments) : (
+          try(rv.pim, null) == null || rv.role_definition_id != null || rv.role_definition_name != null
+        )
+      ]
+    ]))
+    error_message = "user_assigned_identities[*].role_assignments[*]: `role_definition_id` or `role_definition_name` must be provided when `pim` is configured."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for k, v in var.user_assigned_identities : [
+        for rk, rv in(v.role_assignments == null ? {} : v.role_assignments) : (
+          try(rv.pim.member_type, "Eligible") != "Active" || (rv.condition == null && rv.condition_version == null)
+        )
+      ]
+    ]))
+    error_message = "user_assigned_identities[*].role_assignments[*]: `condition` and `condition_version` are not supported when `pim.member_type` is `Active`."
+  }
 }
 
 variable "tfe" {
@@ -231,6 +361,63 @@ variable "role_assignments" {
     delegated_managed_identity_resource_id = optional(string)
     description                            = optional(string)
     skip_service_principal_aad_check       = optional(bool, false)
+    pim = optional(object({
+      member_type   = optional(string, "Eligible")
+      justification = optional(string)
+      ticket = optional(object({
+        number = optional(string)
+        system = optional(string)
+      }))
+      schedule = optional(object({
+        start_date_time = optional(string)
+        expiration = optional(object({
+          duration_days  = optional(number)
+          duration_hours = optional(number)
+          end_date_time  = optional(string)
+        }))
+      }))
+    }))
   }))
+
+  validation {
+    condition = alltrue([
+      for k, v in var.role_assignments : (
+        try(v.pim, null) == null || contains(["Eligible", "Active"], try(v.pim.member_type, "Eligible"))
+      )
+    ])
+    error_message = "role_assignments[*].pim.member_type: Must be either `Eligible` or `Active` when configured."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.role_assignments : (
+        try(v.pim, null) == null ||
+        length(compact([
+          try(v.pim.schedule.expiration.duration_days, null) == null ? "" : "duration_days",
+          try(v.pim.schedule.expiration.duration_hours, null) == null ? "" : "duration_hours",
+          try(v.pim.schedule.expiration.end_date_time, null) == null ? "" : "end_date_time"
+        ])) <= 1
+      )
+    ])
+    error_message = "role_assignments[*].pim.schedule.expiration: Configure at most one of `duration_days`, `duration_hours`, or `end_date_time`."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.role_assignments : (
+        try(v.pim, null) == null || v.role_definition_id != null || v.role_definition_name != null
+      )
+    ])
+    error_message = "role_assignments[*]: `role_definition_id` or `role_definition_name` must be provided when `pim` is configured."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.role_assignments : (
+        try(v.pim.member_type, "Eligible") != "Active" || (v.condition == null && v.condition_version == null)
+      )
+    ])
+    error_message = "role_assignments[*]: `condition` and `condition_version` are not supported when `pim.member_type` is `Active`."
+  }
 }
 

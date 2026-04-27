@@ -30,6 +30,12 @@ run "setup" {
   }
 }
 
+run "overrides" {
+  module {
+    source = "./tests/overrides"
+  }
+}
+
 run "bootstrap_groups" {
   variables {
     user = {
@@ -432,6 +438,39 @@ run "groups-validation_role_name_or_role_id_required" {
         directory_role_assignments = {
           directory_reader = {
             # Neither role_name nor role_id provided
+          }
+        }
+      }
+    }
+  }
+
+  expect_failures = [
+    var.groups
+  ]
+}
+
+run "groups-validation_pim_member_type" {
+  command = plan
+
+  variables {
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    groups = {
+      invalid_group = {
+        display_name     = "Invalid group with unsupported PIM member type"
+        security_enabled = true
+
+        role_assignments = {
+          invalid = {
+            scope                = "/subscriptions/${run.overrides.subscription_id}"
+            role_definition_name = "Reader"
+            pim = {
+              member_type = "Temporary"
+            }
           }
         }
       }

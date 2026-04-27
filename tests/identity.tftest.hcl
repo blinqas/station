@@ -43,6 +43,12 @@ run "setup" {
   }
 }
 
+run "overrides" {
+  module {
+    source = "./tests/overrides"
+  }
+}
+
 variables {
   tfe = {
     project = {
@@ -81,7 +87,7 @@ run "identity" {
     identity = {
       role_assignments = {
         key_vault_reader = {
-          scope                = "/subscriptions/${var.subscription_id}"
+          scope                = "/subscriptions/${run.overrides.subscription_id}"
           role_definition_name = "Key Vault Reader"
           description          = "Needed to read key vaults"
         }
@@ -123,7 +129,7 @@ run "identity" {
 
   // Test for default scope being set on role assignments without scope
   assert {
-    condition     = azurerm_role_assignment.lz_identity["key_vault_admin-rg-${var.resource_groups.lz2.name}"].scope == "/subscriptions/${var.subscription_id}/resourceGroups/rg-${var.resource_groups.lz2.name}"
+    condition     = azurerm_role_assignment.lz_identity["key_vault_admin-rg-${var.resource_groups.lz2.name}"].scope == "/subscriptions/${run.overrides.subscription_id}/resourceGroups/rg-${var.resource_groups.lz2.name}"
     error_message = "The role assignments from var.identity.role_assignments without a scope was not created with default scope set to the resource groups created in this Landing Zone."
   }
 
@@ -150,5 +156,74 @@ run "identity" {
     condition     = module.user_assigned_identity.name == "mi-${var.tfe.workspace_name}"
     error_message = "The Landing Zone identity is not given the correct default name of..."
   }
+}
+
+run "identity_validation_pim_expiration_mutually_exclusive" {
+  command = plan
+
+  module {
+    source = "./"
+  }
+
+  variables {
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    identity = {
+      role_assignments = {
+        invalid = {
+          scope                = "/subscriptions/${run.overrides.subscription_id}"
+          role_definition_name = "Reader"
+          pim = {
+            member_type = "Eligible"
+            schedule = {
+              expiration = {
+                duration_days = 7
+                end_date_time = "2030-01-01T00:00:00Z"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  expect_failures = [
+    var.identity
+  ]
+}
+
+run "role_assignments_validation_pim_member_type" {
+  command = plan
+
+  module {
+    source = "./"
+  }
+
+  variables {
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+    })
+
+    role_assignments = {
+      invalid = {
+        scope                = "/subscriptions/${run.overrides.subscription_id}"
+        principal_id         = run.setup_entraid.groups["test"].object_id
+        role_definition_name = "Reader"
+        pim = {
+          member_type = "Temporary"
+        }
+      }
+    }
+  }
+
+  expect_failures = [
+    var.role_assignments
+  ]
 }
 
