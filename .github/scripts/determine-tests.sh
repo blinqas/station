@@ -150,14 +150,18 @@ while IFS= read -r file; do
   fi
   
   # Group-related files
-  if [[ "$file" == group/* ]] || [[ "$file" == "groups.tf" ]]; then
+  if [[ "$file" == group/* ]] || \
+     [[ "$file" == "groups.tf" ]] || \
+     [[ "$file" == "variables.groups.tf" ]]; then
     echo "  -> Group file detected"
     run_group=true
     file_categorized=true
   fi
   
   # TFE-related files
-  if [[ "$file" == hashicorp/tfe/* ]] || [[ "$file" == "tfe.tf" ]]; then
+  if [[ "$file" == hashicorp/tfe/* ]] || \
+     [[ "$file" == "tfe.tf" ]] || \
+     [[ "$file" == "variables.tfe.tf" ]]; then
     echo "  -> TFE file detected"
     run_tfe=true
     file_categorized=true
