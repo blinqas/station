@@ -195,3 +195,50 @@ run "group_memberships" {
     error_message = "The user-assigned identity was not added to the correct static group."
   }
 }
+
+run "directory_role_assignments" {
+  variables {
+    tfe = {
+      project = {
+        id   = run.bootstrap_create_tfc_test_project.project_id
+        name = "tests_station_uai"
+      }
+      organization_name     = "blinq-west-lab"
+      workspace_name        = "station-tests-uai_tests"
+      workspace_description = "Test for station-uai module"
+      workspace_settings = {
+        execution_mode = "remote"
+      }
+    }
+
+    user_assigned_identities = {
+      maximum = {
+        name                = "uai-test-directory-roles"
+        resource_group_name = run.setup.resource_group.name
+        location            = run.setup.resource_group.location
+        directory_role_assignments = {
+          reader = {
+            role_name = "Directory Readers"
+          }
+          admin = {
+            role_id = "62e90394-69f5-4237-9190-012177145e10" # Global Administrator role ID
+          }
+        }
+      }
+    }
+  }
+
+  module {
+    source = "./"
+  }
+
+  assert {
+    condition     = length(module.user_assigned_identities["maximum"].directory_role_assignments) == 2
+    error_message = "The user-assigned identity should have exactly 2 directory role assignments."
+  }
+
+  assert {
+    condition     = alltrue([for k, v in var.user_assigned_identities["maximum"].directory_role_assignments : module.user_assigned_identities["maximum"].directory_role_assignments[k].principal_object_id == module.user_assigned_identities["maximum"].principal_id])
+    error_message = "All directory role assignments should be assigned to the correct user-assigned identity principal."
+  }
+}
