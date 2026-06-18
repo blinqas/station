@@ -1,6 +1,6 @@
 # Station Terraform Module
 
-Station is a Terraform module that lets you quickly spin up new workload environments in Azure and Terraform Cloud. Station gives you a high level of automation for workload environment provisioning.
+Station is a Terraform module that lets you quickly spin up new landing zone environments in Azure and Terraform Cloud. Station gives you a high level of automation for landing zone environment provisioning.
 
 - Station is maintained by the DevOps team at blinQ (https://blinq.no).
 - See the [terraform-docs.md]() file for `terraform-docs` generated documentation.
@@ -8,13 +8,13 @@ Station is a Terraform module that lets you quickly spin up new workload environ
 
 ## Why does Station exist?
 
-To quickly enable users to deploy workload environments in Azure. Isolating Entra ID and Azure Subscription interactions from the actual workload environment. Station consists of three parts; bootstrap, deployments and workload environment.
+To quickly enable users to deploy landing zone environments in Azure. Isolating Entra ID and Azure Subscription interactions from the actual landing zone environment. Station consists of three parts; bootstrap, deployments and landing zone environment.
 
 - Bootstrap: setting up a Station for your Azure subscription(s) and tenant. (Administrator with permissions on Subscription and Entra ID/Azure AD)
-- Deployments: Where workload environments are defined and deployed. (Application Team/DevOps/SRE/Platform Engineer/Cloud Engineer)
-- Workload Environment: The workload environment where infrastructure is deployed to. (Application Team)
+- Deployments: Where landing zone environments are defined and deployed. (Application Team/DevOps/SRE/Platform Engineer/Cloud Engineer)
+- landing zone Environment: The landing zone environment where infrastructure is deployed to. (Application Team)
 
-Station was designed with isolation in mind. We want our environments to work with least-privilege principle. That's why your workload identity is restricted to permissions inside its own resource group(s). The module is highly flexible and also support Cloud Adoption Framework-like modularization. See our COMING! examples folder for more!
+Station was designed with isolation in mind. We want our environments to work with least-privilege principle. That's why your landing zone identity is restricted to permissions inside its own resource group(s). The module is highly flexible and also support Cloud Adoption Framework-like modularization. See our COMING! examples folder for more!
 
 ## Who uses Station? 
 
@@ -32,7 +32,7 @@ Station is used primarily in context of application development and hosting; Dev
 
 ## Usage
 
-The following example deploys a workload environment for common resources, in this environment we would deploy Container Registries for example.
+The following example deploys a landing zone environment for common resources, in this environment we would deploy Container Registries for example.
 
 Consider the following file structure:
 
@@ -55,7 +55,7 @@ module "common" {
     organization_name     = "my-tfc-organization"
     project_name          = "Azure"
     workspace_name        = "common"
-    workspace_description = "Common resources which are shared between workloads."
+    workspace_description = "Common resources which are shared between landing zones."
     vcs_repo = {
       identifier     = github_repository.repos["common"].full_name
       branch         = "trunk"
@@ -123,6 +123,9 @@ module "workload" {
 ```
 
 ---
+
+## FAQ
+[See our FAQ section](./docs/FAQ.md/)
 
 ## Contact
 
