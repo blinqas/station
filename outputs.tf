@@ -55,7 +55,7 @@ output "virtual_networks" {
 }
 
 output "subnets" {
-  value = local.subnets_output
+  value = azurerm_subnet.this
 }
 
 output "network_security_groups" {

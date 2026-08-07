@@ -107,9 +107,11 @@ variables {
       security_group_name  = "nsg-max-test"
       subnets = {
         main = {
-          name              = "snet-app"
-          address_prefixes  = ["10.0.56.0/24"]
-          service_endpoints = ["Microsoft.Storage"]
+          name             = "snet-app"
+          address_prefixes = ["10.0.56.0/24"]
+          service_endpoint = [{
+            service = "Microsoft.Storage"
+          }]
         }
         other = {
           name             = "snet-app2"
@@ -347,20 +349,20 @@ run "station-connectivity" {
     ])
   }
 
-  # Validate the Station service_endpoints input is mapped to AzureRM 5 service_endpoint blocks
+  # Validate the AzureRM 5 service_endpoint input is mapped to the resource and module output
   assert {
     condition = alltrue([
       for subnet_key, subnet in local.subnets :
-      (subnet.service_endpoints == null || toset(azurerm_subnet.this[subnet_key].service_endpoint[*].service) == subnet.service_endpoints) &&
-      module.subnets[subnet_key].service_endpoints == (subnet.service_endpoints == null ? toset([]) : subnet.service_endpoints)
+      azurerm_subnet.this[subnet_key].service_endpoint[*].service == subnet.service_endpoint[*].service &&
+      module.subnets[subnet_key].service_endpoint[*].service == subnet.service_endpoint[*].service
     ])
     error_message = join("\n", [
       "Subnet service endpoint mismatch. Details:",
       jsonencode({
         for subnet_key, subnet in local.subnets : subnet_key => {
-          resource_actual = toset(azurerm_subnet.this[subnet_key].service_endpoint[*].service),
-          output_actual   = module.subnets[subnet_key].service_endpoints,
-          expected        = subnet.service_endpoints == null ? toset([]) : subnet.service_endpoints
+          resource_actual = azurerm_subnet.this[subnet_key].service_endpoint[*].service,
+          output_actual   = module.subnets[subnet_key].service_endpoint[*].service,
+          expected        = subnet.service_endpoint[*].service
         }
       })
     ])

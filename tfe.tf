@@ -116,9 +116,9 @@ module "station-tfe" {
         sensitive   = false
       }
     } : {},
-    try(length(local.subnets_output) > 0) ? {
+    try(length(azurerm_subnet.this) > 0) ? {
       subnets = {
-        value       = replace(jsonencode(local.subnets_output), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
+        value       = replace(jsonencode(azurerm_subnet.this), "/(\".*?\"):/", "$1 = ") # Credit: https://brendanthompson.com/til/2021/03/hcl-enabled-tfe-variables
         category    = "terraform"
         description = "Subnet(s) provisioned with Station"
         hcl         = true
@@ -136,4 +136,3 @@ module "station-tfe" {
     } : {}
   )
 }
-

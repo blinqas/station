@@ -65,10 +65,11 @@ resource "azurerm_subnet" "this" {
   service_endpoint_policy_ids                   = each.value.service_endpoint_policy_ids
 
   dynamic "service_endpoint" {
-    for_each = each.value.service_endpoints == null ? [] : sort(tolist(each.value.service_endpoints))
+    for_each = each.value.service_endpoint
 
     content {
-      service = service_endpoint.value
+      service            = service_endpoint.value.service
+      network_identifier = service_endpoint.value.network_identifier
     }
   }
 
@@ -82,15 +83,6 @@ resource "azurerm_subnet" "this" {
         actions = delegation.value.service_delegation.actions
       }
     }
-  }
-}
-
-locals {
-  subnets_output = {
-    for subnet_key, subnet in azurerm_subnet.this : subnet_key => merge(subnet, {
-      # Preserve Station's AzureRM 4 output contract while also exposing the AzureRM 5 service_endpoint block.
-      service_endpoints = local.subnets[subnet_key].service_endpoints == null ? toset([]) : local.subnets[subnet_key].service_endpoints
-    })
   }
 }
 
