@@ -354,14 +354,14 @@ run "station-connectivity" {
     condition = alltrue([
       for subnet_key, subnet in local.subnets :
       azurerm_subnet.this[subnet_key].service_endpoint[*].service == subnet.service_endpoint[*].service &&
-      module.subnets[subnet_key].service_endpoint[*].service == subnet.service_endpoint[*].service
+      output.subnets[subnet_key].service_endpoint[*].service == subnet.service_endpoint[*].service
     ])
     error_message = join("\n", [
       "Subnet service endpoint mismatch. Details:",
       jsonencode({
         for subnet_key, subnet in local.subnets : subnet_key => {
           resource_actual = azurerm_subnet.this[subnet_key].service_endpoint[*].service,
-          output_actual   = module.subnets[subnet_key].service_endpoint[*].service,
+          output_actual   = output.subnets[subnet_key].service_endpoint[*].service,
           expected        = subnet.service_endpoint[*].service
         }
       })
