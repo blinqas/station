@@ -62,8 +62,15 @@ resource "azurerm_subnet" "this" {
   default_outbound_access_enabled               = each.value.default_outbound_access_enabled
   private_endpoint_network_policies             = each.value.private_endpoint_network_policies
   private_link_service_network_policies_enabled = each.value.private_link_service_network_policies_enabled
-  service_endpoints                             = each.value.service_endpoints
   service_endpoint_policy_ids                   = each.value.service_endpoint_policy_ids
+
+  dynamic "service_endpoint" {
+    for_each = each.value.service_endpoints == null ? [] : sort(tolist(each.value.service_endpoints))
+
+    content {
+      service = service_endpoint.value
+    }
+  }
 
   dynamic "delegation" {
     for_each = each.value.delegation == null ? {} : each.value.delegation
@@ -75,6 +82,15 @@ resource "azurerm_subnet" "this" {
         actions = delegation.value.service_delegation.actions
       }
     }
+  }
+}
+
+locals {
+  subnets_output = {
+    for subnet_key, subnet in azurerm_subnet.this : subnet_key => merge(subnet, {
+      # Preserve Station's AzureRM 4 output contract while also exposing the AzureRM 5 service_endpoint block.
+      service_endpoints = local.subnets[subnet_key].service_endpoints == null ? toset([]) : local.subnets[subnet_key].service_endpoints
+    })
   }
 }
 
@@ -194,4 +210,3 @@ resource "azurerm_virtual_hub_connection" "this" {
     }
   }
 }
-

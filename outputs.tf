@@ -55,7 +55,7 @@ output "virtual_networks" {
 }
 
 output "subnets" {
-  value = azurerm_subnet.this
+  value = local.subnets_output
 }
 
 output "network_security_groups" {
@@ -84,4 +84,3 @@ output "role_assignments" {
     - others: Role assignments created through `var.role_assignments`
   EOT
 }
-

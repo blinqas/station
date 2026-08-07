@@ -107,8 +107,9 @@ variables {
       security_group_name  = "nsg-max-test"
       subnets = {
         main = {
-          name             = "snet-app"
-          address_prefixes = ["10.0.56.0/24"]
+          name              = "snet-app"
+          address_prefixes  = ["10.0.56.0/24"]
+          service_endpoints = ["Microsoft.Storage"]
         }
         other = {
           name             = "snet-app2"
@@ -341,6 +342,25 @@ run "station-connectivity" {
             expected = subnet.address_prefixes,
             matches  = azurerm_subnet.this[subnet_key].address_prefixes == subnet.address_prefixes
           }
+        }
+      })
+    ])
+  }
+
+  # Validate the Station service_endpoints input is mapped to AzureRM 5 service_endpoint blocks
+  assert {
+    condition = alltrue([
+      for subnet_key, subnet in local.subnets :
+      (subnet.service_endpoints == null || toset(azurerm_subnet.this[subnet_key].service_endpoint[*].service) == subnet.service_endpoints) &&
+      module.subnets[subnet_key].service_endpoints == (subnet.service_endpoints == null ? toset([]) : subnet.service_endpoints)
+    ])
+    error_message = join("\n", [
+      "Subnet service endpoint mismatch. Details:",
+      jsonencode({
+        for subnet_key, subnet in local.subnets : subnet_key => {
+          resource_actual = toset(azurerm_subnet.this[subnet_key].service_endpoint[*].service),
+          output_actual   = module.subnets[subnet_key].service_endpoints,
+          expected        = subnet.service_endpoints == null ? toset([]) : subnet.service_endpoints
         }
       })
     ])

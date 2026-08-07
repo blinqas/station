@@ -24,11 +24,15 @@ Station is used primarily in context of application development and hosting; Dev
 
 ### Requirements
 
+- Terraform `~> 1.12`
+- AzureRM provider `~> 5.0`
 - Terraform Cloud account
     - Permission to create Team Token
 - Azure- Tenant and Subscription
     - Global Administrator on Azure AD
     - Owner on Subscription
+
+Existing Station deployments must update their root AzureRM provider constraint and provider registration configuration before upgrading. See [Migrating Station to AzureRM 5](docs/MIGRATING_TO_AZURERM_5.md) for the required changes and current upstream caveats.
 
 ## Usage
 
