@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 4.0"
+      version = "~> 5.0"
     }
 
     azuread = {
@@ -35,4 +35,3 @@ provider "github" {
   #GITHUB_TOKEN enviorment varible has to be set for auth
   #GITHUB_OWNER enviorment varible has to be set to select correct org
 }
-

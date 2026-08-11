@@ -40,9 +40,12 @@ variable "connectivity" {
       default_outbound_access_enabled               = optional(bool, true)
       private_endpoint_network_policies             = optional(string, "Disabled")
       private_link_service_network_policies_enabled = optional(bool, true)
-      service_endpoints                             = optional(set(string))
-      service_endpoint_policy_ids                   = optional(set(string))
-      route_table_id                                = optional(string)
+      service_endpoint = optional(list(object({
+        service            = string
+        network_identifier = optional(string)
+      })), [])
+      service_endpoint_policy_ids = optional(set(string))
+      route_table_id              = optional(string)
     }))
     peerings = optional(map(object({
       name                                   = string
@@ -105,4 +108,3 @@ variable "connectivity" {
     error_message = "The key used for a peering object must be unique across all connectivity objects."
   }
 }
-

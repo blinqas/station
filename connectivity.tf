@@ -62,8 +62,16 @@ resource "azurerm_subnet" "this" {
   default_outbound_access_enabled               = each.value.default_outbound_access_enabled
   private_endpoint_network_policies             = each.value.private_endpoint_network_policies
   private_link_service_network_policies_enabled = each.value.private_link_service_network_policies_enabled
-  service_endpoints                             = each.value.service_endpoints
   service_endpoint_policy_ids                   = each.value.service_endpoint_policy_ids
+
+  dynamic "service_endpoint" {
+    for_each = each.value.service_endpoint
+
+    content {
+      service            = service_endpoint.value.service
+      network_identifier = service_endpoint.value.network_identifier
+    }
+  }
 
   dynamic "delegation" {
     for_each = each.value.delegation == null ? {} : each.value.delegation
@@ -194,4 +202,3 @@ resource "azurerm_virtual_hub_connection" "this" {
     }
   }
 }
-
