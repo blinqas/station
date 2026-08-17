@@ -113,7 +113,7 @@ resource "azurerm_virtual_network_peering" "to" {
 }
 
 resource "azurerm_virtual_network_peering" "from" {
-  for_each                               = local.peerings
+  for_each                               = { for k, v in local.peerings : k => v if !v.use_connectivity_subscription }
   name                                   = each.value.name
   resource_group_name                    = regex("resourceGroups/(.*?)/", each.value.remote_virtual_network_id)[0] // Extract Resource Group name from Resource ID
   allow_forwarded_traffic                = each.value.allow_forwarded_traffic
@@ -128,6 +128,25 @@ resource "azurerm_virtual_network_peering" "from" {
   use_remote_gateways                    = each.value.use_remote_gateways
   virtual_network_name                   = regex("([^//]+)$", each.value.remote_virtual_network_id)[0] // Extract Virtual Network name from Resource ID
 }
+
+resource "azurerm_virtual_network_peering" "from_connectivity" {
+  provider                               = azurerm.connectivity
+  for_each                               = { for k, v in local.peerings : k => v if v.use_connectivity_subscription }
+  name                                   = each.value.name
+  resource_group_name                    = regex("resourceGroups/(.*?)/", each.value.remote_virtual_network_id)[0] // Extract Resource Group name from Resource ID
+  allow_forwarded_traffic                = each.value.allow_forwarded_traffic
+  allow_gateway_transit                  = each.value.allow_gateway_transit
+  allow_virtual_network_access           = each.value.allow_virtual_network_access
+  local_subnet_names                     = each.value.remote_subnet_names
+  only_ipv6_peering_enabled              = each.value.only_ipv6_peering_enabled
+  peer_complete_virtual_networks_enabled = each.value.peer_complete_virtual_networks_enabled
+  remote_subnet_names                    = each.value.local_subnet_names
+  remote_virtual_network_id              = azurerm_virtual_network.this[each.value.connKey].id
+  triggers                               = each.value.triggers
+  use_remote_gateways                    = each.value.use_remote_gateways
+  virtual_network_name                   = regex("([^//]+)$", each.value.remote_virtual_network_id)[0] // Extract Virtual Network name from Resource ID
+}
+
 
 locals {
   # Generates a map of VWAN Hub Connections from `var.connectivity` where a Hub Connection is

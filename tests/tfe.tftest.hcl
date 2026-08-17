@@ -316,3 +316,51 @@ run "tfe_outputs_to_workspace_variables" {
     error_message = "The application workspace variable was NOT set as type terraform"
   }
 }
+
+run "tfe_workspace_tags" {
+  variables {
+    // Insert the real project id from the generated tfe_project resource in setup-tfe-project (Test module)
+    tfe = merge(var.tfe, {
+      project = merge(var.tfe.project, {
+        id = run.bootstrap_create_tfc_test_project.id
+      })
+      workspace_name = "tfe_test_tags"
+      tags = {
+        "environment" = "production"
+        "platform"    = "azure"
+        "service"     = "kubernetes"
+        "team"        = "platform-engineering"
+      }
+    })
+  }
+
+  module {
+    source = "./"
+  }
+
+  # Assert that tags contains the expected key-value pairs
+  assert {
+    condition     = module.station-tfe.workspace.tags["environment"] == "production"
+    error_message = "The workspace tags should contain environment=production"
+  }
+
+  assert {
+    condition     = module.station-tfe.workspace.tags["platform"] == "azure"
+    error_message = "The workspace tags should contain platform=azure"
+  }
+
+  assert {
+    condition     = module.station-tfe.workspace.tags["service"] == "kubernetes"
+    error_message = "The workspace tags should contain service=kubernetes"
+  }
+
+  assert {
+    condition     = module.station-tfe.workspace.tags["team"] == "platform-engineering"
+    error_message = "The workspace tags should contain team=platform-engineering"
+  }
+
+  assert {
+    condition     = length(module.station-tfe.workspace.tags) == 4
+    error_message = "The workspace should have exactly 4 tags"
+  }
+}

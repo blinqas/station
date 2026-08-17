@@ -18,6 +18,8 @@ This folder contains all tests for the Terraform Station module. The aim is to s
 
 ## How to Run Tests
 
+### Running Tests Locally
+
 1. **Login to Azure and Terraform**:
     ```bash
     az login --tenant YourTenantIdHere
@@ -29,22 +31,67 @@ This folder contains all tests for the Terraform Station module. The aim is to s
     terraform init
     ```
 
-3. **Set Environment Variables**:
-   Replace empty strings with your TFC organization name.
+3. **Create `.agent.test.env` from template**:
+  ```bash
+  cp ./.agent.test.env.example ./.agent.test.env
+  ```
+
+4. **Set Environment Variables in `.agent.test.env`**:
+   Replace empty strings with your values.
     ```bash
-    export TFE_ORGANIZATION=""
-    export TF_VAR_tfc_organization_name=""
-    export TF_VAR_tfc_project_name=""
-    export TF_VAR_tenant_id=""
-    export TF_VAR_subscription_id=""
-    export ARM_SUBSCRIPTION_ID=""
+  export TFE_ORGANIZATION=""
+  export TFE_TOKEN=""
+  export TF_VAR_tfc_organization_name=""
+  export TF_VAR_tfc_project_name=""
+  export TF_VAR_tenant_id=""
+  export TF_VAR_subscription_id=""
+  export ARM_SUBSCRIPTION_ID=""
     ```
 
-4. **Starting the tests**:
+5. **Verify Azure context (without forcing re-login each run)**:
+  ```bash
+  sh ./.agents/skills/terraform-station-test/scripts/check-az-context.sh ./.agent.test.env
+  ```
+
+6. **Starting the tests**:
     ```bash
-    terraform test #This will run all the tests
-    terraform test -filter=tests/tfe.tftest.hcl #This will only run the tests for the tfe block
+  sh -c '. ./.agent.test.env; terraform test' #This will run all the tests
+  sh -c '. ./.agent.test.env; terraform test -filter=tests/tfe.tftest.hcl' #This will only run the tests for the tfe block
     ```
+
+### Automated Test Execution in CI/CD
+
+The repository uses **selective test execution** to optimize CI/CD performance and reduce GitHub Actions minutes. Tests are automatically selected based on which files you've changed:
+
+#### How It Works
+
+When you create a pull request, the CI/CD pipeline analyzes your changes and runs only the tests affected by those changes:
+
+- **Application module changes** (`application/**`, `variables.applications.tf`, `applications.tf`) → Runs `application.tftest.hcl`
+- **Group module changes** (`group/**`, `groups.tf`) → Runs `group.tftest.hcl`
+- **TFE module changes** (`hashicorp/tfe/**`, `tfe.tf`) → Runs `tfe.tftest.hcl`
+- **Connectivity changes** (`connectivity.tf`) → Runs `connectivity.tftest.hcl`
+- **Identity module changes** (`user_assigned_identity/**`, `variables.identity.tf`) → Runs `identity.tftest.hcl` and `user_assigned_identities.tftest.hcl`
+- **Policy exemption changes** (`policy_exemptions.tf`, `variables.policy.tf`) → Runs `policy_exemptions.tftest.hcl`
+- **Core infrastructure changes** (`variables.tf`, `providers.tf`, `resource_group.tf`, etc.) → Runs **all tests**
+
+For full details on the mapping rules, see [`.github/scripts/README.md`](../.github/scripts/README.md).
+
+#### Manual Full Test Execution
+
+If you need to run all tests on a PR (for example, to verify everything works together), comment on the PR:
+
+```
+/test-all
+```
+
+or
+
+```
+/test all
+```
+
+The workflow will acknowledge your request with a 🚀 emoji and run all tests.
 
 ## Testing Approach for New Features in the Station Module
 

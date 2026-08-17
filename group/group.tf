@@ -1,10 +1,11 @@
 resource "azuread_group" "group" {
-  display_name     = var.azuread_group.display_name
-  description      = var.azuread_group.description
-  owners           = var.owners
-  security_enabled = var.azuread_group.security_enabled
-  mail_enabled     = var.azuread_group.mail_enabled
-  types            = var.azuread_group.types
+  display_name       = var.azuread_group.display_name
+  description        = var.azuread_group.description
+  owners             = var.owners
+  security_enabled   = var.azuread_group.security_enabled
+  mail_enabled       = var.azuread_group.mail_enabled
+  assignable_to_role = var.azuread_group.assignable_to_role
+  types              = var.azuread_group.types
 
   dynamic "dynamic_membership" {
     for_each = var.azuread_group.dynamic_membership == null ? [] : [var.azuread_group.dynamic_membership]

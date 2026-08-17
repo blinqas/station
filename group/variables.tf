@@ -30,3 +30,16 @@ variable "subscription_id" {
     (Required)The subscription ID that should be used for the default scope of the role assignments.
   EOF
 }
+
+variable "directory_role_assignments" {
+  type = map(object({
+    role_name          = optional(string)
+    role_id            = optional(string)
+    app_scope_id       = optional(string)
+    directory_scope_id = optional(string)
+  }))
+  default     = {}
+  description = <<EOF
+    (Optional) A map of directory role assignments to create for the group.
+  EOF
+}

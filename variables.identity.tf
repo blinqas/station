@@ -70,3 +70,60 @@ variable "identity" {
   }
 }
 
+variable "user_assigned_identities" {
+  description = <<EOF
+  User Assigned Identities to create.
+
+  Example:
+
+  user_assigned_identities = {
+    my_app = {
+      name                = "uai-my-identity"
+      resource_group_name = "rg-name"
+      location            = "norwayeast"
+      app_role_assignments = {
+        Application.ReadWrite.OwnedBy = {
+          app_role_id        = "18a4783c-866b-4cc7-a460-3d5e5662c884"
+          resource_object_id = "microsoft-graph-enterprise-app-object-id"
+        }
+      }
+      group_memberships = {
+        "Kubernetes Administrators" = azuread_group.k8s_admins.object_id
+      }
+      directory_role_assignments = {
+        role_name                      = "Application Administrator"
+      }
+    }
+  }
+  EOF
+  default     = {}
+  type = map(object({
+    name                = string
+    resource_group_name = optional(string)
+    location            = optional(string)
+    app_role_assignments = optional(map(object({
+      app_role_id        = string
+      resource_object_id = string
+    })), {})
+    role_assignments = optional(map(object({
+      name                                   = optional(string)
+      scope                                  = string
+      role_definition_id                     = optional(string)
+      role_definition_name                   = optional(string)
+      principal_id                           = optional(string)
+      assign_to_workload_principal           = optional(bool)
+      condition                              = optional(string)
+      condition_version                      = optional(string)
+      delegated_managed_identity_resource_id = optional(string)
+      description                            = optional(string)
+      skip_service_principal_aad_check       = optional(bool)
+    })), {})
+    group_memberships = optional(map(string), {})
+    directory_role_assignments = optional(map(object({
+      role_name          = optional(string)
+      app_scope_id       = optional(string)
+      directory_scope_id = optional(string)
+    })), {})
+  }))
+}
+
