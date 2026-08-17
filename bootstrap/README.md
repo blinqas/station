@@ -1,80 +1,188 @@
-# Station bootstrapping
+# Station Bootstrap
 
-This folder contains Terraform files to bootstrap Azure and Terraform Cloud for Station.
+Bootstrap process for **Station** — a Terraform module that provisions secure, automated landing zones in Azure, ready for infrastructure deployment.
 
-## What does it do?
+---
 
-1. Create a service principal in Azure AD
-2. Assigns it Global Administrator on the logged in Azure AD tenant
-3. Assigns it Owner on the logged in subscription
-4. Create two Federated Identity Credential configurations for OIDC between the Terraform Cloud Workspace it provisions for Station Deployments.
-5. Creates a Github repository to hold Station deployments.
-6. Creates a Terraform Cloud Project in the logged in Terraform Cloud Organization
-7. Creates a Terraform Cloud Workspace for the bootstrap state
-8. Creates a Terraform Cloud Workspace for the deployment state
-9. Connects the deployment workspace with the user specified VCS repo
-10. Creates Terraform Environment variables in the deployment workspace for Azure authentication
+## Who is this for?
 
-## Why the need for this?
+DevOps and Platform Engineers deploying Azure infrastructure using GitHub and Terraform Cloud. This bootstraps a complete CI/CD flow using GitHub Apps, Terraform Cloud, and OIDC-based identity.
 
-Provisioning all these resources and linking them together and what not is very cumbersome. This hopefully solves that and makes it easier to understand what Station requires.
+---
 
-Demoing Station is also very fast now!
+## Prerequisites
 
+- A GitHub [User | Org | Enterprise] account
+- An HCP Terraform account
+- Terraform CLI installed
 
-## Usage
+---
 
-**IMPORTANT!** Do not run scripts from the internet without understanding what they do.
+## Overview
 
-### Before you begin:
-1. **Ensure you have the correct permissions**
-   - Your entraID account should have the role `Global Administrator` active. 
-   - You will need to have the RBAC role `Owner` on all the subscriptions you want to use with station.
-   - You will to have access to an [Organization token](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/organization-tokens) or a [Team token](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/team-tokens) in Terrafrom Cloud.
-   - You will need to create a Github PAT that has access to create new reposiotories in the target Github Organization.
-2. **Update the Bootstrap Script**:  
-   Update the bootstrap script with your own values. Carefully read the variable names and comments to enter the correct values.
-  
+This bootstrap process does the following:
 
-#### Environment Variables you need to set in the script
+- Creates two GitHub Apps:
+  - One for Terraform Cloud VCS connection
+  - One for managing GitHub via Terraform (`integrations/github`)
+- Creates service accounts (workaround for TFC user bindings)
+- Links GitHub and HCP Terraform
+- Runs initial Terraform to set up the Station landing zone and migrate state
 
-You will have to set either `TF_VAR_vcs_repo_github_app_installation_id` or `TF_VAR_vcs_repo_oauth_token_id`
+---
 
-   | Variable Name                                | Required/Optional | Description                                                                                         | Where to source the value                                                                                                                                             |
-   | -------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | `TF_CLOUD_ORGANIZATION`                      | Required          | Name of your Terraform Cloud organization.                                                          | Your Terraform Cloud dashboard.                                                                                                                                       |
-   | `TF_WORKSPACE`                               | Required          | Name of the workspace for storing the bootstrap state.           Just set a name for the workspace. |
-   | `TF_VAR_tfc_organization_name`               | Required          | Organization name in Terraform Cloud.                                                               | Same as `TF_CLOUD_ORGANIZATION`.                                                                                                                                      |
-   | `TF_VAR_bootstrap_tfc_workspace_name`        | Required          | Workspace name for storing the bootstrap state.                                                     | Same as `TF_WORKSPACE`.                                                                                                                                               |
-   | `TF_VAR_tfc_project_name`                    | Required          | Decide a project name 'station'.                                                                    | Decide a name for the new project .                                                                                                                                   |
-   | `TF_VAR_deployments_tfc_workspace_name`      | Required          | Workspace for station deployments.                                                                  | Decide a name for the deployments workspace                                                                                                                           |
-   | `TF_VAR_vcs_repo_github_app_installation_id` | Optional          | ID for GitHub app installation in TFC.                                                              | [Terraform Cloud GitHub Installations](https://app.terraform.io/api/v2/github-app/installations)                                                                      |
-   | `TF_VAR_vcs_repo_oauth_token_id`             | Optional          | Alternative to GitHub app installation ID.                                                          | Your GitHub settings or GitHub app integration in Terraform Cloud.                                                                                                    |
-   | `TF_VAR_subscription_ids`                    | Required          | Azure Subscriptions where Station should have owner permissions.                                    | Use: `az account list --query "[?tenantId=='yourTenantID'].{Name:name, ID:id}" --output table`                                                                        |
-   | `TF_VAR_vcs_repo_PAT`                        | Required          | Personal Access Token (PAT) for TFC to create repositories.                                         | [GitHub PAT Documentation](https://docs.github.com/en/enterprise-server@3.6/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) |
-   | `TF_VAR_tfc_token`                           | Required          | Token for Terraform Cloud. Can be a team or organization token.                                     | Your Terraform Cloud dashboard under user settings or organization settings.                                                                                          |
-   | `GITHUB_OWNER`                               | Required          | Target GitHub username or organization for the provider.                                            | Your GitHub username or organization name.                                                                                                                            |
-   | `GITHUB_TOKEN`                               | Required          | Authentication token for GitHub provider.                                                           | Same as `TF_VAR_vcs_repo_PAT`.                                                                                                                                        |
-   | `TF_VAR_vcs_repo_owner`                      | Required          | Owner of the repository in GitHub.                                                                  | Same as `GITHUB_OWNER`.                                                                                                                                               |
-   | `TF_VAR_vcs_repo_name`                       | Optional          | Default repository name. Can be overridden in `variables.tf`.                                       | Decide a name for the new repository or use the default from `variables.tf`.                                                                                          |
+## 1. Create GitHub Service Account
 
+> [!NOTE]
+> Required because Terraform Cloud links GitHub App to *user*, not *org*.
 
+1. Create a new GitHub user
+2. Invite it to your organization
+3. Assign it admin permissions
 
-1. **Log in to Azure**:  
-   ```bash
-   az login --tenant YourTenantID
-   ```
+Use this account for all GitHub App actions below.
 
-2. **Log in to Terraform Cloud CLI**:  
-   ```bash
-   terraform login
-   ```
-   
-3. **Run the Script**:  
-   ```bash
-   ./bootstrap.sh
-   ```
+---
 
+## 2. Create HCP Terraform Service Account
+
+[Background](https://github.com/hashicorp/terraform-provider-tfe/issues/853)
+
+1. Create a dedicated HCP Terraform user
+2. Add it to the `owners` team
+3. Generate a User API Token:
+   - Description: `Station Landing Zones`
+   - Expiration: `No expiration`
+4. Store the token securely
+
+---
+
+## 3. Create GitHub App: Station LZ Management
+
+Used by Terraform to manage GitHub (via `integrations/github` provider)
+
+1. Create a new GitHub App at `https://github.com/organizations/<your-org>/settings/apps/new`
+
+   Recommended settings:
+   - Name: `Station LZ (Org Name)`
+   - Description: GitHub app for Terraform-based org/repo management via Station
+   - Homepage: `<your org’s website>`
+   - **Webhook: Disabled**
+   - **Repository permissions:**
+     - Administration: Read/Write
+     - Contents: Read/Write
+2. Generate a private key  
+   Save it as `station-landing-zones.pem` in the bootstrap directory.
+3. Install the app in your GitHub org
+
+---
+
+## 4. Create GitHub App: HCP Terraform VCS Link
+
+Used by HCP Terraform to watch GitHub commits and trigger runs.
+
+> [!CAUTION]
+> Perform this as the GitHub *Service Account* (step 1) and authenticate in Terraform Cloud as the *TFC Service Account* (step 2)
+
+1. In HCP Terraform:
+   - Go to **Settings > VCS Providers > Add VCS Provider**
+   - Follow the flow to register the GitHub App
+
+2. After installation, note:
+   - GitHub App Installation ID: `ghain-xxxxxxxxxxxx` (Find this at the bottom of **Settings > Tokens:** https://app.terraform.io/app/settings/tokens)
+   - 
+
+---
+
+## 5. Run Bootstrap
+
+### Environment variables
+
+- Set up environment:
+
+```bash
+# bash:
+export TF_VAR_github_app_pem_file=$(base64 -i ./station-landing-zones.pem)
+export TF_VAR_tfe_token="your-tfc-token"
+export TFE_TOKEN="$TF_VAR_tfe_token"
+export TF_TOKEN="$TF_VAR_tfe_token"
+
+# fish:
+set -x TF_VAR_github_app_pem_file (base64 -i ./station-landing-zones.pem)
+set -x TF_VAR_tfe_token "your-tfc-token"
+set -x TFE_TOKEN "$TF_VAR_tfe_token"
+set -x TF_TOKEN "$TF_VAR_tfe_token"
 ```
 
+- Configure variables
+
+Fill out the configuration file `application-landing-zone.auto.tfvars`:
+```hcl
+# hints
+vcs_repo_github_app_installation_id = "<string>" # Installation ID from step 4.2 (ghain-xxxxxx...)
+github.provider.id                  = "<string>" # App ID from step 3
+github.provider.installation_id     = "<string>" # Installation ID from step 3
+```
+
+- Run Terraform
+
+```shell
+# bash:
+export TF_WORKSPACE=$(awk -F'"' '/bootstrap_workspace_name/ {print $2}' application-landing-zone.auto.tfvars)
+terraform init
+terraform plan -out plan.tfplan
+terraform apply plan.tfplan
+
+# fish:
+set -x TF_WORKSPACE (awk -F'"' '/bootstrap_workspace_name/ {print $2}' application-landing-zone.auto.tfvars)
+terraform init
+terraform plan -out plan.tfplan
+terraform apply plan.tfplan
+```
+
+- Migrate state to Terraform Cloud
+
+```shell
+# bash:
+export TF_CLOUD_ORGANIZATION=$(awk -F'"' '/organization_name/ {print $2}' application-landing-zone.auto.tfvars)
+export TF_WORKSPACE=$(awk -F'"' '/bootstrap_workspace_name/ {print $2}' application-landing-zone.auto.tfvars)
+terraform init
+terraform plan -out plan.tfplan
+terraform apply plan.tfplan
+unset TF_CLOUD_ORGANIZATION
+unset TF_WORKSPACE
+
+# fish:
+set -x TF_CLOUD_ORGANIZATION (awk -F'"' '/organization_name/ {print $2}' application-landing-zone.auto.tfvars)
+set -x TF_WORKSPACE (awk -F'"' '/bootstrap_workspace_name/ {print $2}' application-landing-zone.auto.tfvars)
+terraform init
+terraform plan -out plan.tfplan
+terraform apply plan.tfplan
+set -e TF_CLOUD_ORGANIZATION
+set -e TF_WORKSPACE
+```
+
+---
+
+- Clean up
+
+> [!IMPORTANT]
+> Final terraform destroy will fail to update state, because the state has already moved to Terraform Cloud. This is expected. You can safely ignore the error.
+
+- To destroy:
+```shell
+# bash:
+export TF_CLOUD_ORGANIZATION=$(awk -F'"' '/organization_name/ {print $2}' application-landing-zone.auto.tfvars)
+export TF_WORKSPACE=$(awk -F'"' '/bootstrap_workspace_name/ {print $2}' application-landing-zone.auto.tfvars)
+terraform destroy
+unset TF_CLOUD_ORGANIZATION
+unset TF_WORKSPACE
+
+# fish:
+set -x TF_CLOUD_ORGANIZATION (awk -F'"' '/organization_name/ {print $2}' application-landing-zone.auto.tfvars)
+set -x TF_WORKSPACE (awk -F'"' '/bootstrap_workspace_name/ {print $2}' application-landing-zone.auto.tfvars)
+terraform destroy
+set -e TF_CLOUD_ORGANIZATION
+set -e TF_WORKSPACE
+```
 
