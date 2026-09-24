@@ -19,7 +19,7 @@ resource "github_repository_file" "bootstrap" {
     "variables.tf",
     "github.tf",
     "locals.tf",
-    "application-landing-zone.auto.tfvars",
+    "lz.auto.tfvars",
     "README.md"
   ])
   file                = each.value
@@ -29,7 +29,7 @@ resource "github_repository_file" "bootstrap" {
   overwrite_on_create = true # required as auto_init on repo is on
 }
 
-resource "github_repository_file" "alz_applications" {
+resource "github_repository_file" "alz" {
   for_each = toset([
     "providers.tf",
     "variables.tf"
@@ -42,4 +42,6 @@ resource "github_repository_file" "alz_applications" {
   lifecycle {
     ignore_changes = [content] # allow end user to make changes to their LZ
   }
+  # explicit dependency to avoid failed initial terraform apply
+  depends_on = [module.station]
 }

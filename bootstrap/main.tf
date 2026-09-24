@@ -110,7 +110,6 @@ module "station" {
     azurerm              = azurerm
     azurerm.connectivity = azurerm.connectivity
   }
-  depends_on = [github_repository_file.alz_applications]
 }
 
 # Microsoft Graph service principal - used to reference app role IDs
