@@ -15,6 +15,7 @@ config = {
     bootstrap_workspace_name            = "alz-bootstrap"
     bootstrap_workspace_description     = "Bootstrap for Landing Zones"
     vcs_repo_github_app_installation_id = ""
+    # For GitLab, remove the GitHub App ID above and set vcs_repo_oauth_token_id = "ot-...".
     project = {
       name        = "Azure Landing Zones"
       description = "Azure Landing Zones"
@@ -38,10 +39,12 @@ config = {
     }
   }
 
+  # For GitLab, replace the entire github block above with a gitlab block.
+  # See README.md for the required group, project names, and branch settings.
+
   tags = {
     owner      = "Platform Engineering"
     deployedBy = "terraform"
   }
 }
-
 

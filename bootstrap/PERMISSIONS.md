@@ -130,7 +130,7 @@ The repository that triggers Terraform runs must be secured:
 2. **Require PR reviews** - No direct pushes to main branch
 3. **Enable branch protection** - Require status checks and approvals
 4. **Enforce MFA** - All users must use multi-factor authentication
-5. **Audit logs** - Enable and monitor GitHub audit logs
+5. **Audit logs** - Enable and monitor audit logs for the selected GitHub organization or GitLab group
 
 ### Reducing Permissions Further
 

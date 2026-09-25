@@ -1,6 +1,21 @@
 variable "config" {
   type        = any
-  description = "(Required) Input variables for the bootstrap module. See `application-landing-zone.auto.tfvars` for values."
+  description = "Bootstrap configuration with exactly one of github or gitlab selected."
+
+  validation {
+    condition     = (try(var.config.github, null) != null) != (try(var.config.gitlab, null) != null)
+    error_message = "Set exactly one of config.github or config.gitlab."
+  }
+
+  validation {
+    condition     = try(var.config.github, null) == null || try(length(trimspace(var.config.terraform_cloud.vcs_repo_github_app_installation_id)) > 0, false)
+    error_message = "Set terraform_cloud.vcs_repo_github_app_installation_id for GitHub bootstrap."
+  }
+
+  validation {
+    condition     = try(var.config.gitlab, null) == null || try(length(trimspace(var.config.terraform_cloud.vcs_repo_oauth_token_id)) > 0, false)
+    error_message = "Set terraform_cloud.vcs_repo_oauth_token_id for GitLab bootstrap."
+  }
 }
 
 variable "tfe_token" {
@@ -35,8 +50,20 @@ variable "enable_privileged_role_administrator" {
 }
 
 variable "github_app_pem_file" {
-  description = "(Required) Base64 encoded private key for the Station Landing Zones Github app."
+  description = "Base64 encoded private key for the Station Landing Zones GitHub app (required for GitHub bootstrap)."
   sensitive   = true
   type        = string
+  default     = null
+
+  validation {
+    condition     = try(var.config.github, null) == null || try(length(var.github_app_pem_file) > 0, false)
+    error_message = "github_app_pem_file is required for GitHub bootstrap."
+  }
 }
 
+variable "gitlab_token" {
+  description = "GitLab API token. Set TF_VAR_gitlab_token to also pass it to the landing-zone workspace, or use GITLAB_TOKEN for local provider authentication."
+  sensitive   = true
+  type        = string
+  default     = null
+}

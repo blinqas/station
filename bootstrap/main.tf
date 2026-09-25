@@ -7,7 +7,7 @@
 resource "local_file" "providers" {
   source     = "${path.root}/providers/providers.cloud.tf"
   filename   = "${path.root}/providers.tf"
-  depends_on = [terraform_data.this, github_repository_file.bootstrap]
+  depends_on = [terraform_data.this, github_repository_file.bootstrap, gitlab_repository_file.bootstrap]
 }
 
 resource "terraform_data" "this" {
@@ -42,7 +42,7 @@ module "station" {
   tenant_id           = var.config.tenant_id
   subscription_id     = var.config.subscription_id
   resource_group_name = var.config.resource_group_name
-  tags                = merge(var.config.tags, { repoUrl = github_repository.this.full_name })
+  tags                = merge(var.config.tags, { repoUrl = local.repository_identifier })
   tfe = merge(
     var.config.terraform_cloud, {
       workspace_vars = local.workspace_env_vars,
@@ -119,4 +119,3 @@ data "azuread_application_published_app_ids" "well_known" {}
 data "azuread_service_principal" "msgraph" {
   client_id = data.azuread_application_published_app_ids.well_known.result.MicrosoftGraph
 }
-
