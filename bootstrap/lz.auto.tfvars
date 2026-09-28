@@ -9,11 +9,11 @@ config = {
   identity_name = "id-alz"
 
   terraform_cloud = { # Terraform Cloud Configuration
-    organization_name                   = ""
-    workspace_name                      = "alz"
-    workspace_description               = "Landing Zone definitions"
-    bootstrap_workspace_name            = "alz-bootstrap"
-    bootstrap_workspace_description     = "Bootstrap for Landing Zones"
+    organization_name               = ""
+    workspace_name                  = "alz"
+    workspace_description           = "Landing Zone definitions"
+    bootstrap_workspace_name        = "alz-bootstrap"
+    bootstrap_workspace_description = "Bootstrap for Landing Zones"
     #vcs_repo_github_app_installation_id = ""
     # GitLab: comment out the GitHub App ID above and uncomment this OAuth token ID.
     vcs_repo_oauth_token_id = "" # HCP Terraform GitLab VCS connection token ID
