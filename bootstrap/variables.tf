@@ -62,8 +62,13 @@ variable "github_app_pem_file" {
 }
 
 variable "gitlab_token" {
-  description = "GitLab API token. Set TF_VAR_gitlab_token to also pass it to the landing-zone workspace, or use GITLAB_TOKEN for local provider authentication."
+  description = "GitLab API token for bootstrap and the landing-zone workspace. Set TF_VAR_gitlab_token for GitLab bootstrap."
   sensitive   = true
   type        = string
   default     = null
+
+  validation {
+    condition     = try(var.config.gitlab, null) == null || try(length(trimspace(var.gitlab_token)) > 0, false)
+    error_message = "Set TF_VAR_gitlab_token for GitLab bootstrap and landing-zone management."
+  }
 }

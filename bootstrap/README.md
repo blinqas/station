@@ -34,7 +34,8 @@ Set **exactly one** of `config.github` or `config.gitlab` in `lz.auto.tfvars`. T
 ## 1. Set Up Service Accounts
 
 > [!NOTE]
-> For GitHub, HCP Terraform binds a GitHub App to a user, not to an organization. Use a dedicated GitHub user for the App installation. For GitLab, the user that connects HCP Terraform needs Maintainer access to the landing-zone project so it can create webhooks.
+> For GitHub, HCP Terraform binds a GitHub App to a user, not an organization. Use a dedicated GitHub user for the installation.
+> GitLab service accounts cannot sign in through the GitLab UI. Connect HCP Terraform through its API in step 4.
 
 For **GitHub**:
 
@@ -44,7 +45,13 @@ For **GitHub**:
 
 Use this account for all GitHub App actions below.
 
-For **GitLab**, use a dedicated GitLab user that can create private projects in the target group, commit to their default branches, and maintain the landing-zone project for HCP Terraform webhooks. Create its API token in step 3. The HCP Terraform VCS connection may use the same user.
+For **GitLab**:
+
+1. As an Owner of the top-level group, create a [group service account](https://docs.gitlab.com/user/profile/service_accounts/).
+2. Open the target group or subgroup in GitLab, then select **Manage > Members > Invite members**.
+3. Enter the service account's username, select the **Maintainer** role, and select **Invite**. This role is inherited by new projects and lets HCP Terraform create webhooks.
+4. In the target group, select **Settings > General > Permissions and group features**. Check that **Minimum role required to create projects** is **Maintainer** or lower. If it is higher, set it to **Maintainer** and select **Save changes**.
+5. Check that the group's default branch protection lets Maintainers push. GitLab's default **Fully protected** setting does.
 
 ---
 
@@ -64,8 +71,6 @@ For **GitLab**, use a dedicated GitLab user that can create private projects in 
 ## 3. Configure Repository Management
 
 ### GitHub
-
-Create the GitHub App for Station landing-zone management:
 
 Terraform uses this app to manage GitHub with the `integrations/github` provider.
 
@@ -87,9 +92,13 @@ Terraform uses this app to manage GitHub with the `integrations/github` provider
 
 ### GitLab.com
 
-1. Confirm that the GitLab service user can create private projects in the target group or subgroup and commit to their default branches.
-2. Create a personal access token with the `api` scope for that user. Set `GITLAB_TOKEN` for local bootstrap authentication. If the landing-zone workspace will also manage GitLab projects, set `TF_VAR_gitlab_token` instead; this installs the same token as a sensitive `GITLAB_TOKEN` variable in that workspace. The initial landing-zone repository contains no GitLab resources.
-3. Note the full group path (for example, `platform/landing-zones`); use it for `gitlab.group`.
+Create a personal access token for the group service account with the `api` scope.
+
+1. Go to `Group > Settings > Service accounts`
+2. On the Service Account, click `⋮ > Manage access tokens > Add new token`
+3. 
+4. Set `TF_VAR_gitlab_token` to this token before bootstrap (see step 5). Station also installs it as a sensitive `GITLAB_TOKEN` variable in the landing-zone workspace.
+5. Note the full group path (for example, `platform/landing-zones`); use it for `gitlab.group`.
 
 ---
 
@@ -120,9 +129,30 @@ HCP Terraform uses this app to watch GitHub commits and start runs.
 
 ### GitLab.com
 
-1. In HCP Terraform, open **Settings > Providers > Add VCS Provider**, then select **GitLab > GitLab.com**.
-2. [Register the HCP Terraform application in GitLab](https://developer.hashicorp.com/terraform/cloud-docs/vcs/gitlab-com), using the redirect URI shown by HCP Terraform. Authorize it as a user with Maintainer access to the target projects. Select **All Projects** for the VCS provider: the HCP Terraform project does not exist until the first apply. You can narrow its scope after bootstrap.
-3. Find the OAuth token ID (`ot-...`) associated with that VCS provider. You can retrieve it through the [HCP Terraform OAuth tokens API](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/oauth-tokens). Set `terraform_cloud.vcs_repo_oauth_token_id` to this **ID**, not the GitLab access token or the OAuth client ID.
+1. Export the HCP Terraform token and the GitLab service account token as shown in step 5.
+2. Create the GitLab.com VCS connection using the [HCP Terraform OAuth Clients API](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/oauth-clients#create-an-oauth-client). Replace `<organization>` with your HCP Terraform organization name:
+
+```bash
+curl --request POST "https://app.terraform.io/api/v2/organizations/<organization>/oauth-clients" \
+  --header "Authorization: Bearer $TF_VAR_tfe_token" \
+  --header "Content-Type: application/vnd.api+json" \
+  --data @- <<EOF
+{"data":{"type":"oauth-clients","attributes":{"service-provider":"gitlab_hosted","http-url":"https://gitlab.com","api-url":"https://gitlab.com/api/v4","oauth-token-string":"$TF_VAR_gitlab_token"}}}
+EOF
+```
+
+3. Copy the OAuth client ID (`oc-...`) from the response.
+4. List its token IDs using the [HCP Terraform OAuth tokens API](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/oauth-tokens). Replace `<client-id>` with the ID from step 3:
+
+```bash
+curl "https://app.terraform.io/api/v2/oauth-clients/<client-id>/oauth-tokens" \
+  --header "Authorization: Bearer $TF_VAR_tfe_token"
+```
+
+5. Set `terraform_cloud.vcs_repo_oauth_token_id` to the returned `ot-...` ID. Do not use the `oc-...` ID or the GitLab token here.
+
+> [!NOTE]
+> Leave this VCS connection available to **All Projects** for bootstrap. You can limit it to selected projects after the first apply creates the HCP Terraform project.
 
 ---
 
@@ -141,19 +171,13 @@ export TF_TOKEN="$TF_VAR_tfe_token"
 export TF_VAR_github_app_pem_file=$(base64 -i ./station-landing-zones.pem)
 
 # GitLab only (do not export the GitHub PEM for GitLab):
-export GITLAB_TOKEN="your-gitlab-api-token"
-```
-
-Only if the landing-zone workspace must also manage GitLab projects, export the token as a Terraform variable too. This gives that workspace the same API token:
-
-```bash
-export TF_VAR_gitlab_token="$GITLAB_TOKEN"
-```
+export TF_VAR_gitlab_token="your-gitlab-api-token"
 ```
 
 ### Configure the Variables
 
 1. Fill in `lz.auto.tfvars`. Keep the `github` block from the example for GitHub, or replace that entire block with the `gitlab` block below. Do not set both.
+2. If you have other `*.auto.tfvars` files in this directory, Terraform loads them too. The commands below give `lz.auto.tfvars` precedence for values present in both files.
 
 ```hcl
 # Inside config.terraform_cloud, for GitHub:
@@ -185,7 +209,7 @@ gitlab = {
 ```bash
 export TF_WORKSPACE=$(awk -F'"' '/bootstrap_workspace_name/ {print $2}' lz.auto.tfvars)
 terraform init
-terraform plan -out plan.tfplan
+terraform plan -var-file=lz.auto.tfvars -out plan.tfplan
 terraform apply plan.tfplan
 ```
 
@@ -212,11 +236,17 @@ terraform init
 Keep the same VCS credentials exported for the second plan and apply. The bootstrap workspace uses local execution, so the CLI continues to use your local GitHub or GitLab authentication.
 
 ```bash
-terraform plan -out plan.tfplan
+terraform plan -var-file=lz.auto.tfvars -out plan.tfplan
 terraform apply plan.tfplan
 unset TF_CLOUD_ORGANIZATION
 unset TF_WORKSPACE
 ```
+
+### Use the Landing-Zone Workspace Inputs
+
+1. Run the bootstrap plan and apply again after updating this configuration. It adds the five Terraform variables to the landing-zone workspace and a bootstrap-managed `variables.bootstrap.tf` to the GitLab landing-zone repository.
+2. In HCP Terraform, open the landing-zone workspace's **Variables** page. Check for `vcs_repo_oauth_token_id`, `tfe_organization_name`, `tenant_id`, `gitlab_group`, and `subscription_id`.
+3. In the landing-zone repository's `main.tf`, refer to these values as `var.vcs_repo_oauth_token_id`, `var.tfe_organization_name`, `var.tenant_id`, `var.gitlab_group`, and `var.subscription_id`.
 
 ### Optional: Tear Down the Deployment
 
@@ -228,7 +258,7 @@ unset TF_WORKSPACE
 ```bash
 export TF_CLOUD_ORGANIZATION=$(awk -F'"' '/organization_name/ {print $2}' lz.auto.tfvars)
 export TF_WORKSPACE=$(awk -F'"' '/bootstrap_workspace_name/ {print $2}' lz.auto.tfvars)
-terraform destroy
+terraform destroy -var-file=lz.auto.tfvars
 ```
 2. Enter `yes` to destroy the environment
 3. Continue

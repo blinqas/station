@@ -37,6 +37,7 @@ resource "gitlab_repository_file" "bootstrap" {
     "files/providers.gitlab.tf",
     "files/variables.tf",
     "files/variables.gitlab.tf",
+    "files/variables.bootstrap.tf",
     "lz.auto.tfvars",
     "README.md",
     "PERMISSIONS.md"
@@ -70,4 +71,17 @@ resource "gitlab_repository_file" "alz" {
   }
 
   depends_on = [module.station]
+}
+
+resource "gitlab_repository_file" "alz_bootstrap_variables" {
+  count = local.use_github ? 0 : 1
+
+  project        = gitlab_project.this[0].id
+  file_path      = "variables.bootstrap.tf"
+  branch         = var.config.gitlab.branch
+  encoding       = "text"
+  content        = file("${path.root}/files/variables.bootstrap.tf")
+  commit_message = "variables.bootstrap.tf [skip ci]"
+
+  depends_on = [gitlab_repository_file.alz]
 }

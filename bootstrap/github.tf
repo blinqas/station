@@ -28,6 +28,7 @@ resource "github_repository_file" "bootstrap" {
     "files/providers.gitlab.tf",
     "files/variables.tf",
     "files/variables.gitlab.tf",
+    "files/variables.bootstrap.tf",
     "lz.auto.tfvars",
     "README.md",
     "PERMISSIONS.md"
@@ -54,14 +55,4 @@ resource "github_repository_file" "alz" {
   }
   # explicit dependency to avoid failed initial terraform apply
   depends_on = [module.station]
-}
-
-moved {
-  from = github_repository.this
-  to   = github_repository.this[0]
-}
-
-moved {
-  from = github_repository.bootstrap
-  to   = github_repository.bootstrap[0]
 }

@@ -63,12 +63,42 @@ locals {
       category    = "terraform"
     }
   }
-  gitlab_workspace_vars = nonsensitive(var.gitlab_token == null) ? {} : {
+  gitlab_workspace_vars = {
     GITLAB_TOKEN = {
       value       = var.gitlab_token
-      description = "GitLab API token for landing-zone workspace runs."
+      description = "GitLab API token for managing GitLab from the landing-zone workspace."
       sensitive   = true
       category    = "env"
+    }
+    vcs_repo_oauth_token_id = {
+      value       = try(var.config.terraform_cloud.vcs_repo_oauth_token_id, null)
+      description = "HCP Terraform OAuth token ID for the GitLab VCS connection."
+      sensitive   = false
+      category    = "terraform"
+    }
+    tfe_organization_name = {
+      value       = var.config.terraform_cloud.organization_name
+      description = "HCP Terraform organization name."
+      sensitive   = false
+      category    = "terraform"
+    }
+    tenant_id = {
+      value       = var.config.tenant_id
+      description = "Azure tenant ID."
+      sensitive   = false
+      category    = "terraform"
+    }
+    gitlab_group = {
+      value       = try(var.config.gitlab.group, null)
+      description = "Full path of the GitLab group for landing zones."
+      sensitive   = false
+      category    = "terraform"
+    }
+    subscription_id = {
+      value       = var.config.subscription_id
+      description = "Azure subscription ID."
+      sensitive   = false
+      category    = "terraform"
     }
   }
   workspace_env_vars = merge(
