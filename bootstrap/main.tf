@@ -61,44 +61,10 @@ module "station" {
       }
     }
 
-    # Microsoft Graph API Permissions (Application)
-    # These replace Global Administrator with least-privilege permissions
-    # See: https://learn.microsoft.com/en-us/graph/permissions-reference
-    app_role_assignments = {
-      # Manage applications where this identity is an owner
-      # https://learn.microsoft.com/en-us/graph/permissions-reference#applicationreadwriteownedby
-      "Application.ReadWrite.OwnedBy" = {
-        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["Application.ReadWrite.OwnedBy"]
-        resource_object_id = data.azuread_service_principal.msgraph.object_id
-      }
-      # Create and manage security groups
-      # https://learn.microsoft.com/en-us/graph/permissions-reference#groupreadwriteall
-      "Group.ReadWrite.All" = {
-        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["Group.ReadWrite.All"]
-        resource_object_id = data.azuread_service_principal.msgraph.object_id
-      }
-      # Add/remove members from groups
-      # https://learn.microsoft.com/en-us/graph/permissions-reference#groupmemberreadwriteall
-      "GroupMember.ReadWrite.All" = {
-        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["GroupMember.ReadWrite.All"]
-        resource_object_id = data.azuread_service_principal.msgraph.object_id
-      }
-      # Read user profiles (required for group member validation)
-      # https://learn.microsoft.com/en-us/graph/permissions-reference#userreadall
-      "User.Read.All" = {
-        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["User.Read.All"]
-        resource_object_id = data.azuread_service_principal.msgraph.object_id
-      }
-      # Grant API permissions (app roles) to service principals
-      # https://learn.microsoft.com/en-us/graph/permissions-reference#approleassignmentreadwriteall
-      "AppRoleAssignment.ReadWrite.All" = {
-        app_role_id        = data.azuread_service_principal.msgraph.app_role_ids["AppRoleAssignment.ReadWrite.All"]
-        resource_object_id = data.azuread_service_principal.msgraph.object_id
-      }
-    }
+    # Microsoft Graph application permissions selected by station_capabilities.
+    app_role_assignments = local.station_graph_role_assignments
 
-    # Entra ID Directory Role (Optional)
-    # Only granted if var.enable_privileged_role_administrator is true
+    # Entra directory role, separate from Graph application permissions.
     # https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/permissions-reference#privileged-role-administrator
     directory_role_assignments = var.enable_privileged_role_administrator ? {
       "Privileged Role Administrator" = {

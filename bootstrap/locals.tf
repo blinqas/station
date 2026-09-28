@@ -1,4 +1,20 @@
 locals {
+  # Keep Graph permission names as keys to preserve existing assignment addresses.
+  # The root Station module always looks up the Microsoft Graph service principal.
+  station_graph_role_names = toset(concat(
+    ["Application.Read.All"],
+    var.station_capabilities.manage_applications ? ["Application.ReadWrite.All"] : [],
+    var.station_capabilities.manage_groups || var.station_capabilities.manage_group_membership ? ["Group.ReadWrite.All"] : [],
+    var.station_capabilities.grant_application_permissions ? ["AppRoleAssignment.ReadWrite.All"] : [],
+    var.station_capabilities.assign_directory_roles ? ["RoleManagement.ReadWrite.Directory"] : []
+  ))
+  station_graph_role_assignments = {
+    for name in local.station_graph_role_names : name => {
+      app_role_id        = data.azuread_service_principal.msgraph.app_role_ids[name]
+      resource_object_id = data.azuread_service_principal.msgraph.object_id
+    }
+  }
+
   use_github            = try(var.config.github, null) != null
   repository_identifier = local.use_github ? github_repository.this[0].full_name : gitlab_project.this[0].path_with_namespace
   bootstrap_files = toset([

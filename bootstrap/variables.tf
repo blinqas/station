@@ -24,26 +24,24 @@ variable "tfe_token" {
   type        = string
 }
 
+variable "station_capabilities" {
+  description = "Activities the Station managed identity may perform in Microsoft Graph. All optional activities default to false; Application.Read.All is always granted for the Station module's Graph service principal lookup. See PERMISSIONS.md."
+  type = object({
+    manage_applications           = optional(bool, false)
+    manage_groups                 = optional(bool, false)
+    manage_group_membership       = optional(bool, false)
+    grant_application_permissions = optional(bool, false)
+    assign_directory_roles        = optional(bool, false)
+  })
+  default = {}
+}
+
 variable "enable_privileged_role_administrator" {
   description = <<-EOT
-    (Optional) Whether to grant the Station identity the "Privileged Role Administrator" directory role.
-    
-    Default: false
-    
-    When DISABLED (default):
-      • Station uses only Microsoft Graph API permissions (least-privilege)
-      • Landing zones CANNOT be assigned Entra ID directory roles
-      • Landing zones CAN still receive Graph API permissions (e.g., User.Read.All)
-      • This is the recommended setting for most deployments
-    
-    When ENABLED:
-      • Station can assign ANY directory role to landing zone identities
-      • Including Global Administrator (privilege escalation risk)
-      • Only enable if landing zones genuinely require directory roles
-      • Ensure strict repository access controls are in place
-    
-    See PERMISSIONS.md for detailed security implications.
-    Reference: https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/permissions-reference#privileged-role-administrator
+    Whether to grant the Station identity the Privileged Role Administrator Entra directory role.
+    Defaults to false. This is independent of station_capabilities.assign_directory_roles,
+    which grants the RoleManagement.ReadWrite.Directory Microsoft Graph application permission.
+    Neither setting automatically enables the other. See PERMISSIONS.md before enabling.
   EOT
   type        = bool
   default     = false

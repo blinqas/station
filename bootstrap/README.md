@@ -27,7 +27,7 @@ The bootstrap does these tasks:
 2. Connects the landing-zone repository to HCP Terraform using the selected VCS connection.
 3. Runs the first Terraform apply locally, then migrates the bootstrap state to HCP Terraform on the second initialization.
 
-Set **exactly one** of `config.github` or `config.gitlab` in `lz.auto.tfvars`. The checked-in example selects GitHub. A GitLab bootstrap requires GitLab.com and an existing group; self-managed GitLab is not covered by this configuration.
+Set **exactly one** of `config.github` or `config.gitlab` in `lz.auto.tfvars`. The checked-in example selects GitLab. A GitLab bootstrap requires GitLab.com and an existing group; self-managed GitLab is not covered by this configuration.
 
 ---
 
@@ -201,6 +201,31 @@ gitlab = {
   bootstrap_branch      = "main"
 }
 ```
+
+### Select Station identity activities
+
+At the top level of `lz.auto.tfvars`, **outside** `config`, select the activities the landing-zone Station identity needs:
+
+```hcl
+station_capabilities = {
+  manage_applications           = false
+  manage_groups                 = false
+  manage_group_membership       = true
+  grant_application_permissions = false
+  assign_directory_roles        = false
+}
+```
+
+All keys are optional and default to `false`. The identity still receives the baseline `Application.Read.All` Graph permission for the Station module's service-principal lookup and Azure subscription Owner for Azure resources. These switches grant Graph permissions; they do not control which resources the Station module creates. `manage_groups` and `manage_group_membership` both grant tenant-wide `Group.ReadWrite.All`, so use either switch only when that scope is acceptable. `grant_application_permissions` opts the ordinary identity into tenant-wide app-role assignments, including grants to itself. `manage_applications` grants tenant-wide `Application.ReadWrite.All` because the existing module does not set owners on its service principals. `assign_directory_roles` grants tenant-wide `RoleManagement.ReadWrite.Directory` and is separate from `enable_privileged_role_administrator` (an Entra directory role). See [PERMISSIONS.md](PERMISSIONS.md) for the activity-to-permission table, member-type limits, and application auto-consent prerequisites. On upgrades, review the plan: the prior five default Graph grants are subject to revocation.
+
+| Activity | Graph application permission |
+| --- | --- |
+| Always (including all switches off) | `Application.Read.All` |
+| `manage_applications` | `Application.ReadWrite.All` |
+| `manage_groups` | `Group.ReadWrite.All` |
+| `manage_group_membership` | `Group.ReadWrite.All` (also permits group property changes) |
+| `grant_application_permissions` | `AppRoleAssignment.ReadWrite.All` |
+| `assign_directory_roles` | `RoleManagement.ReadWrite.Directory` |
 
 ### Run Terraform
 
