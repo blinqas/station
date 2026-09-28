@@ -7,3 +7,4 @@ variable "gitlab_group" {
   description = "Full path of the GitLab group for landing zones."
   type        = string
 }
+

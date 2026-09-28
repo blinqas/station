@@ -8,11 +8,6 @@ variable "tenant_id" {
   type        = string
 }
 
-variable "gitlab_group" {
-  description = "Full path of the GitLab group for landing zones."
-  type        = string
-}
-
 variable "subscription_id" {
   description = "Azure subscription ID."
   type        = string
