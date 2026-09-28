@@ -15,24 +15,7 @@ resource "github_repository" "bootstrap" {
 }
 
 resource "github_repository_file" "bootstrap" {
-  for_each = local.use_github ? toset([
-    "main.tf",
-    "providers.tf",
-    "variables.tf",
-    "github.tf",
-    "gitlab.tf",
-    "locals.tf",
-    "providers/providers.cloud.tf",
-    "providers/providers.local.tf",
-    "files/providers.tf",
-    "files/providers.gitlab.tf",
-    "files/variables.tf",
-    "files/variables.gitlab.tf",
-    "files/variables.bootstrap.tf",
-    "lz.auto.tfvars",
-    "README.md",
-    "PERMISSIONS.md"
-  ]) : toset([])
+  for_each            = local.use_github ? local.bootstrap_files : toset([])
   file                = each.value
   content             = file("${path.root}/${each.value}")
   repository          = github_repository.bootstrap[0].name
@@ -42,10 +25,11 @@ resource "github_repository_file" "bootstrap" {
 
 resource "github_repository_file" "alz" {
   for_each = local.use_github ? toset([
-    "providers.tf",
-    "variables.tf"
+    "providers.github.tf",
+    "variables.tf",
+    "variables.github.tf"
   ]) : toset([])
-  file                = each.value
+  file                = each.value == "providers.github.tf" ? "providers.tf" : each.value
   content             = file("${path.root}/files/${each.value}")
   repository          = github_repository.this[0].name
   commit_message      = "${each.value} [skip ci]"

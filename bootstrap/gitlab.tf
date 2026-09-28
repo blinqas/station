@@ -24,24 +24,7 @@ resource "gitlab_project" "bootstrap" {
 }
 
 resource "gitlab_repository_file" "bootstrap" {
-  for_each = local.use_github ? toset([]) : toset([
-    "main.tf",
-    "providers.tf",
-    "variables.tf",
-    "github.tf",
-    "gitlab.tf",
-    "locals.tf",
-    "providers/providers.cloud.tf",
-    "providers/providers.local.tf",
-    "files/providers.tf",
-    "files/providers.gitlab.tf",
-    "files/variables.tf",
-    "files/variables.gitlab.tf",
-    "files/variables.bootstrap.tf",
-    "lz.auto.tfvars",
-    "README.md",
-    "PERMISSIONS.md"
-  ])
+  for_each = local.use_github ? toset([]) : local.bootstrap_files
 
   project             = gitlab_project.bootstrap[0].id
   file_path           = each.value
@@ -54,15 +37,16 @@ resource "gitlab_repository_file" "bootstrap" {
 
 resource "gitlab_repository_file" "alz" {
   for_each = local.use_github ? toset([]) : toset([
-    "providers.tf",
-    "variables.tf"
+    "providers.gitlab.tf",
+    "variables.tf",
+    "variables.gitlab.tf"
   ])
 
   project             = gitlab_project.this[0].id
-  file_path           = each.value
+  file_path           = each.value == "providers.gitlab.tf" ? "providers.tf" : each.value
   branch              = var.config.gitlab.branch
   encoding            = "text"
-  content             = file("${path.root}/files/${each.value == "providers.tf" ? "providers.gitlab.tf" : "variables.gitlab.tf"}")
+  content             = file("${path.root}/files/${each.value}")
   commit_message      = "${each.value} [skip ci]"
   overwrite_on_create = true
 

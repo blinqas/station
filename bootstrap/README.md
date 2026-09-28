@@ -213,7 +213,7 @@ terraform plan -var-file=lz.auto.tfvars -out plan.tfplan
 terraform apply plan.tfplan
 ```
 
-The generated bootstrap repository is a copy of the bootstrap configuration. Its `module "station"` source is `../.`, so a later run from a clone requires the Station repository checked out as its parent directory. Keep the selected VCS credentials available when running it. The generated landing-zone repository starts with only `providers.tf` and `variables.tf`; add landing-zone configuration before expecting it to deploy resources.
+The generated bootstrap repository is a copy of the bootstrap configuration. Its `module "station"` source is `../.`, so a later run from a clone requires the Station repository checked out as its parent directory. Keep the selected VCS credentials available when running it. The generated landing-zone repository starts with `providers.tf`, the shared `variables.tf`, and either `variables.github.tf` or `variables.gitlab.tf` (plus `variables.bootstrap.tf` for GitLab); add landing-zone configuration before expecting it to deploy resources.
 
 ### Move the State to HCP Terraform
 

@@ -1,6 +1,25 @@
 locals {
   use_github            = try(var.config.github, null) != null
   repository_identifier = local.use_github ? github_repository.this[0].full_name : gitlab_project.this[0].path_with_namespace
+  bootstrap_files = toset([
+    "main.tf",
+    "providers.tf",
+    "variables.tf",
+    "github.tf",
+    "gitlab.tf",
+    "locals.tf",
+    "providers/providers.cloud.tf",
+    "providers/providers.local.tf",
+    "files/providers.github.tf",
+    "files/providers.gitlab.tf",
+    "files/variables.tf",
+    "files/variables.github.tf",
+    "files/variables.gitlab.tf",
+    "files/variables.bootstrap.tf",
+    "lz.auto.tfvars",
+    "README.md",
+    "PERMISSIONS.md"
+  ])
   github_vcs_repo = {
     identifier                 = local.repository_identifier
     branch                     = try(var.config.github.branch, null)

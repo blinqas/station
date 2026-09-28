@@ -1,8 +1,3 @@
-variable "vcs_repo_oauth_token_id" {
-  description = "HCP Terraform OAuth token ID for the GitLab VCS connection."
-  type        = string
-}
-
 variable "tfe_organization_name" {
   description = "HCP Terraform organization name."
   type        = string
