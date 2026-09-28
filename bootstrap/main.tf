@@ -61,7 +61,7 @@ module "station" {
       }
     }
 
-    # Microsoft Graph application permissions selected by station_capabilities.
+    # Microsoft Graph application permissions selected by config.station_capabilities.
     app_role_assignments = local.station_graph_role_assignments
 
     # Entra directory role, separate from Graph application permissions.

@@ -8,6 +8,15 @@ config = {
   # The name of the Managed Identity which will deploy further Landing Zones
   identity_name = "id-alz"
 
+  # Minimum: no optional Graph activities (Application.Read.All is still granted).
+  station_capabilities = {
+    manage_applications           = false
+    manage_groups                 = false
+    manage_group_membership       = false
+    grant_application_permissions = false
+    assign_directory_roles        = false
+  }
+
   terraform_cloud = { # Terraform Cloud Configuration
     organization_name               = ""
     workspace_name                  = "alz"

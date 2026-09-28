@@ -3,10 +3,11 @@ locals {
   # The root Station module always looks up the Microsoft Graph service principal.
   station_graph_role_names = toset(concat(
     ["Application.Read.All"],
-    var.station_capabilities.manage_applications ? ["Application.ReadWrite.All"] : [],
-    var.station_capabilities.manage_groups || var.station_capabilities.manage_group_membership ? ["Group.ReadWrite.All"] : [],
-    var.station_capabilities.grant_application_permissions ? ["AppRoleAssignment.ReadWrite.All"] : [],
-    var.station_capabilities.assign_directory_roles ? ["RoleManagement.ReadWrite.Directory"] : []
+    var.config.station_capabilities.manage_applications ? ["Application.ReadWrite.All"] : [],
+    var.config.station_capabilities.manage_groups || var.config.station_capabilities.manage_group_membership ? ["Group.ReadWrite.All"] : [],
+    var.config.station_capabilities.manage_group_membership ? ["User.Read.All"] : [],
+    var.config.station_capabilities.grant_application_permissions ? ["AppRoleAssignment.ReadWrite.All"] : [],
+    var.config.station_capabilities.assign_directory_roles ? ["RoleManagement.ReadWrite.Directory"] : []
   ))
   station_graph_role_assignments = {
     for name in local.station_graph_role_names : name => {

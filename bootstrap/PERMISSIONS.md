@@ -1,40 +1,43 @@
 # Station bootstrap permissions
 
-Bootstrap assigns permissions to the **Station managed identity** used by the landing-zone HCP Terraform workspace. Set the root-level `station_capabilities` input in the bootstrap configuration to select its Microsoft Graph **application permissions**. Each activity defaults to `false`; leaving the object unset selects no optional activities. These switches grant permissions to the identity; they do not create or disable Station resources.
+Bootstrap assigns permissions to the **Station managed identity** used by the landing-zone HCP Terraform workspace. Set `config.station_capabilities` in the bootstrap configuration to select its Microsoft Graph **application permissions**. Each activity defaults to `false`; leaving the object unset selects no optional activities. These switches grant permissions to the identity; they do not create or disable Station resources.
 
 The identity always receives **Application.Read.All** because the Station module unconditionally reads the Microsoft Graph service principal (`data.azuread_service_principal.msgraph`). The pinned AzureAD provider requires this application permission (or `Directory.Read.All`) for an app-only lookup. Thus, all switches set to `false` does **not** mean zero Graph access. Bootstrap also assigns **Azure subscription Owner** for Azure resources and Azure RBAC; Graph activities do not change that assignment.
 
-| Activity (`station_capabilities` key) | Graph application permission(s) | What it enables and its scope |
+| Activity (`config.station_capabilities` key) | Graph application permission(s) | What it enables and its scope |
 | --- | --- | --- |
 | Always (no switch) | `Application.Read.All` | Read applications and service principals tenant-wide; required by the Station module's Graph lookup. |
 | `manage_applications` | `Application.ReadWrite.All` | Create and manage application registrations and their service principals tenant-wide. See ownership constraint below. |
 | `manage_groups` | `Group.ReadWrite.All` | Create and manage ordinary groups, their properties, and membership tenant-wide. |
-| `manage_group_membership` | `Group.ReadWrite.All` | Add/remove members of **any ordinary group**, including pre-existing groups the identity does not own. Also grants group property and membership management tenant-wide; this is the same permission as `manage_groups`. |
+| `manage_group_membership` | `Group.ReadWrite.All`, `User.Read.All` | Add/remove members of **any ordinary group**, including pre-existing groups the identity does not own, and support user lookups in membership workflows. Both group property management and user reads are tenant-wide. The Graph add-member-by-ID API does not itself require `User.Read.All`. |
 | `grant_application_permissions` | `AppRoleAssignment.ReadWrite.All` | Assign application roles (including Graph API permissions) to service principals tenant-wide. `Application.Read.All` above supplies the other permission required by the provider. |
 | `assign_directory_roles` | `RoleManagement.ReadWrite.Directory` | Assign Entra directory roles using the AzureAD provider, including privileged roles. Also required to create role-assignable groups or edit their membership. |
 
-Permissions are deduplicated: turning on both group switches results in **one** `Group.ReadWrite.All` assignment. Graph permissions are tenant-wide, not restricted to the bootstrap resource group, Azure subscription, Station-created objects, or the repository. Restrict who can change and run the landing-zone configuration accordingly.
+Permissions are deduplicated: turning on both group switches results in **one** `Group.ReadWrite.All` assignment; `manage_group_membership` also adds `User.Read.All`. Graph permissions are tenant-wide, not restricted to the bootstrap resource group, Azure subscription, Station-created objects, or the repository. Restrict who can change and run the landing-zone configuration accordingly.
 
 ## Configure activities
 
-At the **top level** of `lz.auto.tfvars`, alongside `config` (not inside it), add only the activities you need:
+Inside `config` in `lz.auto.tfvars`, add only the activities you need:
 
 ```hcl
-station_capabilities = {
-  manage_applications           = false
-  manage_groups                 = false
-  manage_group_membership       = true
-  grant_application_permissions = false
-  assign_directory_roles        = false
+config = {
+  # Other bootstrap settings go here.
+  station_capabilities = {
+    manage_applications           = false
+    manage_groups                 = false
+    manage_group_membership       = true
+    grant_application_permissions = false
+    assign_directory_roles        = false
+  }
 }
 ```
 
-You may omit any key; it defaults to `false`. For example, `station_capabilities = {}` grants only the baseline Graph permission. If Station will manage applications with service principals, create groups, and grant those applications API permissions, enable `manage_applications`, `manage_groups`, and `grant_application_permissions` explicitly. The role-assignment switch is **opt-in on the ordinary Station identity**, not a separate privileged workflow. It permits grants to the identity itself and other principals, including powerful tenant-wide roles; treat access to its Terraform configuration as privileged.
+You may omit any key; it defaults to `false`. The checked-in `lz.auto.tfvars` sets every `config.station_capabilities` activity to `false` to grant only the baseline Graph permission. If Station will manage applications with service principals, create groups, and grant those applications API permissions, enable `manage_applications`, `manage_groups`, and `grant_application_permissions` explicitly. The role-assignment switch is **opt-in on the ordinary Station identity**, not a separate privileged workflow. It permits grants to the identity itself and other principals, including powerful tenant-wide roles; treat access to its Terraform configuration as privileged.
 
 ### Provider and Graph limitations
 
 - **Applications:** Station adds the landing-zone identity as an owner of applications it creates, but its service-principal resource does not set service-principal owners. [AzureAD v3.9.0 requires ownership of *both* objects](https://github.com/hashicorp/terraform-provider-azuread/blob/v3.9.0/docs/resources/service_principal.md#api-permissions) for `Application.ReadWrite.OwnedBy`. Consequently `manage_applications` uses the broader `Application.ReadWrite.All` to support the existing application + service-principal lifecycle. If specifying user principals as application owners, [the provider may additionally need `User.Read.All`](https://github.com/hashicorp/terraform-provider-azuread/blob/v3.9.0/docs/resources/application.md#api-permissions); this switch does not add it.
-- **Groups:** [AzureAD v3.9.0 `azuread_group_member`](https://github.com/hashicorp/terraform-provider-azuread/blob/v3.9.0/docs/resources/group_member.md#api-permissions) requires `Group.ReadWrite.All` or `Directory.ReadWrite.All` for app-only access to a group it does not own. `GroupMember.ReadWrite.All` alone is not documented as sufficient for that provider resource, so the membership activity uses `Group.ReadWrite.All`. If specifying **user owners** on a group, [the group resource additionally requires `User.Read.All` or an equivalent directory permission](https://github.com/hashicorp/terraform-provider-azuread/blob/v3.9.0/docs/resources/group.md#api-permissions); it is not granted automatically. Default Station-managed groups add the identity as an owner.
+- **Groups:** [AzureAD v3.9.0 `azuread_group_member`](https://github.com/hashicorp/terraform-provider-azuread/blob/v3.9.0/docs/resources/group_member.md#api-permissions) requires `Group.ReadWrite.All` or `Directory.ReadWrite.All` for app-only access to a group it does not own. `GroupMember.ReadWrite.All` alone is not documented as sufficient for that provider resource, so the membership activity uses `Group.ReadWrite.All`. `User.Read.All` supports [user lookups](https://github.com/hashicorp/terraform-provider-azuread/blob/v3.9.0/docs/data-sources/user.md#api-permissions) and group creation with user members or owners, but [Graph's add-member API](https://learn.microsoft.com/en-us/graph/api/group-post-members?view=graph-rest-1.0#permissions) does not list it for adding a user by object ID. If specifying **user owners** on a group, [the group resource additionally requires `User.Read.All` or an equivalent directory permission](https://github.com/hashicorp/terraform-provider-azuread/blob/v3.9.0/docs/resources/group.md#api-permissions); `manage_group_membership` supplies it, but `manage_groups` alone does not. Default Station-managed groups add the identity as an owner.
 - **Member types:** The provider supports user, group, and service-principal members. Ordinary user and supported group membership uses the group permission above. [Microsoft Graph's add-member API](https://learn.microsoft.com/en-us/graph/api/group-post-members?view=graph-rest-1.0#permissions) also requires `Application.ReadWrite.All` to add a **service principal** as a member (enable `manage_applications` only if this is needed). Role-assignable group membership additionally requires `RoleManagement.ReadWrite.Directory` (enable `assign_directory_roles`). Dynamic group membership is rule-driven and cannot be manually edited. Graph also limits which member types can join security versus Microsoft 365 groups; the switches cannot bypass these limits.
 - **Automatic grants by the Station module:** When the landing-zone configuration specifies `groups` or `applications`, the unchanged Station module unconditionally grants its identity additional Graph app roles (`User.ReadBasic.All` and `Group.Read.All` for groups; `Application.ReadWrite.OwnedBy` for applications). Those assignments require `grant_application_permissions = true` on the Station identity for the run to succeed. When an application has a service principal and `required_resource_access`, `auto_admin_consent` also defaults to `true` and creates additional app-role assignments; setting it to `false` suppresses these extra assignments, **not** the automatic group/application grants. A false capability switch does not disable these resources: the future run may fail for lack of permission. Consult the module configuration before reducing grants.
 
@@ -44,7 +47,7 @@ You may omit any key; it defaults to `false`. For example, `station_capabilities
 
 ## Migration from the previous bootstrap defaults
 
-The previous bootstrap granted five Graph permissions by default: `Application.ReadWrite.OwnedBy`, `Group.ReadWrite.All`, `GroupMember.ReadWrite.All`, `User.Read.All`, and `AppRoleAssignment.ReadWrite.All`. With no optional activities selected, Terraform will **plan revocations** of all five and add `Application.Read.All`. Selecting a switch keeps the address of any retained permission keyed by its Graph name; the other assignments are removed. `Application.ReadWrite.All` replaces `Application.ReadWrite.OwnedBy` for application management. Review the plan and the landing-zone configuration's required operations **before applying** this migration; removing an active permission can break later runs. This configuration does not change the subscription Owner assignment.
+The previous bootstrap granted five Graph permissions by default: `Application.ReadWrite.OwnedBy`, `Group.ReadWrite.All`, `GroupMember.ReadWrite.All`, `User.Read.All`, and `AppRoleAssignment.ReadWrite.All`. With no optional activities selected, Terraform will **plan revocations** of all five and add `Application.Read.All`. Selecting a switch keeps the address of any retained permission keyed by its Graph name; `manage_group_membership` retains both `Group.ReadWrite.All` and `User.Read.All`. Other assignments are removed. `Application.ReadWrite.All` replaces `Application.ReadWrite.OwnedBy` for application management. Review the plan and the landing-zone configuration's required operations **before applying** this migration; removing an active permission can break later runs. This configuration does not change the subscription Owner assignment.
 
 ## References
 

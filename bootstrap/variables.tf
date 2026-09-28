@@ -1,6 +1,22 @@
 variable "config" {
-  type        = any
-  description = "Bootstrap configuration with exactly one of github or gitlab selected."
+  description = "Bootstrap configuration with exactly one of github or gitlab selected, including optional Station capabilities."
+  type = object({
+    tenant_id           = string
+    subscription_id     = string
+    resource_group_name = string
+    identity_name       = string
+    tags                = map(string)
+    terraform_cloud     = any
+    github              = optional(any)
+    gitlab              = optional(any)
+    station_capabilities = optional(object({
+      manage_applications           = optional(bool, false)
+      manage_groups                 = optional(bool, false)
+      manage_group_membership       = optional(bool, false)
+      grant_application_permissions = optional(bool, false)
+      assign_directory_roles        = optional(bool, false)
+    }), {})
+  })
 
   validation {
     condition     = (try(var.config.github, null) != null) != (try(var.config.gitlab, null) != null)
@@ -24,22 +40,10 @@ variable "tfe_token" {
   type        = string
 }
 
-variable "station_capabilities" {
-  description = "Activities the Station managed identity may perform in Microsoft Graph. All optional activities default to false; Application.Read.All is always granted for the Station module's Graph service principal lookup. See PERMISSIONS.md."
-  type = object({
-    manage_applications           = optional(bool, false)
-    manage_groups                 = optional(bool, false)
-    manage_group_membership       = optional(bool, false)
-    grant_application_permissions = optional(bool, false)
-    assign_directory_roles        = optional(bool, false)
-  })
-  default = {}
-}
-
 variable "enable_privileged_role_administrator" {
   description = <<-EOT
     Whether to grant the Station identity the Privileged Role Administrator Entra directory role.
-    Defaults to false. This is independent of station_capabilities.assign_directory_roles,
+    Defaults to false. This is independent of config.station_capabilities.assign_directory_roles,
     which grants the RoleManagement.ReadWrite.Directory Microsoft Graph application permission.
     Neither setting automatically enables the other. See PERMISSIONS.md before enabling.
   EOT
