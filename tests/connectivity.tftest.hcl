@@ -109,6 +109,9 @@ variables {
         main = {
           name             = "snet-app"
           address_prefixes = ["10.0.56.0/24"]
+          service_endpoint = [{
+            service = "Microsoft.Storage"
+          }]
         }
         other = {
           name             = "snet-app2"
@@ -341,6 +344,25 @@ run "station-connectivity" {
             expected = subnet.address_prefixes,
             matches  = azurerm_subnet.this[subnet_key].address_prefixes == subnet.address_prefixes
           }
+        }
+      })
+    ])
+  }
+
+  # Validate the AzureRM 5 service_endpoint input is mapped to the resource and module output
+  assert {
+    condition = alltrue([
+      for subnet_key, subnet in local.subnets :
+      azurerm_subnet.this[subnet_key].service_endpoint[*].service == subnet.service_endpoint[*].service &&
+      output.subnets[subnet_key].service_endpoint[*].service == subnet.service_endpoint[*].service
+    ])
+    error_message = join("\n", [
+      "Subnet service endpoint mismatch. Details:",
+      jsonencode({
+        for subnet_key, subnet in local.subnets : subnet_key => {
+          resource_actual = azurerm_subnet.this[subnet_key].service_endpoint[*].service,
+          output_actual   = output.subnets[subnet_key].service_endpoint[*].service,
+          expected        = subnet.service_endpoint[*].service
         }
       })
     ])

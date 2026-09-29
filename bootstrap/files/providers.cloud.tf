@@ -6,7 +6,7 @@ terraform {
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~>4.0"
+      version = "~>5.0"
     }
     azuread = {
       source  = "hashicorp/azuread"
@@ -54,4 +54,3 @@ provider "tfe" {
   organization = var.config.terraform_cloud.organization_name
   token        = var.tfe_token
 }
-
