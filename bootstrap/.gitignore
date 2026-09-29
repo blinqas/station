@@ -1,5 +1,0 @@
-*.tfplan
-testing/
-
-local.bootstrap.sh
-providers.tf

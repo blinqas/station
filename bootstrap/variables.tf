@@ -1,94 +1,76 @@
-variable "tfc_organization_name" {
-  type        = string
-  description = "The name of the organization containing the workspace(s) the current configuration should use."
+variable "config" {
+  description = "Bootstrap configuration with exactly one of github or gitlab selected, including optional Station capabilities."
+  type = object({
+    tenant_id           = string
+    subscription_id     = string
+    resource_group_name = string
+    identity_name       = string
+    tags                = map(string)
+    terraform_cloud     = any
+    github              = optional(any)
+    gitlab              = optional(any)
+    station_capabilities = optional(object({
+      manage_applications           = optional(bool, false)
+      manage_groups                 = optional(bool, false)
+      manage_group_membership       = optional(bool, false)
+      grant_application_permissions = optional(bool, false)
+      assign_directory_roles        = optional(bool, false)
+    }), {})
+  })
+
+  validation {
+    condition     = (try(var.config.github, null) != null) != (try(var.config.gitlab, null) != null)
+    error_message = "Set exactly one of config.github or config.gitlab."
+  }
+
+  validation {
+    condition     = try(var.config.github, null) == null || try(length(trimspace(var.config.terraform_cloud.vcs_repo_github_app_installation_id)) > 0, false)
+    error_message = "Set terraform_cloud.vcs_repo_github_app_installation_id for GitHub bootstrap."
+  }
+
+  validation {
+    condition     = try(var.config.gitlab, null) == null || try(length(trimspace(var.config.terraform_cloud.vcs_repo_oauth_token_id)) > 0, false)
+    error_message = "Set terraform_cloud.vcs_repo_oauth_token_id for GitLab bootstrap."
+  }
 }
 
-variable "tfc_project_name" {
-  type        = string
-  description = "(Optional) The name of a Terraform Cloud project. Provisioned on initial bootstrap run."
-  default     = "station"
-}
-
-variable "tfc_token" {
-  type        = string
-  description = "Access token for TFC. This can be either a team or organziation token. https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens"
-}
-
-variable "bootstrap_tfc_workspace_name" {
-  type        = string
-  description = "The name of a single Terraform Cloud workspace. Provisioned on initial bootstrap run."
-}
-
-variable "deployments_tfc_workspace_name" {
-  type        = string
-  description = "(Optional) The name of a single Terraform Cloud workspace for Station Deployments."
-  default     = "station-deployments"
-}
-
-variable "tfc_hostname" {
-  description = "The hostname of a Terraform Enterprise installation, if using Terraform Enterprise. Defaults to Terraform Cloud (app.terraform.io)."
-  default     = "app.terraform.io"
-  type        = string
-}
-
-variable "bootstrap_repo_url" {
-  type        = string
-  description = "The url of the git repository where the bootstrap code is stored. Providing this makes it easy to find back to the source repo where Station was bootstrapped from."
-  default     = "Not provided. Set `var.bootstrap_repo_url`."
-}
-
-variable "vcs_repo_name" {
-  type        = string
-  description = "(Optional) The name you want to give the repository that should hold you Station deployments"
-  default     = "station-deployments"
-}
-
-variable "vcs_repo_branch" {
-  type        = string
-  description = "(Optional) The repository branch that Terraform will execute from. This defaults to the repository's default branch (e.g. main)."
-  default     = null
-}
-
-variable "vcs_repo_oauth_token_id" {
-  type        = string
-  description = "(Optional) The VCS Connection (OAuth Connection + Token) to use. This ID can be obtained from a tfe_oauth_client resource. This conflicts with github_app_installation_id and can only be used if github_app_installation_id is not used."
-  default     = null
-}
-
-variable "vcs_repo_github_app_installation_id" {
-  type        = string
-  description = "(Optional) The installation id of the Github App. This conflicts with oauth_token_id and can only be used if oauth_token_id is not used. Go to https://app.terraform.io/api/v2/github-app/installations to find installations. See https://developer.hashicorp.com/terraform/cloud-docs/api-docs/github-app-installations for more information."
-  default     = null
-}
-
-variable "vcs_repo_tags_regex" {
-  type        = string
-  description = "(Optional) A regular expression used to trigger a Workspace run for matching Git tags. This option conflicts with trigger_patterns and trigger_prefixes. Should only set this value if the former is not being used."
-  default     = null
-}
-
-variable "vcs_repo_owner" {
-  type        = string
-  description = "Name of the GitHub Organization to manage"
-  default     = null
-}
-
-variable "vcs_repo_PAT" {
-  type        = string
-  description = "Personal Access Token (PAT) for TFC to create repositories. Documentation: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"
-  default     = null
+variable "tfe_token" {
+  description = "(Required) HCP Terraform User API token for \"Service Account\" user. Must be member of the `owners` team."
   sensitive   = true
-}
-
-variable "subscription_ids" {
-  type        = set(string)
-  description = "Set of Subscription ID's the Station identity can manage."
-  default     = []
-}
-
-variable "entraID_application_name" {
   type        = string
-  description = "The name of the Azure AD application that will be created for Station. This application will be used to create new workloads using the station module."
-  default     = "station-deployments"
+}
 
+variable "enable_privileged_role_administrator" {
+  description = <<-EOT
+    Whether to grant the Station identity the Privileged Role Administrator Entra directory role.
+    Defaults to false. This is independent of config.station_capabilities.assign_directory_roles,
+    which grants the RoleManagement.ReadWrite.Directory Microsoft Graph application permission.
+    Neither setting automatically enables the other. See PERMISSIONS.md before enabling.
+  EOT
+  type        = bool
+  default     = false
+}
+
+variable "github_app_pem_file" {
+  description = "Base64 encoded private key for the Station Landing Zones GitHub app (required for GitHub bootstrap)."
+  sensitive   = true
+  type        = string
+  default     = null
+
+  validation {
+    condition     = try(var.config.github, null) == null || try(length(var.github_app_pem_file) > 0, false)
+    error_message = "github_app_pem_file is required for GitHub bootstrap."
+  }
+}
+
+variable "gitlab_token" {
+  description = "GitLab API token for bootstrap and the landing-zone workspace. Set TF_VAR_gitlab_token for GitLab bootstrap."
+  sensitive   = true
+  type        = string
+  default     = null
+
+  validation {
+    condition     = try(var.config.gitlab, null) == null || try(length(trimspace(var.gitlab_token)) > 0, false)
+    error_message = "Set TF_VAR_gitlab_token for GitLab bootstrap and landing-zone management."
+  }
 }
