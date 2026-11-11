@@ -6,6 +6,7 @@ variable "connectivity" {
     - Connecting Virtual Networks in different resource groups managed by this landing zone is currently unavailable. Configure this manually in the landing zone configuration.
     - The key used for a peering object must be unique across all connectivity objects.
     - The VWAN Virtual Hub peering option can only peer to VWAN Hubs that are in the configured `azurerm.connectivity` subscription.
+    - Private DNS zone links target existing zones in the configured `azurerm.connectivity` subscription, with registration disabled.
   EOF
   default     = {}
   type = map(object({
@@ -60,6 +61,10 @@ variable "connectivity" {
         remote_address_space = string
       }))
     })), {})
+    private_dns_zone_links = optional(map(object({
+      name                = string
+      private_dns_zone_id = string
+    })), {})
     virtual_hub_connection = optional(object({
       name                      = string
       id                        = string
@@ -85,6 +90,34 @@ variable "connectivity" {
   )
 
   validation {
+    condition = alltrue(flatten([
+      for network in values(var.connectivity) : [
+        for link in values(network.private_dns_zone_links) :
+        can(regex(local.private_dns_zone_id_pattern, link.private_dns_zone_id))
+      ]
+    ]))
+    error_message = "Each private_dns_zone_id must be a complete Private DNS zone resource ID: /subscriptions/<subscription UUID>/resourceGroups/<group>/providers/Microsoft.Network/privateDnsZones/<zone>, without a trailing slash or child resource."
+  }
+
+  validation {
+    condition = alltrue([
+      for network in values(var.connectivity) :
+      length(distinct([for link in values(network.private_dns_zone_links) : try(lower(link.private_dns_zone_id), "")])) == length(network.private_dns_zone_links)
+    ])
+    error_message = "Each VNet's private_dns_zone_links must target distinct Private DNS zones (resource IDs are compared case-insensitively)."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for network in values(var.connectivity) : [
+        for link in values(network.private_dns_zone_links) :
+        try(length(trimspace(link.name)) > 0, false)
+      ]
+    ]))
+    error_message = "Each private_dns_zone_links entry must supply a non-empty Azure link name unique within its zone."
+  }
+
+  validation {
     condition = length(
       distinct(
         flatten([
@@ -105,4 +138,3 @@ variable "connectivity" {
     error_message = "The key used for a peering object must be unique across all connectivity objects."
   }
 }
-

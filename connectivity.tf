@@ -1,3 +1,46 @@
+// Resolution links belong to the existing zone owner, not the workload subscription.
+locals {
+  private_dns_zone_id_pattern = "(?i)^/subscriptions/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/resourceGroups/([^/]+)/providers/Microsoft\\.Network/privateDnsZones/([^/]+)$"
+  private_dns_zone_links = {
+    for link in flatten([
+      for network_key, network in var.connectivity : [
+        for link_key, link in network.private_dns_zone_links : {
+          // Encoding the pair avoids collisions even when either key contains separators.
+          key         = jsonencode([network_key, link_key])
+          network_key = network_key
+          name        = link.name
+          // Keep instance keys independent of IDs that may be unknown until apply.
+          // Input validation reports malformed IDs before these fallbacks are used.
+          zone = try(regex(local.private_dns_zone_id_pattern, link.private_dns_zone_id), null)
+        }
+      ]
+    ]) : link.key => link
+  }
+}
+
+data "azurerm_client_config" "connectivity" {
+  provider = azurerm.connectivity
+  for_each = toset(length(local.private_dns_zone_links) > 0 ? ["current"] : [])
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "this" {
+  provider              = azurerm.connectivity
+  for_each              = local.private_dns_zone_links
+  name                  = each.value.name
+  resource_group_name   = try(each.value.zone[1], null)
+  private_dns_zone_name = try(each.value.zone[2], null)
+  virtual_network_id    = azurerm_virtual_network.this[each.value.network_key].id
+  registration_enabled  = false
+  tags                  = local.tags
+
+  lifecycle {
+    precondition {
+      condition     = each.value.zone == null ? true : lower(each.value.zone[0]) == lower(data.azurerm_client_config.connectivity["current"].subscription_id)
+      error_message = "Private DNS zone link ${each.key} must target a zone in the effective azurerm.connectivity subscription (${data.azurerm_client_config.connectivity["current"].subscription_id}). Configure that provider for the zone's subscription; the workload subscription is not used for DNS links."
+    }
+  }
+}
+
 resource "azurerm_virtual_network" "this" {
   for_each                       = var.connectivity
   name                           = each.value.virtual_network_name
@@ -194,4 +237,3 @@ resource "azurerm_virtual_hub_connection" "this" {
     }
   }
 }
-

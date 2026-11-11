@@ -58,6 +58,11 @@ output "subnets" {
   value = azurerm_subnet.this
 }
 
+output "private_dns_zone_links" {
+  description = "Managed Private DNS zone VNet links, including IDs, keyed by jsonencode([VNet key, link key])."
+  value       = azurerm_private_dns_zone_virtual_network_link.this
+}
+
 output "network_security_groups" {
   value = azurerm_network_security_group.this
 }
@@ -84,4 +89,3 @@ output "role_assignments" {
     - others: Role assignments created through `var.role_assignments`
   EOT
 }
-
