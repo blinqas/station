@@ -12,13 +12,13 @@ terraform {
 }
 
 variable "subscription_id" {
-  description = "Workload test subscription; must differ from the fixture's connectivity provider."
+  description = "(Required) Workload test subscription; must differ from the fixture's connectivity provider."
   type        = string
   nullable    = false
 }
 
 variable "tenant_id" {
-  description = "Workload tenant; the connectivity provider must use the same tenant."
+  description = "(Required) Workload tenant; the connectivity provider must use the same tenant."
   type        = string
   nullable    = false
 }
@@ -61,21 +61,26 @@ resource "azurerm_private_dns_a_record" "this" {
 }
 
 output "zones" {
-  value = azurerm_private_dns_zone.this
+  description = "Fixture-owned Private DNS zones keyed by test zone name."
+  value       = azurerm_private_dns_zone.this
 }
 
 output "records" {
-  value = azurerm_private_dns_a_record.this
+  description = "Sentinel A records used to verify preservation after link removal."
+  value       = azurerm_private_dns_a_record.this
 }
 
 output "subscription_id" {
-  value = data.azurerm_client_config.this.subscription_id
+  description = "Connectivity subscription containing the fixture zones."
+  value       = data.azurerm_client_config.this.subscription_id
 }
 
 output "tenant_id" {
-  value = data.azurerm_client_config.this.tenant_id
+  description = "Connectivity tenant used to verify same-tenant test boundaries."
+  value       = data.azurerm_client_config.this.tenant_id
 }
 
 output "suffix" {
-  value = random_id.this.hex
+  description = "Unique suffix for fixture resource names."
+  value       = random_id.this.hex
 }

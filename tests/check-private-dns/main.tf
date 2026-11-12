@@ -8,7 +8,7 @@ terraform {
 }
 
 variable "zones" {
-  description = "Fixture-owned zones to read again after Station removes its links."
+  description = "(Required) Fixture-owned zones to read again after Station removes its links."
   nullable    = false
   type = map(object({
     name                = string
@@ -30,9 +30,11 @@ data "azurerm_private_dns_a_record" "this" {
 }
 
 output "zones" {
-  value = data.azurerm_private_dns_zone.this
+  description = "Fixture-owned zones read after link removal."
+  value       = data.azurerm_private_dns_zone.this
 }
 
 output "records" {
-  value = data.azurerm_private_dns_a_record.this
+  description = "Sentinel A records read after link removal."
+  value       = data.azurerm_private_dns_a_record.this
 }
