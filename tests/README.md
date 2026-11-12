@@ -59,6 +59,47 @@ This folder contains all tests for the Terraform Station module. The aim is to s
   sh -c '. ./.agent.test.env; terraform test -filter=tests/tfe.tftest.hcl' #This will only run the tests for the tfe block
     ```
 
+### Private DNS connectivity tests
+
+`connectivity_dns_mock.tftest.hcl` uses mocked AzureRM (default and connectivity),
+Entra ID, TFE, random and time providers. It does not authenticate or create cloud
+resources. It covers omitted/empty maps, multiple zones/VNets, repeated and
+separator-key collision rejection, link names, VNet identity, provider targeting,
+registration, outputs, validation failures, unchanged plans/reapplies, and removal
+without VNet changes. Mocked behavior is not proof of Azure DNS resolution or live
+zone/record preservation.
+
+For offline commands, source a local `.agent.test.env` (the unfilled example is
+sufficient). No live Azure context preflight is needed for these mocked tests or
+formatting/backend-disabled initialization:
+
+```shell
+sh -c '. ./.agent.test.env; terraform init -backend=false'
+sh -c '. ./.agent.test.env; terraform test -filter=tests/connectivity_dns_mock.tftest.hcl'
+```
+
+`connectivity_dns.tftest.hcl` is a **live, billable integration test**, using the
+existing provider/setup-module conventions. Run it only in approved non-production
+Azure/TFC test accounts, with **two distinct subscriptions in one tenant**:
+
+1. Fill `.agent.test.env` with the existing test prerequisites and add
+   `TF_VAR_connectivity_subscription_id` for the non-production DNS subscription.
+   Confirm `TFE_ORGANIZATION` matches the test file's `tfe.organization_name`;
+   update that test value if not using the repository's default test organization.
+2. Run the Azure context preflight above; independently verify that the connectivity
+   subscription and TFC organization are approved test scopes, not production.
+3. Run `sh -c '. ./.agent.test.env; terraform test -filter=tests/connectivity_dns.tftest.hcl'`.
+
+The test creates fixture-owned zones and sentinel records through the connectivity
+provider and VNets through the workload provider. It checks unchanged plan/reapply
+link attributes and IDs, applies link removal, then **freshly reads both zones and
+records before fixture teardown**. Missing or changed external resources fail the
+test. It does not use customer resources or provision private endpoints or clients.
+Production resolution, reviewed creation/cleanup plans and final retained-link
+state require separately authorized integration verification; they are not proved
+by either automated file. Existing peering/hub/subnet regressions remain covered by
+`connectivity.tftest.hcl`.
+
 ### Automated Test Execution in CI/CD
 
 The repository uses **selective test execution** to optimize CI/CD performance and reduce GitHub Actions minutes. Tests are automatically selected based on which files you've changed:

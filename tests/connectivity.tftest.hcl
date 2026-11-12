@@ -198,6 +198,11 @@ run "station-connectivity" {
     source = "./"
   }
 
+  assert {
+    condition     = length(output.private_dns_zone_links) == 0
+    error_message = "Existing connectivity configurations without DNS links must not create links."
+  }
+
   # Verify that VNets have the correct names
   assert {
     condition = alltrue([
