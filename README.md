@@ -146,23 +146,40 @@ module "workload" {
 
 The `private_dns_zone_links` output follows the existing network-resource outputs
 and exposes complete managed link objects, including `id`. Resource instances and
-outputs share keys produced by `jsonencode([vnet_key, link_key])`. Encoding the pair
-avoids collisions even when keys contain punctuation:
+outputs share `vnet_key.link_key` keys, matching subnet addresses. Repeated inner
+keys across VNets are supported. Dot-containing keys are allowed unless two pairs
+produce the same composite key; such collisions are rejected during validation:
 
 ```terraform
-module.workload.private_dns_zone_links[jsonencode(["app", "vault"])].id
+module.workload.private_dns_zone_links["app.vault"].id
 ```
 
 Existing unmanaged links require **explicit import**. Configure the link first,
 then import its full Azure resource ID into the composite resource address:
 
 ```shell
-terraform import 'module.workload.azurerm_private_dns_zone_virtual_network_link.this["[\"app\",\"vault\"]"]' '/subscriptions/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/resourceGroups/rg-dns/providers/Microsoft.Network/privateDnsZones/privatelink.vaultcore.azure.net/virtualNetworkLinks/app-prod-vault'
+terraform import 'module.workload.azurerm_private_dns_zone_virtual_network_link.this["app.vault"]' '/subscriptions/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/resourceGroups/rg-dns/providers/Microsoft.Network/privateDnsZones/privatelink.vaultcore.azure.net/virtualNetworkLinks/app-prod-vault'
 ```
 
 Review the subsequent plan before applying. Station never automatically adopts
 links or their parent zones. See [DNS connectivity tests](tests/README.md#private-dns-connectivity-tests)
 for offline coverage and the separate, non-production integration test.
+
+#### Upgrading from tuple-key addresses
+
+Earlier feature revisions used JSON tuple keys. If those addresses are already in
+state, migrate each existing link in the correct root configuration and workspace
+**before applying** the new version. For the connectivity-test consumer:
+
+```shell
+terraform state mv 'module.connectivity_test.azurerm_private_dns_zone_virtual_network_link.this["[\"this\",\"key_vault\"]"]' 'module.connectivity_test.azurerm_private_dns_zone_virtual_network_link.this["this.key_vault"]'
+```
+
+Adapt both addresses for other module paths and keys. Coordinate state access and
+retain a state backup through the normal workspace procedure. Review the next plan:
+the address change must not destroy/recreate the Azure link. An existing Azure link
+alone does not prove its Terraform state address; inspect the workspace state first.
+Do not import a link that is already managed at the old address.
 
 ### Policy exemption usage example
 
@@ -252,7 +269,7 @@ MIT
 | <a name="output_landing_zone_identity"></a> [landing\_zone\_identity](#output\_landing\_zone\_identity) | n/a |
 | <a name="output_network_security_groups"></a> [network\_security\_groups](#output\_network\_security\_groups) | n/a |
 | <a name="output_peerings"></a> [peerings](#output\_peerings) | n/a |
-| <a name="output_private_dns_zone_links"></a> [private\_dns\_zone\_links](#output\_private\_dns\_zone\_links) | Managed Private DNS zone VNet links, including IDs, keyed by jsonencode([VNet key, link key]). |
+| <a name="output_private_dns_zone_links"></a> [private\_dns\_zone\_links](#output\_private\_dns\_zone\_links) | Managed Private DNS zone VNet links, including IDs, keyed by VNet-key.link-key. |
 | <a name="output_policy_exemptions"></a> [policy\_exemptions](#output\_policy\_exemptions) | n/a |
 | <a name="output_resource_group"></a> [resource\_group](#output\_resource\_group) | n/a |
 | <a name="output_resource_groups_user_specified"></a> [resource\_groups\_user\_specified](#output\_resource\_groups\_user\_specified) | n/a |

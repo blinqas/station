@@ -156,7 +156,7 @@ run "maximum" {
 
   assert {
     condition = toset(keys(output.private_dns_zone_links)) == toset([
-      jsonencode(["first", "shared"]), jsonencode(["first", "other"]), jsonencode(["second", "shared"])
+      "first.shared", "first.other", "second.shared"
     ])
     error_message = "Different VNets may reuse a link key and share a zone, while one VNet may link multiple zones."
   }
@@ -164,20 +164,20 @@ run "maximum" {
     condition = alltrue(flatten([
       for network_key, network in var.connectivity : [
         for link_key, link in network.private_dns_zone_links :
-        output.private_dns_zone_links[jsonencode([network_key, link_key])].name == link.name &&
-        output.private_dns_zone_links[jsonencode([network_key, link_key])].virtual_network_id == output.virtual_networks[network_key].id &&
-        output.private_dns_zone_links[jsonencode([network_key, link_key])].registration_enabled == false &&
-        length(output.private_dns_zone_links[jsonencode([network_key, link_key])].id) > 0
+        output.private_dns_zone_links["${network_key}.${link_key}"].name == link.name &&
+        output.private_dns_zone_links["${network_key}.${link_key}"].virtual_network_id == output.virtual_networks[network_key].id &&
+        output.private_dns_zone_links["${network_key}.${link_key}"].registration_enabled == false &&
+        length(output.private_dns_zone_links["${network_key}.${link_key}"].id) > 0
       ]
     ]))
     error_message = "Links must expose IDs, preserve explicit names, reference their enclosing VNet and disable registration."
   }
   assert {
     condition = (
-      output.private_dns_zone_links[jsonencode(["first", "shared"])].private_dns_zone_name == "shared.example" &&
-      output.private_dns_zone_links[jsonencode(["first", "shared"])].resource_group_name == "rg-dns" &&
-      output.private_dns_zone_links[jsonencode(["first", "other"])].private_dns_zone_name == "other.example" &&
-      output.private_dns_zone_links[jsonencode(["first", "other"])].resource_group_name == "rg-other"
+      output.private_dns_zone_links["first.shared"].private_dns_zone_name == "shared.example" &&
+      output.private_dns_zone_links["first.shared"].resource_group_name == "rg-dns" &&
+      output.private_dns_zone_links["first.other"].private_dns_zone_name == "other.example" &&
+      output.private_dns_zone_links["first.other"].resource_group_name == "rg-other"
     )
     error_message = "Zone names and resource groups must come from the supplied zone IDs, including mixed-case resource paths."
   }
@@ -201,10 +201,10 @@ run "unchanged_plan" {
         subnets              = {}
         private_dns_zone_links = {
           for link_key in(key == "first" ? ["shared", "other"] : ["shared"]) : link_key => {
-            name = run.maximum.private_dns_zone_links[jsonencode([key, link_key])].name
+            name = run.maximum.private_dns_zone_links["${key}.${link_key}"].name
             private_dns_zone_id = format("/subscriptions/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s",
-              run.maximum.private_dns_zone_links[jsonencode([key, link_key])].resource_group_name,
-            run.maximum.private_dns_zone_links[jsonencode([key, link_key])].private_dns_zone_name)
+              run.maximum.private_dns_zone_links["${key}.${link_key}"].resource_group_name,
+            run.maximum.private_dns_zone_links["${key}.${link_key}"].private_dns_zone_name)
           }
         }
       }
@@ -225,10 +225,10 @@ run "unchanged_reapply" {
         subnets              = {}
         private_dns_zone_links = {
           for link_key in(key == "first" ? ["shared", "other"] : ["shared"]) : link_key => {
-            name = run.maximum.private_dns_zone_links[jsonencode([key, link_key])].name
+            name = run.maximum.private_dns_zone_links["${key}.${link_key}"].name
             private_dns_zone_id = format("/subscriptions/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/resourceGroups/%s/providers/Microsoft.Network/privateDnsZones/%s",
-              run.maximum.private_dns_zone_links[jsonencode([key, link_key])].resource_group_name,
-            run.maximum.private_dns_zone_links[jsonencode([key, link_key])].private_dns_zone_name)
+              run.maximum.private_dns_zone_links["${key}.${link_key}"].resource_group_name,
+            run.maximum.private_dns_zone_links["${key}.${link_key}"].private_dns_zone_name)
           }
         }
       }
@@ -342,7 +342,27 @@ run "wrong_subscription" {
   expect_failures = [azurerm_private_dns_zone_virtual_network_link.this]
 }
 
-run "separator_keys" {
+run "noncolliding_separator_keys" {
+  command = plan
+  variables {
+    connectivity = {
+      "a.b" = {
+        virtual_network_name = "vnet-ab"
+        address_space        = ["10.4.0.0/24"]
+        subnets              = {}
+        private_dns_zone_links = {
+          c = { name = "ab-c", private_dns_zone_id = "/subscriptions/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/resourceGroups/rg-dns/providers/Microsoft.Network/privateDnsZones/shared.example" }
+        }
+      }
+    }
+  }
+  assert {
+    condition     = toset(keys(output.private_dns_zone_links)) == toset(["a.b.c"])
+    error_message = "Dot-containing keys must remain supported when their composite address is unique."
+  }
+}
+
+run "colliding_separator_keys" {
   command = plan
   variables {
     connectivity = {
@@ -364,10 +384,7 @@ run "separator_keys" {
       }
     }
   }
-  assert {
-    condition     = toset(keys(output.private_dns_zone_links)) == toset([jsonencode(["a.b", "c"]), jsonencode(["a", "b.c"])])
-    error_message = "Composite identities must not collide when VNet or link keys contain separators."
-  }
+  expect_failures = [var.connectivity]
 }
 
 run "null_zone_id" {

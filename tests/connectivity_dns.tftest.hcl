@@ -109,7 +109,7 @@ run "maximum" {
   }
   assert {
     condition = toset(keys(output.private_dns_zone_links)) == toset([
-      jsonencode(["first", "shared"]), jsonencode(["first", "other"]), jsonencode(["second", "shared"])
+      "first.shared", "first.other", "second.shared"
     ])
     error_message = "Multiple zones, shared zones and repeated map keys must produce three distinct links."
   }
@@ -117,10 +117,10 @@ run "maximum" {
     condition = alltrue(flatten([
       for network_key, network in var.connectivity : [
         for link_key, link in network.private_dns_zone_links :
-        lower(output.private_dns_zone_links[jsonencode([network_key, link_key])].id) == lower("${link.private_dns_zone_id}/virtualNetworkLinks/${link.name}") &&
-        output.private_dns_zone_links[jsonencode([network_key, link_key])].name == link.name &&
-        output.private_dns_zone_links[jsonencode([network_key, link_key])].virtual_network_id == output.virtual_networks[network_key].id &&
-        output.private_dns_zone_links[jsonencode([network_key, link_key])].registration_enabled == false
+        lower(output.private_dns_zone_links["${network_key}.${link_key}"].id) == lower("${link.private_dns_zone_id}/virtualNetworkLinks/${link.name}") &&
+        output.private_dns_zone_links["${network_key}.${link_key}"].name == link.name &&
+        output.private_dns_zone_links["${network_key}.${link_key}"].virtual_network_id == output.virtual_networks[network_key].id &&
+        output.private_dns_zone_links["${network_key}.${link_key}"].registration_enabled == false
       ]
     ]))
     error_message = "Each link must belong to the fixture zone in the connectivity subscription and target its enclosing workload VNet without registration."

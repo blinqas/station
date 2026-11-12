@@ -59,7 +59,7 @@ output "subnets" {
 }
 
 output "private_dns_zone_links" {
-  description = "Managed Private DNS zone VNet links, including IDs, keyed by jsonencode([VNet key, link key])."
+  description = "Managed Private DNS zone VNet links, including IDs, keyed by VNet-key.link-key."
   value       = azurerm_private_dns_zone_virtual_network_link.this
 }
 

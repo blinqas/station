@@ -5,8 +5,8 @@ locals {
     for link in flatten([
       for network_key, network in var.connectivity : [
         for link_key, link in network.private_dns_zone_links : {
-          // Encoding the pair avoids collisions even when either key contains separators.
-          key         = jsonencode([network_key, link_key])
+          // The object comprehension rejects duplicate composite keys.
+          key         = "${network_key}.${link_key}"
           network_key = network_key
           name        = link.name
           // Keep instance keys independent of IDs that may be unknown until apply.

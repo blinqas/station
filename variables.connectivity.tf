@@ -90,6 +90,15 @@ variable "connectivity" {
   )
 
   validation {
+    condition = length(distinct(flatten([
+      for network_key, network in var.connectivity : [
+        for link_key in keys(network.private_dns_zone_links) : "${network_key}.${link_key}"
+      ]
+    ]))) == sum(concat([0], [for network in values(var.connectivity) : length(network.private_dns_zone_links)]))
+    error_message = "Private DNS zone link keys must produce unique VNet-key.link-key addresses; dot-containing keys must not collide with another pair."
+  }
+
+  validation {
     condition = alltrue(flatten([
       for network in values(var.connectivity) : [
         for link in values(network.private_dns_zone_links) :

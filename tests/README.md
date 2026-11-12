@@ -64,7 +64,7 @@ This folder contains all tests for the Terraform Station module. The aim is to s
 `connectivity_dns_mock.tftest.hcl` uses mocked AzureRM (default and connectivity),
 Entra ID, TFE, random and time providers. It does not authenticate or create cloud
 resources. It covers omitted/empty maps, multiple zones/VNets, repeated and
-separator-containing keys, link names, VNet identity, provider targeting,
+separator-key collision rejection, link names, VNet identity, provider targeting,
 registration, outputs, validation failures, unchanged plans/reapplies, and removal
 without VNet changes. Mocked behavior is not proof of Azure DNS resolution or live
 zone/record preservation.
