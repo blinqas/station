@@ -98,7 +98,7 @@ while IFS= read -r file; do
   done
   
   # Check for test files themselves - map to corresponding test
-  if [[ "$file" == tests/application.tftest.hcl ]]; then
+  if [[ "$file" == tests/application.tftest.hcl ]] || [[ "$file" == tests/application_identifier_uris_mock.tftest.hcl ]]; then
     echo "  -> Application test file detected"
     run_application=true
     file_categorized=true
@@ -223,6 +223,7 @@ if $run_all; then
   echo "Running ALL tests"
   TEST_FILES=(
     "tests/application.tftest.hcl"
+    "tests/application_identifier_uris_mock.tftest.hcl"
     "tests/group.tftest.hcl"
     "tests/tfe.tftest.hcl"
     "tests/connectivity.tftest.hcl"
@@ -238,7 +239,7 @@ else
   
   if $run_application; then
     echo "  - application tests"
-    TEST_FILES+=("tests/application.tftest.hcl")
+    TEST_FILES+=("tests/application.tftest.hcl" "tests/application_identifier_uris_mock.tftest.hcl")
   fi
   
   if $run_group; then
@@ -278,6 +279,7 @@ else
     echo "No matching changes detected. Defaulting to all tests for safety."
     TEST_FILES=(
       "tests/application.tftest.hcl"
+      "tests/application_identifier_uris_mock.tftest.hcl"
       "tests/group.tftest.hcl"
       "tests/tfe.tftest.hcl"
       "tests/connectivity.tftest.hcl"

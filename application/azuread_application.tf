@@ -8,7 +8,6 @@ resource "azuread_application" "this" {
   sign_in_audience               = var.azuread_application.sign_in_audience
   logo_image                     = var.azuread_application.logo_image
   group_membership_claims        = var.azuread_application.group_membership_claims
-  identifier_uris                = var.azuread_application.identifier_uris
   prevent_duplicate_names        = var.azuread_application.prevent_duplicate_names
   fallback_public_client_enabled = var.azuread_application.fallback_public_client_enabled
   notes                          = var.azuread_application.notes
@@ -126,7 +125,8 @@ resource "azuread_application" "this" {
     }
   }
   lifecycle {
-    ignore_changes = [app_role]
+    # The Graph update owns identifier URIs, including for existing applications.
+    ignore_changes = [app_role, identifier_uris]
   }
 }
 
@@ -167,6 +167,8 @@ resource "azuread_service_principal" "this" {
       relay_state = try(saml_single_sign_on.value.relay_state, "")
     }
   }
+
+  depends_on = [msgraph_update_resource.this]
 }
 
 /* 

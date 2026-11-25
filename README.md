@@ -76,6 +76,22 @@ This file would provision the following:
     - Configured to authenticate to VCS with token already in Terraform Cloud
 - TFC Environment Variables for OIDC authentication with Managed Identity
 
+### Default application identifier URI
+
+Set `use_default_identifier_uri = true` on an entry in `applications` to register
+`api://<client-id>` in the same apply. Leave `identifier_uris` unset or empty.
+The option defaults to `false`; use `identifier_uris` to specify custom URIs.
+
+You can enable the option on an existing application without replacing it or
+changing its client ID. If you switch from custom URIs, Station replaces those
+URIs with the generated one. Update any clients that use the old URIs.
+
+Station manages identifier URIs through the `microsoft/msgraph` provider. If you
+configure AzureAD authentication in HCL rather than through the Azure CLI or
+environment variables, configure `msgraph` for the same tenant and identity.
+Run `terraform init` when upgrading to install the provider. The first apply
+adds URI management to state without moving the application resource.
+
 ### Private DNS zone VNet links
 
 Use `connectivity.<vnet key>.private_dns_zone_links` to link a Station-managed VNet

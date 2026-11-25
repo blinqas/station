@@ -2,6 +2,10 @@ variable "applications" {
   description = <<EOT
   Map of applications to create. The body of each object is more or less identical to azuread_application 
   with the exception of map usage instead of blocks (as blocks are impossible to define with HCL)
+
+  Set use_default_identifier_uri to true to register api://<client-id> in the same apply.
+  It defaults to false and cannot be combined with a non-empty identifier_uris list.
+
     Example:
   applications = {
     example_client = {
@@ -70,6 +74,7 @@ variable "applications" {
     sign_in_audience               = optional(string)
     group_membership_claims        = optional(list(string))
     identifier_uris                = optional(list(string))
+    use_default_identifier_uri     = optional(bool, false)
     prevent_duplicate_names        = optional(bool)
     fallback_public_client_enabled = optional(bool)
     notes                          = optional(string) #This can be used as description for the application. 1024 character limit.
@@ -166,5 +171,12 @@ variable "applications" {
       }))
     }))
   }))
-}
 
+  validation {
+    condition = alltrue([
+      for app in var.applications :
+      !app.use_default_identifier_uri || length(coalesce(app.identifier_uris, [])) == 0
+    ])
+    error_message = "An application cannot set use_default_identifier_uri to true and supply non-empty identifier_uris."
+  }
+}

@@ -12,10 +12,14 @@ terraform {
       version = "~>3.0"
     }
 
+    msgraph = {
+      source  = "microsoft/msgraph"
+      version = "~> 0.6.0"
+    }
+
     random = {
       source  = "hashicorp/random"
       version = "~>3.6"
     }
   }
 }
-
