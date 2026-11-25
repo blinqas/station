@@ -84,4 +84,3 @@ output "role_assignments" {
     - others: Role assignments created through `var.role_assignments`
   EOT
 }
-

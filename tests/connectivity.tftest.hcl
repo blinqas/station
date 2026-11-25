@@ -109,6 +109,9 @@ variables {
         main = {
           name             = "snet-app"
           address_prefixes = ["10.0.56.0/24"]
+          service_endpoint = [{
+            service = "Microsoft.Storage"
+          }]
         }
         other = {
           name             = "snet-app2"
@@ -175,6 +178,13 @@ run "station-connectivity" {
       }),
       // Overide the max network to use the outputed vnet ID from the setup_create_hub_vnet module
       max = merge(var.connectivity.max, {
+        subnets = merge(var.connectivity.max.subnets, {
+          main = merge(var.connectivity.max.subnets.main, {
+            service_endpoint = [merge(var.connectivity.max.subnets.main.service_endpoint[0], {
+              network_identifier = run.setup_create_hub_vnet.virtual_network_id
+            })]
+          })
+        })
         peerings = merge(var.connectivity.max.peerings, {
           max_hub = merge(var.connectivity.max.peerings.max_hub, {
             remote_virtual_network_id = run.setup_create_hub_vnet.virtual_network_id
@@ -341,6 +351,30 @@ run "station-connectivity" {
             expected = subnet.address_prefixes,
             matches  = azurerm_subnet.this[subnet_key].address_prefixes == subnet.address_prefixes
           }
+        }
+      })
+    ])
+  }
+
+  # Validate the AzureRM 5 service_endpoint input is mapped to the resource and module output
+  assert {
+    condition = alltrue([
+      for subnet_key, subnet in local.subnets :
+      azurerm_subnet.this[subnet_key].service_endpoint[*].service == subnet.service_endpoint[*].service &&
+      output.subnets[subnet_key].service_endpoint[*].service == subnet.service_endpoint[*].service &&
+      azurerm_subnet.this[subnet_key].service_endpoint[*].network_identifier == subnet.service_endpoint[*].network_identifier &&
+      output.subnets[subnet_key].service_endpoint[*].network_identifier == subnet.service_endpoint[*].network_identifier
+    ])
+    error_message = join("\n", [
+      "Subnet service endpoint mismatch. Details:",
+      jsonencode({
+        for subnet_key, subnet in local.subnets : subnet_key => {
+          resource_actual                    = azurerm_subnet.this[subnet_key].service_endpoint[*].service,
+          output_actual                      = output.subnets[subnet_key].service_endpoint[*].service,
+          expected                           = subnet.service_endpoint[*].service,
+          resource_network_identifier_actual = azurerm_subnet.this[subnet_key].service_endpoint[*].network_identifier,
+          output_network_identifier_actual   = output.subnets[subnet_key].service_endpoint[*].network_identifier,
+          expected_network_identifier        = subnet.service_endpoint[*].network_identifier
         }
       })
     ])
