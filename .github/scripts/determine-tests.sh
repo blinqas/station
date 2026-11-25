@@ -110,7 +110,7 @@ while IFS= read -r file; do
     echo "  -> TFE test file detected"
     run_tfe=true
     file_categorized=true
-  elif [[ "$file" == tests/connectivity.tftest.hcl ]]; then
+  elif [[ "$file" == tests/connectivity.tftest.hcl ]] || [[ "$file" == tests/connectivity_dns*.tftest.hcl ]]; then
     echo "  -> Connectivity test file detected"
     run_connectivity=true
     file_categorized=true
@@ -125,6 +125,10 @@ while IFS= read -r file; do
   elif [[ "$file" == tests/policy_exemptions.tftest.hcl ]]; then
     echo "  -> Policy exemptions test file detected"
     run_policy_exemptions=true
+    file_categorized=true
+  elif [[ "$file" == tests/check-private-dns/* ]]; then
+    echo "  -> DNS preservation fixture detected"
+    run_connectivity=true
     file_categorized=true
   elif [[ "$file" == tests/setup-* ]] || [[ "$file" == tests/README.md ]]; then
     echo "  -> Test infrastructure changed, running all tests"
@@ -222,6 +226,8 @@ if $run_all; then
     "tests/group.tftest.hcl"
     "tests/tfe.tftest.hcl"
     "tests/connectivity.tftest.hcl"
+    "tests/connectivity_dns.tftest.hcl"
+    "tests/connectivity_dns_mock.tftest.hcl"
     "tests/identity.tftest.hcl"
     "tests/user_assigned_identities.tftest.hcl"
     "tests/policy_exemptions.tftest.hcl"
@@ -248,6 +254,7 @@ else
   if $run_connectivity; then
     echo "  - connectivity tests"
     TEST_FILES+=("tests/connectivity.tftest.hcl")
+    TEST_FILES+=("tests/connectivity_dns.tftest.hcl" "tests/connectivity_dns_mock.tftest.hcl")
   fi
   
   if $run_identity; then
@@ -274,6 +281,8 @@ else
       "tests/group.tftest.hcl"
       "tests/tfe.tftest.hcl"
       "tests/connectivity.tftest.hcl"
+      "tests/connectivity_dns.tftest.hcl"
+      "tests/connectivity_dns_mock.tftest.hcl"
       "tests/identity.tftest.hcl"
       "tests/user_assigned_identities.tftest.hcl"
       "tests/policy_exemptions.tftest.hcl"
