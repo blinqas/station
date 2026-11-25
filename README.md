@@ -92,6 +92,64 @@ environment variables, configure `msgraph` for the same tenant and identity.
 Run `terraform init` when upgrading to install the provider. The first apply
 adds URI management to state without moving the application resource.
 
+### Entra client preauthorization and group access
+
+Set `preauthorized_clients` on an application to let clients access selected
+delegated scopes without prompting users for consent. Use the client's
+application (client) ID, not its object ID, and list the `value` of each enabled
+scope defined under the same application's `api.oauth2_permission_scope`.
+
+Set `service_principal.group_assignments` to assign a Station-managed group to
+the enterprise application. `group_key` must match a key in the same module
+call's `groups` input. Omit `app_role_id` for **Default Access** on applications
+without app roles. If the application exposes app roles, specify the ID of an
+enabled role that allows users and groups. Set `app_role_assignment_required`
+if sign-in should be limited to assigned users and groups.
+
+```terraform
+# Inputs to the same Station module call
+groups = {
+  vpn_users = { display_name = "VPN users" }
+}
+
+applications = {
+  vpn_audience = {
+    display_name               = "VPN audience"
+    use_default_identifier_uri = true
+
+    api = {
+      oauth2_permission_scope = [{
+        id                         = "d22cb23d-e57a-44d3-aa50-963db186b048"
+        value                      = "user_impersonation"
+        admin_consent_display_name = "Access the VPN"
+        admin_consent_description  = "Allows the client to access the VPN on behalf of the user."
+        type                       = "Admin"
+      }]
+    }
+
+    preauthorized_clients = {
+      vpn = {
+        client_id    = var.vpn_client_id
+        scope_values = ["user_impersonation"]
+      }
+    }
+
+    service_principal = {
+      app_role_assignment_required = true
+      group_assignments = {
+        vpn_access = { group_key = "vpn_users" }
+      }
+    }
+  }
+}
+```
+
+Both maps default to empty. Neither changes Azure RBAC or Entra directory
+roles. With Station bootstrap, use `manage_applications` for application
+management and `grant_application_permissions` for app role assignments. See
+[bootstrap permissions](bootstrap/PERMISSIONS.md) for the permissions required
+to manage the groups themselves.
+
 ### Private DNS zone VNet links
 
 Use `connectivity.<vnet key>.private_dns_zone_links` to link a Station-managed VNet

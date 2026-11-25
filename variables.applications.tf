@@ -6,6 +6,10 @@ variable "applications" {
   Set use_default_identifier_uri to true to register api://<client-id> in the same apply.
   It defaults to false and cannot be combined with a non-empty identifier_uris list.
 
+  Use preauthorized_clients to grant clients access to enabled API scopes by scope value.
+  Use service_principal.group_assignments to grant groups access by key in the groups input.
+  Omit app_role_id for Default Access on applications without app roles.
+
     Example:
   applications = {
     example_client = {
@@ -101,6 +105,11 @@ variable "applications" {
       })))
     }))
 
+    preauthorized_clients = optional(map(object({
+      client_id    = string
+      scope_values = set(string)
+    })), {})
+
     public_client = optional(object({
       redirect_uris = optional(set(string))
     }))
@@ -159,6 +168,11 @@ variable "applications" {
       tags                          = optional(list(string))
       use_existing                  = optional(bool, false)
 
+      group_assignments = optional(map(object({
+        group_key   = string
+        app_role_id = optional(string, "00000000-0000-0000-0000-000000000000")
+      })), {})
+
       feature_tags = optional(object({
         custom_single_sign_on = optional(bool, false)
         enterprise            = optional(bool, false)
@@ -178,5 +192,32 @@ variable "applications" {
       !app.use_default_identifier_uri || length(coalesce(app.identifier_uris, [])) == 0
     ])
     error_message = "An application cannot set use_default_identifier_uri to true and supply non-empty identifier_uris."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for app in var.applications : [
+        for client in app.preauthorized_clients : try(
+          length(client.scope_values) > 0 && alltrue([
+            for value in client.scope_values : length([
+              for scope in coalesce(try(app.api.oauth2_permission_scope, null), []) : scope
+              if scope.value == value && coalesce(scope.enabled, true)
+            ]) == 1
+          ]),
+          false
+        )
+      ]
+    ]))
+    error_message = "Each applications[*].preauthorized_clients entry must specify at least one scope_values item, and every item must match exactly one enabled api.oauth2_permission_scope value on the same application."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for app in var.applications : [
+        for assignment in try(app.service_principal.group_assignments, {}) :
+        try(contains(keys(var.groups), assignment.group_key), false)
+      ]
+    ]))
+    error_message = "Each applications[*].service_principal.group_assignments entry must specify a group_key that exists in the groups input."
   }
 }
