@@ -1,5 +1,7 @@
 output "application" {
-  value = azuread_application.this
+  value = merge(azuread_application.this, {
+    identifier_uris = msgraph_update_resource.this.body.identifierUris
+  })
 }
 
 output "service_principal" {

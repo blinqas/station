@@ -56,6 +56,10 @@ variables {
     minimum = {
       display_name = "Station test: minimum"
     },
+    generated_uri = {
+      display_name               = "Station test: generated URI"
+      use_default_identifier_uri = true
+    },
     maximum = {
       display_name                   = "Station test: maximum"
       owners                         = ["This has to be overriden with the current objectid"]
@@ -272,7 +276,8 @@ run "application-main" {
   assert {
     condition = alltrue([
       length(module.applications["minimum"].application.identifier_uris) == 0, //Default value when nothing is provided
-      module.applications["maximum"].application.identifier_uris == toset(var.applications.maximum.identifier_uris)
+      module.applications["maximum"].application.identifier_uris == toset(var.applications.maximum.identifier_uris),
+      module.applications["generated_uri"].application.identifier_uris == toset(["api://${module.applications["generated_uri"].application.client_id}"])
     ])
     error_message = "The var.applications.appName.identifier_uris identifier_uris does not match the identifier uris of the application."
   }
