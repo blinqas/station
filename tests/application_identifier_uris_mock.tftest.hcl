@@ -58,7 +58,7 @@ variables {
     }
     existing = {
       display_name    = "Existing application"
-      identifier_uris = ["api://existing"]
+      identifier_uris = ["api://existing", "api://other"]
     }
     generated = {
       display_name               = "Generated URI"
@@ -71,7 +71,7 @@ run "initial_apply" {
   assert {
     condition = (
       length(output.applications["unchanged"].application.identifier_uris) == 0 &&
-      output.applications["existing"].application.identifier_uris == toset(["api://existing"]) &&
+      output.applications["existing"].application.identifier_uris == toset(["api://existing", "api://other"]) &&
       output.applications["generated"].application.identifier_uris == toset(["api://${output.applications["generated"].application.client_id}"])
     )
     error_message = "Applications must have their omitted, explicit or generated identifier URIs after the first apply."
@@ -82,7 +82,6 @@ run "enable_on_existing_application" {
   variables {
     applications = merge(var.applications, {
       existing = merge(var.applications.existing, {
-        identifier_uris            = []
         use_default_identifier_uri = true
       })
     })
@@ -92,9 +91,9 @@ run "enable_on_existing_application" {
     condition = (
       output.applications["existing"].application.id == run.initial_apply.applications["existing"].application.id &&
       output.applications["existing"].application.client_id == run.initial_apply.applications["existing"].application.client_id &&
-      output.applications["existing"].application.identifier_uris == toset(["api://${run.initial_apply.applications["existing"].application.client_id}"])
+      output.applications["existing"].application.identifier_uris == toset(["api://existing", "api://other", "api://${run.initial_apply.applications["existing"].application.client_id}"])
     )
-    error_message = "Enabling the generated URI must update the existing application without replacing it."
+    error_message = "Enabling the generated URI must preserve the existing application and its custom URIs."
   }
 }
 
@@ -104,7 +103,6 @@ run "unchanged_plan" {
   variables {
     applications = merge(var.applications, {
       existing = merge(var.applications.existing, {
-        identifier_uris            = []
         use_default_identifier_uri = true
       })
     })
@@ -116,18 +114,18 @@ run "unchanged_plan" {
   }
 }
 
-run "conflicting_identifier_uris" {
-  command = plan
-
+run "deduplicate_identifier_uris" {
   variables {
-    applications = {
-      conflict = {
-        display_name               = "Conflicting URI settings"
-        identifier_uris            = ["api://explicit"]
+    applications = merge(var.applications, {
+      existing = merge(var.applications.existing, {
+        identifier_uris            = ["api://existing", "api://other", "api://${run.initial_apply.applications["existing"].application.client_id}"]
         use_default_identifier_uri = true
-      }
-    }
+      })
+    })
   }
 
-  expect_failures = [var.applications]
+  assert {
+    condition     = output.applications["existing"].application.identifier_uris == run.enable_on_existing_application.applications["existing"].application.identifier_uris
+    error_message = "An explicitly listed default URI must not be duplicated."
+  }
 }

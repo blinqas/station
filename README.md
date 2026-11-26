@@ -79,12 +79,11 @@ This file would provision the following:
 ### Default application identifier URI
 
 Set `use_default_identifier_uri = true` on an entry in `applications` to register
-`api://<client-id>` in the same apply. Leave `identifier_uris` unset or empty.
-The option defaults to `false`; use `identifier_uris` to specify custom URIs.
+`api://<client-id>` in the same apply alongside any custom URIs in
+`identifier_uris`. The option defaults to `false`.
 
 You can enable the option on an existing application without replacing it or
-changing its client ID. If you switch from custom URIs, Station replaces those
-URIs with the generated one. Update any clients that use the old URIs.
+changing its client ID. Keep any custom URIs you still need in `identifier_uris`.
 
 Station manages identifier URIs through the `microsoft/msgraph` provider. If you
 configure AzureAD authentication in HCL rather than through the Azure CLI or
