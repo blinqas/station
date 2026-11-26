@@ -732,11 +732,24 @@ run "application-web" {
 run "application-service_principal" {
 
   variables {
+    groups = {
+      application_users = { display_name = "Station test: application users" }
+    }
+
     applications = merge(var.applications, {
       maximum = merge(var.applications.maximum, {
         owners = [run.setup.azuread_client_config.current.object_id],
+        preauthorized_clients = {
+          minimum = {
+            client_id    = run.application-main.applications["minimum"].application.client_id
+            scope_values = ["user_impersonation", "default"]
+          }
+        }
         service_principal = merge(var.applications.maximum.service_principal, {
           owners = [run.setup.azuread_client_config.current.object_id]
+          group_assignments = {
+            access = { group_key = "application_users" }
+          }
         })
         required_resource_access = merge(var.applications.maximum.required_resource_access, {
           graph = merge(var.applications.maximum.required_resource_access.graph, {
@@ -793,5 +806,22 @@ run "application-service_principal" {
   assert {
     condition     = module.applications["maximum"].service_principal[0].saml_single_sign_on[0].relay_state == var.applications.maximum.service_principal.saml_single_sign_on.relay_state
     error_message = "Service principal saml_single_sign_on settings do not match expected configuration."
+  }
+
+  assert {
+    condition = (
+      module.applications["maximum"].preauthorized_clients["minimum"].authorized_client_id == module.applications["minimum"].application.client_id &&
+      module.applications["maximum"].preauthorized_clients["minimum"].permission_ids == toset(var.applications.maximum.api.oauth2_permission_scope[*].id)
+    )
+    error_message = "The client must be preauthorized for the two scopes on the maximum application."
+  }
+
+  assert {
+    condition = (
+      module.applications["maximum"].group_assignments["access"].app_role_id == "00000000-0000-0000-0000-000000000000" &&
+      module.applications["maximum"].group_assignments["access"].principal_object_id == module.ad_groups["application_users"].object_id &&
+      module.applications["maximum"].group_assignments["access"].resource_object_id == module.applications["maximum"].service_principal[0].object_id
+    )
+    error_message = "The Station-managed group must receive Default Access on the enterprise application."
   }
 }

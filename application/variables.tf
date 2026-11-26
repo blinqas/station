@@ -13,6 +13,17 @@ variable "azuread_service_principal" {
   The configuration for the azuread_service_principal to create. See Station's applications variable on how to configure the service principal block. 
   EOF
 }
+
+variable "group_assignments" {
+  description = "(Optional) App role assignments for groups, with their object IDs resolved by Station."
+  type = map(object({
+    app_role_id     = string
+    group_object_id = string
+  }))
+  default  = {}
+  nullable = false
+}
+
 variable "owners" {
   type        = set(string)
   default     = null
@@ -21,4 +32,3 @@ variable "owners" {
   - https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application#owners
   EOF
 }
-
