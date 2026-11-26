@@ -3,8 +3,8 @@ variable "applications" {
   Map of applications to create. The body of each object is more or less identical to azuread_application 
   with the exception of map usage instead of blocks (as blocks are impossible to define with HCL)
 
-  Set use_default_identifier_uri to true to register api://<client-id> in the same apply.
-  It defaults to false and cannot be combined with a non-empty identifier_uris list.
+  Set use_default_identifier_uri to true to add api://<client-id> to any URIs
+  configured in identifier_uris in the same apply. It defaults to false.
 
   Use preauthorized_clients to grant clients access to enabled API scopes by scope value.
   Use service_principal.group_assignments to grant groups access by key in the groups input.
@@ -185,14 +185,6 @@ variable "applications" {
       }))
     }))
   }))
-
-  validation {
-    condition = alltrue([
-      for app in var.applications :
-      !app.use_default_identifier_uri || length(coalesce(app.identifier_uris, [])) == 0
-    ])
-    error_message = "An application cannot set use_default_identifier_uri to true and supply non-empty identifier_uris."
-  }
 
   validation {
     condition = alltrue(flatten([
